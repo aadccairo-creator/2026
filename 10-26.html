@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبر فهمك</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Baloo 2', 'Comic Sans MS', 'Trebuchet MS', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #ff6b6b 0%, #feca57 45%, #48dbfb 75%, #ff9ff3 100%);
+  background-size: 300% 300%;
+  animation: bgshift 12s ease infinite;
+  min-height: 100vh; padding: 20px; color: #2d2d2d;
+}
+@keyframes bgshift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 26px 20px; }
+.header h1 { font-size: 30px; font-weight: 800; margin-bottom: 6px; text-shadow: 0 3px 0 rgba(0,0,0,0.15); }
+.header .meta { font-size: 14px; opacity: 0.95; font-weight: 600; }
+.progress-bar { background: rgba(255,255,255,0.35); border-radius: 20px; height: 12px; margin: 18px 0; overflow: hidden; border: 2px solid rgba(255,255,255,0.5); }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 20px; }
+.question { background: #fff; border-radius: 24px; padding: 28px; box-shadow: 0 14px 0 rgba(0,0,0,0.12); display: none; border: 4px solid #2d2d2d; position: relative; overflow: hidden; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; font-size: 13px; }
+.q-number { font-weight: 800; color: #ff6b6b; background: #fff0f0; padding: 6px 12px; border-radius: 20px; }
+.streak { font-weight: 800; color: #e67e22; }
+.streak:empty { display: none; }
+.q-text { font-size: 19px; font-weight: 700; line-height: 1.5; margin-bottom: 22px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: center; gap: 12px; padding: 16px 18px;
+  border: 3px solid #2d2d2d; border-radius: 18px; background: #fffdf5;
+  cursor: pointer; transition: transform 0.12s, background 0.2s; text-align: left; font-size: 15px; font-weight: 600; width: 100%;
+  box-shadow: 0 4px 0 #2d2d2d;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { transform: translateY(-2px); background: #fff7e0; }
+.option:active:not(.disabled) { transform: translateY(2px); box-shadow: 0 2px 0 #2d2d2d; }
+.option.selected { background: #eef2ff; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-emoji { font-size: 20px; flex-shrink: 0; }
+.opt-text { line-height: 1.5; }
+
+.option-feedback { margin: 6px 0 4px 4px; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.5; border: 2px dashed transparent; }
+.option-feedback.correct-feedback { background: #dcfce7; border-color: #22c55e; }
+.option-feedback.incorrect-feedback { background: #fef3f2; border-color: #fca5a5; }
+.feedback-status { font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+.hint-box { margin: 12px 0; border-radius: 16px; overflow: hidden; background: #fffbeb; border: 2px solid #fcd34d; }
+.hint-toggle { width: 100%; padding: 10px 16px; background: transparent; border: none; cursor: pointer; font-size: 14px; font-weight: 700; color: #92400e; text-align: left; display: flex; align-items: center; gap: 8px; }
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content { padding: 0 16px; max-height: 0; overflow: hidden; transition: max-height 0.3s, padding 0.3s; font-size: 14px; color: #78350f; line-height: 1.5; }
+.hint-box.show .hint-content { padding: 0 16px 12px; max-height: 200px; }
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 15px;
+  background: #ff6b6b; color: #fff; border: 3px solid #2d2d2d;
+  border-radius: 18px; font-size: 16px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 5px 0 #2d2d2d; transition: transform 0.12s;
+}
+.next-btn:hover { transform: translateY(-2px); }
+.next-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #2d2d2d; }
+.hidden { display: none !important; }
+
+.results { background: #fff; border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 14px 0 rgba(0,0,0,0.12); border: 4px solid #2d2d2d; display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 30px; margin-bottom: 6px; color: #333; font-weight: 800; }
+.stars { font-size: 40px; margin: 14px 0; letter-spacing: 4px; }
+.results .score { font-size: 60px; font-weight: 800; color: #ff6b6b; margin: 10px 0; }
+.results .score-text { font-size: 17px; color: #666; margin-bottom: 26px; font-weight: 600; }
+.restart-btn {
+  padding: 15px 40px; background: #48dbfb; color: #103a45; border: 3px solid #2d2d2d;
+  border-radius: 18px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 5px 0 #2d2d2d;
+}
+.restart-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #2d2d2d; }
+
+.confetti-piece { position: fixed; top: -10px; width: 8px; height: 14px; opacity: 0.9; pointer-events: none; z-index: 999; animation: fall linear forwards; }
+@keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: 0.3; } }
+
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🎉 اختبر فهمك</h1>
+    <div class="meta">10 أسئلة</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 1 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">ما هو المفهوم الذي ركزت عليه المحاضرة كعامل أساسي في نجاح التدريب وتفادي المشاكل التي واجهها المدربون على مدار 40 عاماً؟</div>
+          
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">حفظ المعلومات النظرية بدقة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">تطبيق المفهوم وتحويل المعلومات النظرية إلى عملي.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">زيادة عدد ساعات التدريب اليومية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">التركيز فقط على سرعة اللاعب.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 2 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">ما المقصود بمصطلح &quot;الهندسة العكسية&quot; (Reverse Engineering) في سياق التخطيط للتدريب؟</div>
+          
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">تحديد الهدف النهائي أولاً ثم تنظيم التدريبات للوصول إليه.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">تقليد أساليب تدريب الأبطال العالميين.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">تحليل أخطاء المنافسين لتجنبها.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">البدء من مستوى اللاعب الحالي وتطويره تدريجياً.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 3 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">عند زيادة حمل التدريب بنسبة <span class="math">20%</span>، ما هو الإجراء الضروري الذي يجب اتباعه وفقاً للمحاضرة؟</div>
+          
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">زيادة الشدة لتصل إلى <span class="math">100%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">زيادة عدد التكرارات بنفس النسبة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">تقليل زمن الراحة بين المجموعات.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">زيادة فترات الاستشفاء بنفس النسبة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 4 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">ما هي النسبة المئوية التي تعتبر &quot;شدة قصوى&quot; أو عالية جداً في تدريبات العدو والوثب؟</div>
+          
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">أقل من <span class="math">50%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">بين <span class="math">75%</span> و <span class="math">84%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">بين <span class="math">85%</span> و <span class="math">94%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">بين <span class="math">95%</span> و <span class="math">100%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 5 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">وفقاً لنظام الطاقة، كم تستغرق طاقة الـ <span class="math">ATP-CP</span> تقريباً قبل أن يحتاج الجسم لنظام طاقة آخر؟</div>
+          
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text"><span class="math">30</span> ثانية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">حوالي دقيقتين.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">حوالي <span class="math">10</span> ثوانٍ كحد أقصى.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">ساعة واحدة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 6 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">في مثال اللاعب &quot;دوبلانتس&quot;، ما هو العامل الرئيسي الذي تغير وسمح له بتحسين أرقامه العالمية بينما ظل تكنيكه ثابتاً تقريباً منذ صغره؟</div>
+          
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">تحسن القوة والسرعة مما سمح باستخدام زانات أكثر صلابة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">تغيير شامل في زوايا الارتقاء.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">التركيز على تدريبات التحمل الهوائي.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">استخدام عصا (زانة) أكثر مرونة وليونة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 7 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">لماذا يحذر المحاضر من الإفراط في تدريبات الوثب والقوة العالية للناشئين تحت سن الـ <span class="math">20</span>؟</div>
+          
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">لتوفير الجهد لسن الرشد فقط.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">لأن الناشئين لا يحتاجون للقوة في هذه المرحلة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">خوفاً من تعرض الجهاز الهيكلي والعظمي للإصابات.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">لأنها تقلل من سرعة اللاعب في المسافات القصيرة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 8 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">أي مرحلة من مراحل الوثب تعتبر المسؤولة عن تحضير الجسم للارتقاء وتحديد سرعته؟</div>
+          
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">مرحلة الاقتراب.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">مرحلة التوقف.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">مرحلة الهبوط.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">مرحلة الطيران.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 9 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">ما هو الدور الأساسي للتحمل الهوائي لمتسابقي الوثب الناشئين حسب ما ورد في الندوة؟</div>
+          
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">تحسين زمن الجري لمسافة <span class="math">5000</span> متر.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">تعويض النقص في تدريبات السرعة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">المساعدة في تسريع عملية الاستشفاء بين التدريبات والمحاولات.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">زيادة قوة عضلات الرجلين بشكل مباشر.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 10 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">حسب إحصائيات التطور (Development Rates)، كم تبلغ نسبة التطور المتوقعة في الأداء بعد سن الـ <span class="math">23</span>؟</div>
+          
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">حوالي <span class="math">5%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">حوالي <span class="math">1.5%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">حوالي <span class="math">10%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">لا يوجد تطور نهائياً.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>اكتمل الاختبار!</h2>
+    <div class="stars" id="stars"></div>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">🔁 حاول مرة أخرى</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"ما هو المفهوم الذي ركزت عليه المحاضرة كعامل أساسي في نجاح التدريب وتفادي المشاكل التي واجهها المدربون على مدار 40 عاماً؟","hint":"فكر في العلاقة بين ما يُقرأ في الكتب وما يحدث فعلياً في الميدان.","options":[{"label":"A","text":"حفظ المعلومات النظرية بدقة.","isCorrect":false,"rationale":""},{"label":"B","text":"تطبيق المفهوم وتحويل المعلومات النظرية إلى عملي.","isCorrect":true,"rationale":""},{"label":"C","text":"زيادة عدد ساعات التدريب اليومية.","isCorrect":false,"rationale":""},{"label":"D","text":"التركيز فقط على سرعة اللاعب.","isCorrect":false,"rationale":""}]},{"question":"ما المقصود بمصطلح \"الهندسة العكسية\" (Reverse Engineering) في سياق التخطيط للتدريب؟","hint":"يتعلق الأمر بالبدء من النهاية لتنظيم البداية.","options":[{"label":"A","text":"تحديد الهدف النهائي أولاً ثم تنظيم التدريبات للوصول إليه.","isCorrect":true,"rationale":""},{"label":"B","text":"تقليد أساليب تدريب الأبطال العالميين.","isCorrect":false,"rationale":""},{"label":"C","text":"تحليل أخطاء المنافسين لتجنبها.","isCorrect":false,"rationale":""},{"label":"D","text":"البدء من مستوى اللاعب الحالي وتطويره تدريجياً.","isCorrect":false,"rationale":""}]},{"question":"عند زيادة حمل التدريب بنسبة $20\\%$، ما هو الإجراء الضروري الذي يجب اتباعه وفقاً للمحاضرة؟","hint":"فكر في التوازن المطلوب لمنع اللاعب من الوصول لمرحلة التعب المفرط.","options":[{"label":"A","text":"زيادة الشدة لتصل إلى $100\\%$.","isCorrect":false,"rationale":""},{"label":"B","text":"زيادة عدد التكرارات بنفس النسبة.","isCorrect":false,"rationale":""},{"label":"C","text":"تقليل زمن الراحة بين المجموعات.","isCorrect":false,"rationale":""},{"label":"D","text":"زيادة فترات الاستشفاء بنفس النسبة.","isCorrect":true,"rationale":""}]},{"question":"ما هي النسبة المئوية التي تعتبر \"شدة قصوى\" أو عالية جداً في تدريبات العدو والوثب؟","hint":"هذه النسبة هي التي تضمن محاكاة ظروف المنافسة الفعلية.","options":[{"label":"A","text":"أقل من $50\\%$.","isCorrect":false,"rationale":""},{"label":"B","text":"بين $75\\%$ و $84\\%$.","isCorrect":false,"rationale":""},{"label":"C","text":"بين $85\\%$ و $94\\%$.","isCorrect":false,"rationale":""},{"label":"D","text":"بين $95\\%$ و $100\\%$.","isCorrect":true,"rationale":""}]},{"question":"وفقاً لنظام الطاقة، كم تستغرق طاقة الـ $ATP-CP$ تقريباً قبل أن يحتاج الجسم لنظام طاقة آخر؟","hint":"ابحث عن أقصر زمن ممكن مرتبط بالحركات الانفجارية والسرعة القصوى.","options":[{"label":"A","text":"$30$ ثانية.","isCorrect":false,"rationale":""},{"label":"B","text":"حوالي دقيقتين.","isCorrect":false,"rationale":""},{"label":"C","text":"حوالي $10$ ثوانٍ كحد أقصى.","isCorrect":true,"rationale":""},{"label":"D","text":"ساعة واحدة.","isCorrect":false,"rationale":""}]},{"question":"في مثال اللاعب \"دوبلانتس\"، ما هو العامل الرئيسي الذي تغير وسمح له بتحسين أرقامه العالمية بينما ظل تكنيكه ثابتاً تقريباً منذ صغره؟","hint":"فكر في كيفية تأثير تطور القدرات البدنية على الأدوات المستخدمة في الوثب.","options":[{"label":"A","text":"تحسن القوة والسرعة مما سمح باستخدام زانات أكثر صلابة.","isCorrect":true,"rationale":""},{"label":"B","text":"تغيير شامل في زوايا الارتقاء.","isCorrect":false,"rationale":""},{"label":"C","text":"التركيز على تدريبات التحمل الهوائي.","isCorrect":false,"rationale":""},{"label":"D","text":"استخدام عصا (زانة) أكثر مرونة وليونة.","isCorrect":false,"rationale":""}]},{"question":"لماذا يحذر المحاضر من الإفراط في تدريبات الوثب والقوة العالية للناشئين تحت سن الـ $20$؟","hint":"فكر في تأثير الضغط الميكانيكي العالي على جسم لا يزال في طور النمو.","options":[{"label":"A","text":"لتوفير الجهد لسن الرشد فقط.","isCorrect":false,"rationale":""},{"label":"B","text":"لأن الناشئين لا يحتاجون للقوة في هذه المرحلة.","isCorrect":false,"rationale":""},{"label":"C","text":"خوفاً من تعرض الجهاز الهيكلي والعظمي للإصابات.","isCorrect":true,"rationale":""},{"label":"D","text":"لأنها تقلل من سرعة اللاعب في المسافات القصيرة.","isCorrect":false,"rationale":""}]},{"question":"أي مرحلة من مراحل الوثب تعتبر المسؤولة عن تحضير الجسم للارتقاء وتحديد سرعته؟","hint":"هي المرحلة الأولى التي يبدأ بها اللاعب حركته باتجاه اللوحة أو العارضة.","options":[{"label":"A","text":"مرحلة الاقتراب.","isCorrect":true,"rationale":""},{"label":"B","text":"مرحلة التوقف.","isCorrect":false,"rationale":""},{"label":"C","text":"مرحلة الهبوط.","isCorrect":false,"rationale":""},{"label":"D","text":"مرحلة الطيران.","isCorrect":false,"rationale":""}]},{"question":"ما هو الدور الأساسي للتحمل الهوائي لمتسابقي الوثب الناشئين حسب ما ورد في الندوة؟","hint":"فكر في كيفية تأثير الأكسجين على استعادة الطاقة بعد مجهود شاق وقصير.","options":[{"label":"A","text":"تحسين زمن الجري لمسافة $5000$ متر.","isCorrect":false,"rationale":""},{"label":"B","text":"تعويض النقص في تدريبات السرعة.","isCorrect":false,"rationale":""},{"label":"C","text":"المساعدة في تسريع عملية الاستشفاء بين التدريبات والمحاولات.","isCorrect":true,"rationale":""},{"label":"D","text":"زيادة قوة عضلات الرجلين بشكل مباشر.","isCorrect":false,"rationale":""}]},{"question":"حسب إحصائيات التطور (Development Rates)، كم تبلغ نسبة التطور المتوقعة في الأداء بعد سن الـ $23$؟","hint":"هذه النسبة تعكس صعوبة كسر الأرقام الشخصية في مرحلة النضج الكامل.","options":[{"label":"A","text":"حوالي $5\\%$.","isCorrect":false,"rationale":""},{"label":"B","text":"حوالي $1.5\\%$.","isCorrect":true,"rationale":""},{"label":"C","text":"حوالي $10\\%$.","isCorrect":false,"rationale":""},{"label":"D","text":"لا يوجد تطور نهائياً.","isCorrect":false,"rationale":""}]}];
+const tr = {"correct":"صحيح!","incorrect":"خطأ","next":"السؤال التالي ←","seeResults":"عرض النتائج","complete":"اكتمل الاختبار!","scoreText":"أجبت {correct} من {total} بشكل صحيح","tryAgain":"حاول مرة أخرى","rightAnswer":"إجابة صحيحة","notQuite":"ليس تماماً"};
+let currentQ = 0, correctCount = 0, streak = 0, answered = false;
+const CONFETTI_COLORS = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#1dd1a1'];
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  updateStreakBadge();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function updateStreakBadge() {
+  const badge = document.getElementById('streak-badge');
+  if (!badge) return;
+  badge.textContent = streak >= 2 ? ('🔥 ' + streak) : '';
+}
+
+function burstConfetti() {
+  for (let i = 0; i < 24; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+    piece.style.animationDuration = (1.6 + Math.random() * 1.2) + 's';
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 3000);
+  }
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+
+  options.forEach(o => o.classList.add('disabled'));
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+
+  if (isCorrect) { correctCount++; streak++; burstConfetti(); } else { streak = 0; }
+  updateStreakBadge();
+
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect ? ('🎉 ' + tr.rightAnswer) : ('😅 ' + tr.notQuite);
+    }
+  });
+
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = '🏁 ' + tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+  updateStreakBadge();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  const starCount = Math.max(1, Math.round(pct / 20));
+  document.getElementById('stars').textContent = '⭐'.repeat(starCount) + '☆'.repeat(5 - starCount);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+  if (pct >= 80) burstConfetti();
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; streak = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+  updateStreakBadge();
+}
+
+init();
+</script>
+</body>
+</html>
