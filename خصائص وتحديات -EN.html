@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Participants List - Distance Training</title>
+    <!-- استيراد خط Poppins العصري -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- مكتبة أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #34A853;       /* لون الأخضر الرياضي المماثل للتصميم الأصلي */
+            --primary-dark: #2e8b57;  /* درجة أخضر داكنة */
+            --secondary: #D1F1DA;     /* خلفية خضراء باهتة للشارات المماثلة للأصل */
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --white: #ffffff;
+            --gray: #64748b;
+            --shadow: 0 10px 25px -5px rgba(52, 168, 83, 0.1), 0 8px 10px -6px rgba(52, 168, 83, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* رأس الصفحة */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.3rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header h1 span {
+            color: var(--primary);
+        }
+
+        header p {
+            color: var(--gray);
+            font-size: 1.05rem;
+        }
+
+        /* شريط البحث والتحكم */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 20px;
+            padding-right: 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(52, 168, 83, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        .stats-badge {
+            background: var(--white);
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* تصميم الجدول */
+        .table-container {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: #000000;
+            padding: 18px 20px;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 1rem;
+            color: #334155;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #D1F1DA;
+        }
+
+        .badge-country {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: var(--secondary);
+            color: var(--primary-dark);
+        }
+
+        .id-col {
+            font-weight: 600;
+            color: var(--gray);
+            width: 80px;
+        }
+
+        /* التصميم المتجاوب للهواتف */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+            .table-container {
+                background: transparent;
+                box-shadow: none;
+                border: none;
+            }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead {
+                display: none;
+            }
+            tbody tr {
+                background: var(--white);
+                margin-bottom: 15px;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+                padding: 15px;
+                border: 1px solid #e2e8f0;
+            }
+            td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 0;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            td:last-child {
+                border-bottom: none;
+            }
+            td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--gray);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Participants List - <span>Distance Training</span></h1>
+            <p>Directory of names, federations, and participating countries (Total: 77 participants)</p>
+        </header>
+
+        <div class="controls-bar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search by name or country..." onkeyup="searchTable()">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <div class="stats-badge">
+                <i class="fa-solid fa-users"></i> Total: <span id="count">77</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="participantsTable">
+                <thead>
+                    <tr>
+                        <th class="id-col">No.</th>
+                        <th>Full Name</th>
+                        <th>Federation</th>
+                        <th>Country</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td data-label="No." class="id-col">1</td><td data-label="Full Name">Atia Salama Abu Mansour</td><td data-label="Federation">Jordan</td><td data-label="Country"><span class="badge-country">Jordan</span></td></tr>
+                    <tr><td data-label="No." class="id-col">2</td><td data-label="Full Name">Kamal Sami Abdullah Momani</td><td data-label="Federation">Jordan</td><td data-label="Country"><span class="badge-country">Jordan</span></td></tr>
+                    <tr><td data-label="No." class="id-col">3</td><td data-label="Full Name">Hamdan Mahmoud Al-Muhaisen</td><td data-label="Federation">Jordan</td><td data-label="Country"><span class="badge-country">Jordan</span></td></tr>
+                    <tr><td data-label="No." class="id-col">4</td><td data-label="Full Name">Ahmed Abdul Hafiz</td><td data-label="Federation">Jordan</td><td data-label="Country"><span class="badge-country">Jordan</span></td></tr>
+                    <tr><td data-label="No." class="id-col">5</td><td data-label="Full Name">Khaled Oweid Debiyan Al-Sharafat</td><td data-label="Federation">Jordan</td><td data-label="Country"><span class="badge-country">Jordan</span></td></tr>
+                    <tr><td data-label="No." class="id-col">6</td><td data-label="Full Name">Zuhair Mufleh Muhammad Al-Zaboun</td><td data-label="Federation">Jordan</td><td data-label="Country"><span class="badge-country">Jordan</span></td></tr>
+                    <tr><td data-label="No." class="id-col">7</td><td data-label="Full Name">Muhammad Al-Matari</td><td data-label="Federation">Jordan</td><td data-label="Country"><span class="badge-country">Jordan</span></td></tr>
+                    <tr><td data-label="No." class="id-col">8</td><td data-label="Full Name">Rami Ghazi Al-Faer</td><td data-label="Federation">Saudi Arabia</td><td data-label="Country"><span class="badge-country">Saudi Arabia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">9</td><td data-label="Full Name">Abdullah Ali Al Juma</td><td data-label="Federation">Saudi Arabia</td><td data-label="Country"><span class="badge-country">Saudi Arabia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">10</td><td data-label="Full Name">Radwan Yahya Shani</td><td data-label="Federation">Yemen</td><td data-label="Country"><span class="badge-country">Yemen</span></td></tr>
+                    <tr><td data-label="No." class="id-col">11</td><td data-label="Full Name">Khaled Abdullah Sarkal</td><td data-label="Federation">Yemen</td><td data-label="Country"><span class="badge-country">Yemen</span></td></tr>
+                    <tr><td data-label="No." class="id-col">12</td><td data-label="Full Name">Saeed Ali Al-Zghaibi</td><td data-label="Federation">Yemen</td><td data-label="Country"><span class="badge-country">Yemen</span></td></tr>
+                    <tr><td data-label="No." class="id-col">13</td><td data-label="Full Name">Fouad Muhammad Abbad</td><td data-label="Federation">Yemen</td><td data-label="Country"><span class="badge-country">Yemen</span></td></tr>
+                    <tr><td data-label="No." class="id-col">14</td><td data-label="Full Name">Ramzy Ahmed Salah</td><td data-label="Federation">Yemen</td><td data-label="Country"><span class="badge-country">Yemen</span></td></tr>
+                    <tr><td data-label="No." class="id-col">15</td><td data-label="Full Name">Borkan Bashir</td><td data-label="Federation">Algeria</td><td data-label="Country"><span class="badge-country">Algeria</span></td></tr>
+                    <tr><td data-label="No." class="id-col">16</td><td data-label="Full Name">Moussa Al-Hariri</td><td data-label="Federation">Syria</td><td data-label="Country"><span class="badge-country">Syria</span></td></tr>
+                    <tr><td data-label="No." class="id-col">17</td><td data-label="Full Name">Tihama Ayoub</td><td data-label="Federation">Syria</td><td data-label="Country"><span class="badge-country">Syria</span></td></tr>
+                    <tr><td data-label="No." class="id-col">18</td><td data-label="Full Name">Imen Mekki</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">19</td><td data-label="Full Name">Ali Mehdi Trabelsi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">20</td><td data-label="Full Name">Hedi Amara</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">21</td><td data-label="Full Name">Bilal Zguir</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">22</td><td data-label="Full Name">Henda Aiyachi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">23</td><td data-label="Full Name">Mohamed Chihawi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">24</td><td data-label="Full Name">Hala Zghdoudi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">25</td><td data-label="Full Name">Saeed Fatnassi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">26</td><td data-label="Full Name">Najed Bouhlel</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">27</td><td data-label="Full Name">Hazem Ben Naceur</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">28</td><td data-label="Full Name">Khadija Ghoul</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">29</td><td data-label="Full Name">Hatem Belgassem</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">30</td><td data-label="Full Name">Mounir Benbelghith</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">31</td><td data-label="Full Name">Wassim Messaoudi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">32</td><td data-label="Full Name">Haifa Ghazouani</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">33</td><td data-label="Full Name">Fouad Aouadi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">34</td><td data-label="Full Name">Fawzi Oraibi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">35</td><td data-label="Full Name">Ashraf Belhi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">36</td><td data-label="Full Name">Ramzi Telhaoui</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">37</td><td data-label="Full Name">Sadek Matir</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">38</td><td data-label="Full Name">Hanafi Brahimi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">39</td><td data-label="Full Name">Kamel Mezi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">40</td><td data-label="Full Name">Bedour Messaoudi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">41</td><td data-label="Full Name">Yosra Jamali</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">42</td><td data-label="Full Name">Noureddine Kammoun</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">43</td><td data-label="Full Name">Manel Mohsni</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">44</td><td data-label="Full Name">Hedi Meghraoui</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">45</td><td data-label="Full Name">Ali Fadl Hamidi</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">46</td><td data-label="Full Name">Mona Ben Mhamed</td><td data-label="Federation">Tunisia</td><td data-label="Country"><span class="badge-country">Tunisia</span></td></tr>
+                    <tr><td data-label="No." class="id-col">47</td><td data-label="Full Name">Hussein Abboud Hussein</td><td data-label="Federation">Iraq</td><td data-label="Country"><span class="badge-country">Iraq</span></td></tr>
+                    <tr><td data-label="No." class="id-col">48</td><td data-label="Full Name">Haider Abdul Zahra Rebeet</td><td data-label="Federation">Iraq</td><td data-label="Country"><span class="badge-country">Iraq</span></td></tr>
+                    <tr><td data-label="No." class="id-col">49</td><td data-label="Full Name">Israa Kamel Hassan</td><td data-label="Federation">Iraq</td><td data-label="Country"><span class="badge-country">Iraq</span></td></tr>
+                    <tr><td data-label="No." class="id-col">50</td><td data-label="Full Name">Riyadh Salem Alwan</td><td data-label="Federation">Iraq</td><td data-label="Country"><span class="badge-country">Iraq</span></td></tr>
+                    <tr><td data-label="No." class="id-col">51</td><td data-label="Full Name">Saif Muhammad Bashir Youssef</td><td data-label="Federation">Iraq</td><td data-label="Country"><span class="badge-country">Iraq</span></td></tr>
+                    <tr><td data-label="No." class="id-col">52</td><td data-label="Full Name">Omar Waleed Jamal Kamar</td><td data-label="Federation">Iraq</td><td data-label="Country"><span class="badge-country">Iraq</span></td></tr>
+                    <tr><td data-label="No." class="id-col">53</td><td data-label="Full Name">Furqan Fares Muhammad</td><td data-label="Federation">Iraq</td><td data-label="Country"><span class="badge-country">Iraq</span></td></tr>
+                    <tr><td data-label="No." class="id-col">54</td><td data-label="Full Name">Muhammad Jassim Muhammad Saleh</td><td data-label="Federation">Iraq</td><td data-label="Country"><span class="badge-country">Iraq</span></td></tr>
+                    <tr><td data-label="No." class="id-col">55</td><td data-label="Full Name">Yahya Amer Daoud</td><td data-label="Federation">Iraq</td><td data-label="Country"><span class="badge-country">Iraq</span></td></tr>
+                    <tr><td data-label="No." class="id-col">56</td><td data-label="Full Name">Shaima Mahmoud Abdullah Mahmoud Ghanem</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">57</td><td data-label="Full Name">Muhammad Ibrahim Mahmoud Mustafa</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">58</td><td data-label="Full Name">Mostafa Fawzy Shalaby</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">59</td><td data-label="Full Name">Saif Mostafa Fawzy Shalaby</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">60</td><td data-label="Full Name">Mostafa Moussa Ali Ahmed</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">61</td><td data-label="Full Name">Wajih Lotfi Thabet</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">62</td><td data-label="Full Name">Mansour Abdul Radi Ali</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">63</td><td data-label="Full Name">Hossam Muhammad Tharwat Abdel Aal</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">64</td><td data-label="Full Name">Azima Abdel Wahab Ibrahim</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">65</td><td data-label="Full Name">Karim Hossam Muhammad Tharwat</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">66</td><td data-label="Full Name">Aya Hossam Muhammad Tharwat</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">67</td><td data-label="Full Name">Muhammad Muhammad Metwally Masraja</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">68</td><td data-label="Full Name">Rowan Ashraf Fouad</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">69</td><td data-label="Full Name">Adel Ibrahim Al-Sharif</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">70</td><td data-label="Full Name">Muhammad Ibrahim Raslan</td><td data-label="Federation">Egypt</td><td data-label="Country"><span class="badge-country">Egypt</span></td></tr>
+                    <tr><td data-label="No." class="id-col">71</td><td data-label="Full Name">Mamoun Ishaq Amin Palo</td><td data-label="Federation">Palestine</td><td data-label="Country"><span class="badge-country">Palestine</span></td></tr>
+                    <tr><td data-label="No." class="id-col">72</td><td data-label="Full Name">Yahya Mshaqi</td><td data-label="Federation">Palestine</td><td data-label="Country"><span class="badge-country">Palestine</span></td></tr>
+                    <tr><td data-label="No." class="id-col">73</td><td data-label="Full Name">Saher Essam Ahmed Gouda</td><td data-label="Federation">Palestine</td><td data-label="Country"><span class="badge-country">Palestine</span></td></tr>
+                    <tr><td data-label="No." class="id-col">74</td><td data-label="Full Name">Doha Dhib Abdel Idris</td><td data-label="Federation">Palestine</td><td data-label="Country"><span class="badge-country">Palestine</span></td></tr>
+                    <tr><td data-label="No." class="id-col">75</td><td data-label="Full Name">Haneen Thalji Taher Yacoub</td><td data-label="Federation">Palestine</td><td data-label="Country"><span class="badge-country">Palestine</span></td></tr>
+                    <tr><td data-label="No." class="id-col">76</td><td data-label="Full Name">Muhammad Yahya Suleiman Dwaidar</td><td data-label="Federation">Palestine</td><td data-label="Country"><span class="badge-country">Palestine</span></td></tr>
+                    <tr><td data-label="No." class="id-col">77</td><td data-label="Full Name">Asmaa Mansour Mahmoud Hammad</td><td data-label="Federation">Sudan</td><td data-label="Country"><span class="badge-country">Sudan</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- كود JavaScript لتفعيل البحث الفوري -->
+    <script>
+        function searchTable() {
+            let input = document.getElementById("searchInput");
+            let filter = input.value.toLowerCase();
+            let table = document.getElementById("participantsTable");
+            let tr = table.getElementsByTagName("tr");
+            let visibleCount = 0;
+
+            for (let i = 1; i < tr.length; i++) {
+                let tdName = tr[i].getElementsByTagName("td")[1];
+                let tdCountry = tr[i].getElementsByTagName("td")[3];
+                if (tdName || tdCountry) {
+                    let nameValue = tdName.textContent || tdName.innerText;
+                    let countryValue = tdCountry.textContent || tdCountry.innerText;
+                    if (nameValue.toLowerCase().indexOf(filter) > -1 || countryValue.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                        visibleCount++;
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+            document.getElementById("count").innerText = visibleCount;
+        }
+    </script>
+</body>
+</html>

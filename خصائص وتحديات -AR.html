@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة المشاركين - خصائص وتحديات تدريب لاعبات المسافات</title>
+    <!-- استيراد خط تجوال العصري من جوجل -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- مكتبة أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #d1f1da;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --white: #ffffff;
+            --gray: #64748b;
+            --shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.1), 0 8px 10px -6px rgba(16, 185, 129, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* رأس الصفحة */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+            font-weight: 900;
+        }
+
+        header h1 span {
+            color: var(--primary);
+        }
+
+        header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        /* شريط البحث والفلاتر */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 20px 14px 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        .stats-badge {
+            background: var(--white);
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* تصميم الجدول العصري */
+        .table-container {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 18px 20px;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 1rem;
+            color: #334155;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #f8fafc;
+            transform: scale(1.001);
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+
+        .badge-country {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            background: var(--secondary);
+            color: var(--primary-dark);
+        }
+
+        .id-col {
+            font-weight: 700;
+            color: var(--gray);
+            width: 80px;
+        }
+
+        /* التصميم المتجاوب للهواتف */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+            .table-container {
+                background: transparent;
+                box-shadow: none;
+                border: none;
+            }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead {
+                display: none;
+            }
+            tbody tr {
+                background: var(--white);
+                margin-bottom: 15px;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+                padding: 15px;
+                border: 1px solid #e2e8f0;
+            }
+            td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 0;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            td:last-child {
+                border-bottom: none;
+            }
+            td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                color: var(--gray);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>ندوة خصائص وتحديات تدريب لاعبات المسافات <span> </h1> قائمة المشاركين </span>
+          
+            <p>دليل الأسماء، الاتحادات، والدول المشاركة (العدد الإجمالي: 77 مشاركاً)</p>
+        </header>
+
+        <div class="controls-bar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="ابحث بالاسم أو الدولة..." onkeyup="searchTable()">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <div class="stats-badge">
+                <i class="fa-solid fa-users"></i> الإجمالي: <span id="count">77</span> مشارك
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="participantsTable">
+                <thead>
+                    <tr>
+                        <th class="id-col">م</th>
+                        <th>الاسم الكامل</th>
+                        <th>الاتحاد</th>
+                        <th>الدولة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td data-label="م" class="id-col">1</td><td data-label="الاسم">عطية سلامه ابومنصور</td><td data-label="الاتحاد">الأردن</td><td data-label="الدولة"><span class="badge-country">الأردن</span></td></tr>
+                    <tr><td data-label="م" class="id-col">2</td><td data-label="الاسم">كمال سامي عبد الله مومني</td><td data-label="الاتحاد">الأردن</td><td data-label="الدولة"><span class="badge-country">الأردن</span></td></tr>
+                    <tr><td data-label="م" class="id-col">3</td><td data-label="الاسم">حمدان محمود المحيسن</td><td data-label="الاتحاد">الأردن</td><td data-label="الدولة"><span class="badge-country">الأردن</span></td></tr>
+                    <tr><td data-label="م" class="id-col">4</td><td data-label="الاسم">احمد عبد الحافظ</td><td data-label="الاتحاد">الأردن</td><td data-label="الدولة"><span class="badge-country">الأردن</span></td></tr>
+                    <tr><td data-label="م" class="id-col">5</td><td data-label="الاسم">خالد عويد دبيان الشرفات</td><td data-label="الاتحاد">الأردن</td><td data-label="الدولة"><span class="badge-country">الأردن</span></td></tr>
+                    <tr><td data-label="م" class="id-col">6</td><td data-label="الاسم">زهير مفلح محمد الزبون</td><td data-label="الاتحاد">الأردن</td><td data-label="الدولة"><span class="badge-country">الأردن</span></td></tr>
+                    <tr><td data-label="م" class="id-col">7</td><td data-label="الاسم">محمد المطري</td><td data-label="الاتحاد">الأردن</td><td data-label="الدولة"><span class="badge-country">الأردن</span></td></tr>
+                    <tr><td data-label="م" class="id-col">8</td><td data-label="الاسم">رامي غازي الفعر</td><td data-label="الاتحاد">السعودية</td><td data-label="الدولة"><span class="badge-country">السعودية</span></td></tr>
+                    <tr><td data-label="م" class="id-col">9</td><td data-label="الاسم">عبد الله علي ال جمعة</td><td data-label="الاتحاد">السعودية</td><td data-label="الدولة"><span class="badge-country">السعودية</span></td></tr>
+                    <tr><td data-label="م" class="id-col">10</td><td data-label="الاسم">رضوان يحيى شاني</td><td data-label="الاتحاد">اليمن</td><td data-label="الدولة"><span class="badge-country">اليمن</span></td></tr>
+                    <tr><td data-label="م" class="id-col">11</td><td data-label="الاسم">خالد عبد الله سركال</td><td data-label="الاتحاد">اليمن</td><td data-label="الدولة"><span class="badge-country">اليمن</span></td></tr>
+                    <tr><td data-label="م" class="id-col">12</td><td data-label="الاسم">سعيد علي الزغيبي</td><td data-label="الاتحاد">اليمن</td><td data-label="الدولة"><span class="badge-country">اليمن</span></td></tr>
+                    <tr><td data-label="م" class="id-col">13</td><td data-label="الاسم">فؤاد محمد عباد</td><td data-label="الاتحاد">اليمن</td><td data-label="الدولة"><span class="badge-country">اليمن</span></td></tr>
+                    <tr><td data-label="م" class="id-col">14</td><td data-label="الاسم">رمزي احمد صلاح</td><td data-label="الاتحاد">اليمن</td><td data-label="الدولة"><span class="badge-country">اليمن</span></td></tr>
+                    <tr><td data-label="م" class="id-col">15</td><td data-label="الاسم">بركان بشير</td><td data-label="الاتحاد">الجزائر</td><td data-label="الدولة"><span class="badge-country">الجزائر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">16</td><td data-label="الاسم">موسى الحريرى</td><td data-label="الاتحاد">سوريا</td><td data-label="الدولة"><span class="badge-country">سوريا</span></td></tr>
+                    <tr><td data-label="م" class="id-col">17</td><td data-label="الاسم">تهامة ايوب</td><td data-label="الاتحاد">سوريا</td><td data-label="الدولة"><span class="badge-country">سوريا</span></td></tr>
+                    <tr><td data-label="م" class="id-col">18</td><td data-label="الاسم">إيمان المكي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">19</td><td data-label="الاسم">علي مهدي الطرابلسي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">20</td><td data-label="الاسم">هادي عمارة</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">21</td><td data-label="الاسم">بلال زقير</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">22</td><td data-label="الاسم">هندة العياشي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">23</td><td data-label="الاسم">محمد الشيحاوي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">24</td><td data-label="الاسم">هالة الزغدودي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">25</td><td data-label="الاسم">سعيد الفطناسي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">26</td><td data-label="الاسم">نجد بوهلال</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">27</td><td data-label="الاسم">حازم بن نصير</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">28</td><td data-label="الاسم">خديجة الغول</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">29</td><td data-label="الاسم">حاتم بلقاسم</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">30</td><td data-label="الاسم">منير بنبلغيث</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">31</td><td data-label="الاسم">وسيم المسعودي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">32</td><td data-label="الاسم">هيفاء غزواني</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">33</td><td data-label="الاسم">فؤاد العوادي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">34</td><td data-label="الاسم">فوزي العريضي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">35</td><td data-label="الاسم">أشرف بلحي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">36</td><td data-label="الاسم">رمزي طلحاوي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">37</td><td data-label="الاسم">الصادق مطير</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">38</td><td data-label="الاسم">حنافي براهيمي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">39</td><td data-label="الاسم">كمال المزي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">40</td><td data-label="الاسم">بدور مسعودي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">41</td><td data-label="الاسم">يسرى جمالي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">42</td><td data-label="الاسم">نور الدين كمون</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">43</td><td data-label="الاسم">منال محسني</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">44</td><td data-label="الاسم">الهادي المغراوي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">45</td><td data-label="الاسم">علي فضل حميدي</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">46</td><td data-label="الاسم">منى بن امحمد</td><td data-label="الاتحاد">تونس</td><td data-label="الدولة"><span class="badge-country">تونس</span></td></tr>
+                    <tr><td data-label="م" class="id-col">47</td><td data-label="الاسم">حسين عبود حسين</td><td data-label="الاتحاد">العراق</td><td data-label="الدولة"><span class="badge-country">العراق</span></td></tr>
+                    <tr><td data-label="م" class="id-col">48</td><td data-label="الاسم">حيدر عبد الزهرة ربيط</td><td data-label="الاتحاد">العراق</td><td data-label="الدولة"><span class="badge-country">العراق</span></td></tr>
+                    <tr><td data-label="م" class="id-col">49</td><td data-label="الاسم">اسراء كامل حسن</td><td data-label="الاتحاد">العراق</td><td data-label="الدولة"><span class="badge-country">العراق</span></td></tr>
+                    <tr><td data-label="م" class="id-col">50</td><td data-label="الاسم">رياض سالم علوان</td><td data-label="الاتحاد">العراق</td><td data-label="الدولة"><span class="badge-country">العراق</span></td></tr>
+                    <tr><td data-label="م" class="id-col">51</td><td data-label="الاسم">سيف محمد بشير يوسف</td><td data-label="الاتحاد">العراق</td><td data-label="الدولة"><span class="badge-country">العراق</span></td></tr>
+                    <tr><td data-label="م" class="id-col">52</td><td data-label="الاسم">عمر وليد جمال كمر</td><td data-label="الاتحاد">العراق</td><td data-label="الدولة"><span class="badge-country">العراق</span></td></tr>
+                    <tr><td data-label="م" class="id-col">53</td><td data-label="الاسم">فرقان فارس محمد</td><td data-label="الاتحاد">العراق</td><td data-label="الدولة"><span class="badge-country">العراق</span></td></tr>
+                    <tr><td data-label="م" class="id-col">54</td><td data-label="الاسم">محمد جاسم محمد صالح</td><td data-label="الاتحاد">العراق</td><td data-label="الدولة"><span class="badge-country">العراق</span></td></tr>
+                    <tr><td data-label="م" class="id-col">55</td><td data-label="الاسم">يحيى عامر داود</td><td data-label="الاتحاد">العراق</td><td data-label="الدولة"><span class="badge-country">العراق</span></td></tr>
+                    <tr><td data-label="م" class="id-col">56</td><td data-label="الاسم">شيماء محمود عبد الله محمود غنايم</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">57</td><td data-label="الاسم">محمد إبراهيم محمود مصطفي</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">58</td><td data-label="الاسم">مصطفي فوزي شلبي</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">59</td><td data-label="الاسم">سيف مصطفي فوزي شلبي</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">60</td><td data-label="الاسم">مصطفي موسي علي احمد</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">61</td><td data-label="الاسم">وجيه لطفي ثابت</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">62</td><td data-label="الاسم">منصور عبدالراضي علي</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">63</td><td data-label="الاسم">حسام محمد ثروت عبد العال</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">64</td><td data-label="الاسم">عظيمة عبد الوهاب ابراهيم</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">65</td><td data-label="الاسم">كريم حسام محمد ثروت</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">66</td><td data-label="الاسم">اية حسام محمد ثروت</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">67</td><td data-label="الاسم">محمد محمد متولي مسرجه</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">68</td><td data-label="الاسم">روان أشرف فؤاد</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">69</td><td data-label="الاسم">عادل ابراهيم الشريف</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">70</td><td data-label="الاسم">محمد ابراهيم رسلان</td><td data-label="الاتحاد">مصر</td><td data-label="الدولة"><span class="badge-country">مصر</span></td></tr>
+                    <tr><td data-label="م" class="id-col">71</td><td data-label="الاسم">مامون اسحق امين بالو</td><td data-label="الاتحاد">فلسطين</td><td data-label="الدولة"><span class="badge-country">فلسطين</span></td></tr>
+                    <tr><td data-label="م" class="id-col">72</td><td data-label="الاسم">يحي مشاقي</td><td data-label="الاتحاد">فلسطين</td><td data-label="الدولة"><span class="badge-country">فلسطين</span></td></tr>
+                    <tr><td data-label="م" class="id-col">73</td><td data-label="الاسم">ساهر عصام احمد جودة</td><td data-label="الاتحاد">فلسطين</td><td data-label="الدولة"><span class="badge-country">فلسطين</span></td></tr>
+                    <tr><td data-label="م" class="id-col">74</td><td data-label="الاسم">ضحى ذيب عبد ادريس</td><td data-label="الاتحاد">فلسطين</td><td data-label="الدولة"><span class="badge-country">فلسطين</span></td></tr>
+                    <tr><td data-label="م" class="id-col">75</td><td data-label="الاسم">حنين ثلجي طاهر يعقوب</td><td data-label="الاتحاد">فلسطين</td><td data-label="الدولة"><span class="badge-country">فلسطين</span></td></tr>
+                    <tr><td data-label="م" class="id-col">76</td><td data-label="الاسم">محمد يحيى سليمان دويدار</td><td data-label="الاتحاد">فلسطين</td><td data-label="الدولة"><span class="badge-country">فلسطين</span></td></tr>
+                    <tr><td data-label="م" class="id-col">77</td><td data-label="الاسم">أسماء منصور محمود حماد</td><td data-label="الاتحاد">السودان</td><td data-label="الدولة"><span class="badge-country">السودان</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- كود JavaScript لتفعيل البحث الفوري -->
+    <script>
+        function searchTable() {
+            let input = document.getElementById("searchInput");
+            let filter = input.value.toLowerCase();
+            let table = document.getElementById("participantsTable");
+            let tr = table.getElementsByTagName("tr");
+            let visibleCount = 0;
+
+            for (let i = 1; i < tr.length; i++) {
+                let tdName = tr[i].getElementsByTagName("td")[1];
+                let tdCountry = tr[i].getElementsByTagName("td")[3];
+                if (tdName || tdCountry) {
+                    let nameValue = tdName.textContent || tdName.innerText;
+                    let countryValue = tdCountry.textContent || tdCountry.innerText;
+                    if (nameValue.toLowerCase().indexOf(filter) > -1 || countryValue.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                        visibleCount++;
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+            document.getElementById("count").innerText = visibleCount;
+        }
+    </script>
+</body>
+</html>
