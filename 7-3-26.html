@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كروت تدريب عداءات المسافات - التطبيق التفاعلي</title>
+    <style>
+        :root {
+            --primary: #1e1b4b;
+            --primary-light: #312e81;
+            --accent: #0d9488;
+            --accent-light: #f0fdf4;
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            direction: rtl;
+            text-align: right;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 680px;
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* الهيدر وشريط التقدم */
+        .app-header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-counter {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--accent);
+            background: var(--accent-light);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background-color: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--primary-light));
+            transition: width 0.3s ease;
+        }
+
+        /* تبويبات الأقسام */
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scrollbar-width: none;
+        }
+
+        .category-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            background: #f1f5f9;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        /* حاوي الكارت والتأثير التفاعلي 3D */
+        .flashcard-wrapper {
+            width: 100%;
+            height: 360px;
+            perspective: 1200px;
+            cursor: pointer;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: var(--radius-lg);
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1.5px solid var(--border);
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.8);
+        }
+
+        /* الوجه الأمامي */
+        .card-front {
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+        }
+
+        .tag-badge {
+            align-self: flex-start;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+
+        .front-content {
+            text-align: center;
+            margin: auto 0;
+        }
+
+        .front-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.6;
+        }
+
+        .flip-hint {
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        /* الوجه الخلفي */
+        .card-back {
+            background: linear-gradient(145deg, var(--primary), #0f172a);
+            color: #ffffff;
+            transform: rotateY(180deg);
+            border-color: var(--primary);
+        }
+
+        .back-header {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #38bdf8;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            padding-bottom: 10px;
+        }
+
+        .back-body {
+            font-size: 0.98rem;
+            line-height: 1.8;
+            color: #f1f5f9;
+            text-align: justify;
+            margin: auto 0;
+        }
+
+        .back-footer {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        /* شريط أزرار التحكم */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 5px;
+        }
+
+        .nav-btn {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: var(--primary-light);
+        }
+
+        .nav-btn:disabled {
+            background: #e2e8f0;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: #e2e8f0;
+        }
+
+        @media (max-width: 480px) {
+            .app-container { padding: 18px; }
+            .flashcard-wrapper { height: 380px; }
+            .front-title { font-size: 1.12rem; }
+            .back-body { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- هيدر التطبيق -->
+        <div class="app-header">
+            <div class="header-top">
+                <div class="app-title">🎴 كروت تدريب عداءات المسافات</div>
+                <div class="card-counter" id="counter">1 / 60</div>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- أزرار التصفية -->
+        <div class="category-tabs">
+            <button class="tab-btn active" onclick="filterCategory('all', this)">الكل (60)</button>
+            <button class="tab-btn" onclick="filterCategory('biomechanics', this)">البايوميكانيك والحوض</button>
+            <button class="tab-btn" onclick="filterCategory('physiology', this)">الفسيولوجيا وعلم الطاقة</button>
+            <button class="tab-btn" onclick="filterCategory('hormones', this)">الدورة الهرمونية</button>
+            <button class="tab-btn" onclick="filterCategory('nutrition', this)">التغذية والحديد</button>
+            <button class="tab-btn" onclick="filterCategory('reds', this)">متلازمة RED-S والتعافي</button>
+        </div>
+
+        <!-- حاوي الكارت التفاعلي -->
+        <div class="flashcard-wrapper" onclick="flipCard()">
+            <div class="flashcard" id="card">
+                <!-- الوجه الأمامي -->
+                <div class="card-face card-front">
+                    <span class="tag-badge" id="cardTag">المحور</span>
+                    <div class="front-content">
+                        <div class="front-title" id="cardFrontText">عنوان البطاقة...</div>
+                    </div>
+                    <div class="flip-hint">🔄 اضغط على البطاقة لقلبها لرؤية التوجيه العلمي</div>
+                </div>
+
+                <!-- الوجه الخلفي -->
+                <div class="card-face card-back">
+                    <div class="back-header" id="cardBackTitle">التوجيه التطبيقي</div>
+                    <div class="back-body" id="cardBackText">الشرح والتحليل الفسيولوجي...</div>
+                    <div class="back-footer">Gemini Notebook Studio App • 60 Flashcards</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- أزرار التحكم -->
+        <div class="controls-bar">
+            <button class="nav-btn" id="prevBtn" onclick="prevCard()">← السابق</button>
+            <div class="action-btns">
+                <button class="icon-btn" onclick="shuffleCards()" title="خلط البطاقات">🔀 خلط</button>
+                <button class="icon-btn" onclick="resetCards()" title="إعادة للبداية">🔄 إعادة</button>
+            </div>
+            <button class="nav-btn" id="nextBtn" onclick="nextCard()">التالي →</button>
+        </div>
+    </div>
+
+    <script>
+        // قاعدة بيانات الكروت المعرفية الـ 60 المعتمدة على المصادر
+        const fullCardsData = [
+            // --- البايوميكانيك وتثبيت الحوض ---
+            { cat: 'biomechanics', catName: 'البايوميكانيك والحوض', front: 'ما هي زاوية كيو (Q-Angle) وما الفارق التشريحي فيها بين الإناث والرجال؟', backTitle: 'زاوية كيو (Q-Angle) والتأثير المورفولوجي', backText: 'تتراوح زاوية كيو لدى الإناث بين 14°-16° (وتصل لـ 20°) مقارنة بـ 10°-12° لدى الرجال نتيجة اتساع الحوض، مما يخلق ضغطاً أفقياً على مفصل الركبة والرباط الصليبي.' },
+            { cat: 'biomechanics', catName: 'البايوميكانيك والحوض', front: 'ما الميزة الحركية المتولدة عن اتساع وعمق الحوض لدى لاعبات المسافات؟', backTitle: 'مركز الثقل والثبات الحركي (Stability)', backText: 'على الرغم من أثر زاوية كيو، يمنح اتساع الحوض وعمقه مركز ثقل أخفض للاعبة، مما يحقق استقراراً وتوازناً حركياً أعلى (Stability) في مرحلة الارتكاز.' },
+            { cat: 'biomechanics', catName: 'البايوميكانيك والحوض', front: 'ما أهمية العضلة الألوية المتوسطة (Gluteus Medius) في أداء الجري؟', backTitle: 'منع هبوط الحوض وقصر الخطوة', backText: 'تمنع هذه العضلة هبوط الحوض في الجانب المعاكس أثناء الارتكاز على ساق واحدة. تقويتها تفادي قصر الخطوة بمقدار 1-5 سم، مما يوفر ملايين السنتيمترات طوال الموسم.' },
+            { cat: 'biomechanics', catName: 'البايوميكانيك والحوض', front: 'ما الفارق الوظيفي بين العضلة الألوية الكبرى (Maximus) والمتوسطة (Medius)؟', backTitle: 'الدفع مقابل التثبيت والتبعيد', backText: 'العضلة الكبرى مسؤولة عن مد القدم للخلف والدفع في السرعة والارتقاء، بينما المتوسطة مسؤولة عن تبعيد الساق (Abduction) وتثبيت الحوض أثناء الجري.' },
+            { cat: 'biomechanics', catName: 'البايوميكانيك والحوض', front: 'كيف يُنفذ تمرين الصدفة (Clamshell) وما فائدته التشريحية؟', backTitle: 'العزل الدقيق للألوية المتوسطة', backText: 'يُنفذ بالاستلقاء الجانبي وتثبيت القدمين ملتصقتين وفتح الركبة فقط، وهو التمرين الأكثر دقة لعزل وتقوية العضلة الألوية المتوسطة بشكل مباشر.' },
+            { cat: 'biomechanics', catName: 'البايوميكانيك والحوض', front: 'كيف يعمل تمرين هبوط الحوض (Pelvic Drop) على تقوية الورك؟', backTitle: 'التقوية الديناميكية ومقاومة الهبوط', backText: 'يُنفذ بالوقوف على درجة بساق واحدة وهبوط الساق الأخرى ببطء دون ثني الركبة المثبتة، مما يجبر عضلات الورك والحوض على الثبات تحت ضغط الارتكاز.' },
+            { cat: 'biomechanics', catName: 'البايوميكانيك والحوض', front: 'ما دور تمرين القطة والكلب (Cat-Cow) في برنامج تثبيت الحوض؟', backTitle: 'التوازن العضلي (Agonist / Antagonist)', backText: 'يعمل على إطالة وتمديد عضلات الظهر والبطن والصدر المقابلة، لتحقيق التوازن العضلي ومنع انحناء الجذع مع زيادة الكيلومترات الأسبوعية.' },
+            { cat: 'biomechanics', catName: 'البايوميكانيك والحوض', front: 'كيف تؤثر مرحلة النمو والبلوغ على تكنيك الجري والكرونومتر لدى العداءات؟', backTitle: 'نمو العظام قبل العضلات والكرونومتر', backText: 'ينمو العظم أفقياً قبل العضلات في البلوغ، مما يغير تكنيك الجري مؤقتاً ويؤثر على الكرونومتر. يجب اعتبارها مرحلة انتقالية وتفادي التسرع أو تعديل الأحمال بقسوة.' },
+            { cat: 'biomechanics', catName: 'البايوميكانيك والحوض', front: 'ما هي القاعدة الذهبية لتفادي آلام الظهر الناتجة عن تكرار تمارين البطن؟', backTitle: 'تقوية العضلات المقابلة للظهر', backText: 'كلما قام المدرب بتقوية عضلات البطن، وجب عليه تقوية عضلات الظهر المقابلة وإطالتها بالتوازي لتفادي ميلان الحوض للأمام وقصر الخطوة وتراكم آلام الفقرات.' },
+            { cat: 'biomechanics', catName: 'البايوميكانيك والحوض', front: 'كيف تتوزع حصص تثبيت الحوض في البرنامج التدريبي على مدار الموسم؟', backTitle: 'تدرج الحصص من الإعداد إلى المنافسات', backText: 'تُدرج بواقع 3 حصص أسبوعياً في مرحلة الإعداد العام، حصتين في الإعداد الخاص، وحصة واحدة في مرحلة المنافسات للصيانة (مبدأ: إن لم تستعمله تفقده).' },
+            { cat: 'biomechanics', catName: 'البايوميكانيك والحوض', front: 'ما تأثير التذبذبات الناتجة عن عمق الحوض وكيف يتم الحد منها؟', backTitle: 'تقليل الاعاقات التكرارية في الخطوة', backText: 'عمق الحوض يسبب ذبذبات حركية طفيفة تكرر ملايين المرات. يتم تقليصها بتقوية عضلات الحوض والجذع لرفع كفاءة واقتصادية الجري (Running Economy).' },
+            { cat: 'biomechanics', catName: 'البايوميكانيك والحوض', front: 'كيف يستغل المدرب المرونة والنضج المبكر لدى الفتيات في الفئات الصغرى؟', backTitle: 'الاستجابة الفنية والتكنيك المرن', backText: 'تتميز الفتيات بنضج حركي مبكر ومرونة عالية. يجب استغلالها لتعلم التكنيك السليم والمرونة المطاطية (Elasticity) قبل الدخول في تدريبات القوة المفرطة.' },
+
+            // --- الفسيولوجيا وعلم الطاقة ---
+            { cat: 'physiology', catName: 'الفسيولوجيا وعلم الطاقة', front: 'ما ميزة توزيع الألياف العضلية البطيئة (Type I) لدى لاعبات المسافات؟', backTitle: 'كفاءة استهلاك الأكسجين والدهون', backText: 'تمتلك الإناث نسبة أعلى من الألياف العضلية البطيئة (Type I)، وهي ألياف تمتاز بكفاءة عالية في أكسدة الدهون واستخدام الأكسجين واستدامة المجهود.' },
+            { cat: 'physiology', catName: 'الفسيولوجيا وعلم الطاقة', front: 'كيف يسهم هرمون الاستروجين في توفير مخزون الجلايكوجين العضلي؟', backTitle: 'أكسدة الدهون الثلاثية العضلية (IMTG)', backText: 'ينشط الاستروجين جينات أكسدة الدهون الثلاثية داخل العضلات (IMTG)، مما يجعل الجسم يعتمد على الدهون كوقود رئيسي ويدخر الجلايكوجين للمراحل الحاسمة.' },
+            { cat: 'physiology', catName: 'الفسيولوجيا وعلم الطاقة', front: 'ما هي ظاهرة "الحائط الأسود" (Dark Wall) وكيف تتفوق الإناث في تفاديها؟', backTitle: 'تجنب انهيار الطاقة في الكيلو 35', backText: 'يصيب الحائط الأسود العداءين عند الكيلو 33-35 بسبب نفاد الجلايكوجين. تتفوق العداءات في تجنبه بفضل ادخار الجلايكوجين والاعتماد المسبق على الدهون.' },
+            { cat: 'physiology', catName: 'الفسيولوجيا وعلم الطاقة', front: 'كيف يعوض جسم الأنثى صغر حجم القلب مقارنة بالرجل أثناء المجهود؟', backTitle: 'زيادة معدل النبض وضخ الدم', backText: 'حجم قلب الأنثى (230-280 جم) أقل من الرجل (280-340 جم). يعوض الجسم ذلك بمعدل ضخ أعلى (78-82 نبضة/دقيقة) ويتكيف التدريب بكبر حجم الضخة بالتدريج.' },
+            { cat: 'physiology', catName: 'الفسيولوجيا وعلم الطاقة', front: 'ما الفارق في كمية الهيموجلوبين بين الإناث والرجال وتأثيره على VO2max؟', backTitle: 'تركيز الهيموجلوبين والسعة الأكسجينية', backText: 'تمتلك الأنثى (13-14 جم/ديسيلتر) هيموجلوبين مقابل (15-16 جم/ديسيلتر) للرجل، مما يجعل الحد الأقصى لاستهلاك الأكسجين أقل، لكن كفاءة استغلاله أعلى.' },
+            { cat: 'physiology', catName: 'الفسيولوجيا وعلم الطاقة', front: 'لماذا تزداد كفاءة الإناث في سباقات التحمل الفائق (Ultra-Endurance)؟', backTitle: 'بطء تراجع الأداء واستدامة الجهد', backText: 'في المجهودات الطويلة دون القصوى (65%-75% من VO2max)، تظهر الإناث تراجعاً أبطأ في الأداء وقدرة أعلى على استدامة الجهد بفضل الكفاءة الطاقية.' },
+            { cat: 'physiology', catName: 'الفسيولوجيا وعلم الطاقة', front: 'ما التأثير الفسيولوجي للجري بالسرعة الهوائية الحرجة (MAS)؟', backTitle: 'بناء شبكة التحمل وتفادي اللاكتيك', backText: 'الاعتماد على السرعة الهوائية الحرجة يضمن تطوير السعة الأكسجينية وتفادي تراكم حمض اللاكتيك المسبب للتعب العضلي المبكر.' },
+            { cat: 'physiology', catName: 'الفسيولوجيا وعلم الطاقة', front: 'ما الفرق بين الجلايكوجين العضلي والكبد والجلوكوز في الدم؟', backTitle: 'مخازن الطاقة الحيوية', backText: 'الجلايكوجين هو الشكل المخزن للكربوهيدرات في الكبد والعضلات، بينما الجلوكوز هو السكر الحر في مجرى الدم الذي يغذي الخلايا أثناء الجري.' },
+            { cat: 'physiology', catName: 'الفسيولوجيا وعلم الطاقة', front: 'كيف تؤثر المطاطية العضلية (Elasticity) على اقتصادية الجري؟', backTitle: 'تخزين وإطلاق الطاقة الارتدادية', backText: 'دمج المرونة مع القوة يمنح الألياف ميزة مطاطية تخزن الطاقة في مرحلة الارتكاز وتطلقها في الدفع دون استهلاك إضافي للأكسجين.' },
+            { cat: 'physiology', catName: 'الفسيولوجيا وعلم الطاقة', front: 'ما سبب شعور العداءة بتعب ناتج عن الحجم التدريبي وليس عن الشدة؟', backTitle: 'إجهاد الأنسجة مقابل التعب اللاكتيكي', backText: 'في الجري الهوائي، لا ينتج التعب عن تراكم اللاكتيك بل عن الاستهلاك الطويل للأنسجة وتناقص السوائل والحديد مع كثرة الكيلومترات.' },
+            { cat: 'physiology', catName: 'الفسيولوجيا وعلم الطاقة', front: 'كيف يتكيف الجهاز الدموي والقلب مع استمرارية تدريب المسافات؟', backTitle: 'انخفاض النبض الراحي وزيادة ضخة القلب', backText: 'يؤدي التكيف الرياضي لزيادة حجم ضخة القلب وانخفاض النبض الراحي (قد يصل لـ 35-40 نبضة/دقيقة)، مما يوفر راحة وكفاءة أعلى للقلب.' },
+            { cat: 'physiology', catName: 'الفسيولوجيا وعلم الطاقة', front: 'لماذا يُفضل عدم التدريب المكثف على معدة فارغة في سباقات المسافات؟', backTitle: 'منع الهدم العضلي وتأمين وقود المخ', backText: 'التدريب المكثف بدون وقود كربوهيدراتي يجبر الجسم على تفكيك البروتين العضلي وتأخير الاستشفاء وتنشيط إشارات الإجهاد البيولوجي.' },
+
+            // --- الدورة الهرمونية وتوجيه الأحمال ---
+            { cat: 'hormones', catName: 'الدورة الهرمونية', front: 'ما هي فترات الدورة الشهرية الرئيسية الثلاث وما مدتها التقريبية؟', backTitle: 'مراحل الدورة الشهرية (28 يوماً)', backText: '1. مرحلة الطمث (الأيام 1-5).\n2. الطور الجريبي (الأيام 6-14).\n3. الطور اللوتيني (الأيام 15-28).' },
+            { cat: 'hormones', catName: 'الدورة الهرمونية', front: 'ما الحالة الهرمونية في مرحلة الطمث (الأيام 1-5) وكيف تُوجه الأحمال؟', backTitle: 'انخفاض الهرمونات والاستشفاء', backText: 'تنخفض مستويات الاستروجين والبروجستيرون لأدنى مستوى. يُوصى بخفض الشدة والتركيز على الراحة، الاستشفاء، وتدريبات المرونة الخفيفة.' },
+            { cat: 'hormones', catName: 'الدورة الهرمونية', front: 'ما مميزات الطور الجريبي (Follicular Phase - الأيام 6-14) تدريبياً؟', backTitle: 'قمة الاستروجين والشدة والسرعة', backText: 'يشهد قمة إفراز الاستروجين واعتكاف الجسم على استهلاك الكربوهيدرات السريعة. التوجيه التدريبي: الشدة، السرعة، وتدريبات القوة العضلية.' },
+            { cat: 'hormones', catName: 'الدورة الهرمونية', front: 'ما مميزات الطور اللوتيني (Luteal Phase - الأيام 15-28) تدريبياً؟', backTitle: 'قمة البروجستيرون والحجم والتحمل', backText: 'يشهد قمة البروجستيرون (يوم 22) وارتفاع أكسدة الدهون. التوجيه التدريبي: الحجم، التحمل الهوائي، المسافات الطويلة، مع توفير التبريد والترطيب.' },
+            { cat: 'hormones', catName: 'الدورة الهرمونية', front: 'كيف تؤثر حرارة الجسم والترطيب في الطور اللوتيني على العداءة؟', backTitle: 'ارتفاع الحرارة وزيادة التعرق', backText: 'يرفع البروجستيرون درجة حرارة الجسم الأساسية بمقدار 0.3-0.5 درجة مئوية، مما يتطلب اهتماماً مضاعفاً بالتبريد وشرب السوائل أثناء الجري.' },
+            { cat: 'hormones', catName: 'الدورة الهرمونية', front: 'لماذا يُعتبر التعامل مع الدورة الشهرية خصوصية فسيولوجية وليس عائقاً؟', backTitle: 'البرمجة الذكية وفق التقلبات البيولوجية', backText: 'فهم التقلبات الهرمونية يسمح للمدرب ببرمجة أحمال السرعة والحجم في توقيتها البيولوجي المثالي لتحقيق أفضل أداء وتفادي الإجهاد.' },
+            { cat: 'hormones', catName: 'الدورة الهرمونية', front: 'كيف تؤثر هرمون الاستروجين على بناء الكولاجين ومرونة الأوتار؟', backTitle: 'حماية الأنسجة وتجديد الغضاريف', backText: 'يدعم الاستروجين بناء الكولاجين وترميم الأوتار والغضاريف؛ وانخفاضه الحاد يفقد الأنسجة صلابتها المطاطية ويزيد خطورة كسور الإجهاد.' },
+            { cat: 'hormones', catName: 'الدورة الهرمونية', front: 'ما سبب تغير الحالة المزاجية أو استجابة الاستشفاء خلال فترات الدورة؟', backTitle: 'التفاعل العصبي الهرموني', backText: 'تؤثر تقلبات الاستروجين والبروجستيرون على النواقل العصبية بالدماغ وجودة النوم؛ واستيعاب المدرب لهذه التغيرات يدعم الحالة النفسية للاعبة.' },
+            { cat: 'hormones', catName: 'الدورة الهرمونية', front: 'متى تكون اللاعبة في أعلى كفاءة لاستهلاك السكريات وتدريبات اللاكتيك؟', backTitle: 'أواخر الطور الجريبي قبل التبويض', backText: 'قبل التبويض مباشرة (الأيام 12-14) مع قمة الاستروجين، تكون كفاءة استهلاك السكريات في أوجها، مما يجعلها مثالية لتدريبات الشدة والسرعة.' },
+            { cat: 'hormones', catName: 'الدورة الهرمونية', front: 'ما خطورة تجاهل المدرب لتوقف الدورة الشهرية لدى اللاعبة؟', backTitle: 'مؤشر خطر على اضطراب الطاقة والعظام', backText: 'توقف الدورة ليس دليلاً على جدية التدريب، بل إشارة طوارئ بيولوجية تفيد بدخول الجسم في عجز طاقي مهدد لصحة العظام والهرمونات.' },
+            { cat: 'hormones', catName: 'الدورة الهرمونية', front: 'كيف يُستغل يوم التبويض (اليوم 14) في جدولة الأحمال التدريبية؟', backTitle: 'عتبة الانتقال بين الشدة والحجم', backText: 'يمثل يوم التبويض نقطة التحول بين قمة الشدة في الطور الجريبي وبدء التوجه نحو الحجم والتحمل الهوائي في الطور اللوتيني.' },
+            { cat: 'hormones', catName: 'الدورة الهرمونية', front: 'ما النصيحة الأساسية للتواصل بين المدرب والعداءة حول الدورة الشهرية؟', backTitle: 'التواصل العلمي الاحترافي', backText: 'بناء بيئة احترافية تسمح بتتبع تاريخ الدورة الشهرية وتكييف الأحمال بشفافية دون إحراج لضمان السلامة والاستمرارية.' },
+
+            // --- التغذية وإدارة عنصر الحديد ---
+            { cat: 'nutrition', catName: 'التغذية والحديد', front: 'ما الدور الأساسي لعنصر الحديد في سباقات المسافات المتوسطة والطويلة؟', backTitle: 'مركز النظام الهوائي ونقل الأكسجين', backText: 'الحديد هو المحرك الأساسي لنقل الأكسجين؛ فهو يدخل في تركيب الهيموجلوبين بالدم والمايوجلوبين بالعضلات لإنتاج الطاقة الهوائية.' },
+            { cat: 'nutrition', catName: 'التغذية والحديد', front: 'ما الفرق بين الفريتين (Ferritin) والترانسفيرين (Transferrin) في الدم؟', backTitle: 'مخزن الكبد مقابل الناقل الدموي', backText: 'الفريتين يمثل خزان الحديد المحفوظ في الكبد والجسم، بينما الترانسفيرين هو البروتين الناقل الذي ينقل الحديد في الدم لنخاع العظام والعضلات.' },
+            { cat: 'nutrition', catName: 'التغذية والحديد', front: 'ما الاحتياج اليومي التقديري للحديد لتعويض المخزون لدى العداءات؟', backTitle: 'تعويض الخزان الكبدي (1.5-2 جم/يوم)', backText: 'تحتاج العداءة لتناول مصادر غذائية توفر امتصاصاً يعوض الفقد اليومي، نظراً لفقدان الحديد عبر التعرق، الطمث، وتكسر الكريات بالقدم (Foot-strike).' },
+            { cat: 'nutrition', catName: 'التغذية والحديد', front: 'ما الفرق بين مصادر الحديد الحيوانية (Heme) والنباتية (Non-Heme)؟', backTitle: 'سرعة وكفاءة الامتصاص', backText: 'الحديد الحيواني (الكبد، اللحوم الحمراء، الأسماك) سريع الامتصاص بالأمعاء، بينما الحديد النباتي (البقوليات، السبانخ) يحتاج معززات لزيادة امتصاصه.' },
+            { cat: 'nutrition', catName: 'التغذية والحديد', front: 'كيف يسهم فيتامين (C) في مضاعفة امتصاص الحديد النباتي؟', backTitle: 'تحويل الحديد لصورته القابلة لللامتصاص', backText: 'تناول فيتامين C (الليمون، الطماطم، الفلفل) مع وجبات الحديد النباتي يغير تركيبته الكيميائية ويضاعف معدل امتصاصه بالأمعاء.' },
+            { cat: 'nutrition', catName: 'التغذية والحديد', front: 'لماذا يُمنع تناول الشاي والقهوة مباشرة بعد وجبات الغذاء الغنية بالحديد؟', backTitle: 'تأثير مادة التانين (Tannins)', backText: 'ترتبط مادة التانين بالشاي والقهوة بالحديد وتشكل مركبات ثقيلة تمنع الأمعاء من امتصاصه. يُنصح بالانتظار ساعتين بعد الوجبة.' },
+            { cat: 'nutrition', catName: 'التغذية والحديد', front: 'ما هو مخزن الحديد الرئيسي في الجسم وكيف يتصرف عند النقص؟', backTitle: 'استدعاء المخزون الكبدي', backText: 'الكبد هو الخزان الرئيسي للحديد. عند نقص الحديد بالدم، ترسل المستقبلات إشارات للكبد لضخ من مخزونه لتعويض الهيموجلوبين.' },
+            { cat: 'nutrition', catName: 'التغذية والحديد', front: 'ما هي ظاهرة تكسر الكريات الدموية بالقدم (Foot-strike Hemolysis)؟', backTitle: 'الفقد الميكانيكي للحديد بالجري', backText: 'تكرار اصطدام القدم بالأرض لملايين الخطوات يسبب تكسراً ميكانيكياً لطيفاً لكريات الدم الحمراء بالشعيرات، مما يزيد من استهلاك الحديد.' },
+            { cat: 'nutrition', catName: 'التغذية والحديد', front: 'ما المؤشرات الميدانية الأولية لنقص الحديد لدى العداءة بدون مختبر؟', backTitle: 'شحوب البشرة وسرعة نهجان القلب', backText: 'شحوب لثة وفم اللاعبة، نهجان وضيق تنفس غير مبرر في السرعات العادية، وتأخر الاستشفاء دلالات ميدانية على هبوط الفريتين.' },
+            { cat: 'nutrition', catName: 'التغذية والحديد', front: 'ما هي النافذة الأيضية (Metabolic Window) وما التوقيت المثالي لها؟', backTitle: 'إيقاف الهدم العضلي خلال 30 دقيقة', backText: 'تناول وجبة تجمع الكربوهيدرات والبروتين (مثل الحليب بالشوكولاتة والموز) خلال 30 دقيقة بعد الجري لإيقاف الهدم وتسريع بناء الجلايكوجين.' },
+            { cat: 'nutrition', catName: 'التغذية والحديد', front: 'لماذا تُعتبر التغذية الكربوهيدراتية حاسمة قبل تدريبات الشدة العالية؟', backTitle: 'تأمين الوقود السريع للجلوكوز', backText: 'تدريبات الشدة والسرعة تعتمد كلياً على الجلوكوز كمصدر طاقي سريع؛ ونقصها يجبر الجسم على الإجهاد الباكر واستنزاف الأنسجة.' },
+            { cat: 'nutrition', catName: 'التغذية والحديد', front: 'كيف تؤثر السوائل والترطيب على كفاءة الدورة الدموية أثناء الجري؟', backTitle: 'الحفاظ على حجم البلازما ولزوجة الدم', backText: 'الجفاف يقلل حجم البلازما ويرفع لزوجة الدم، مما يضاعف الجهد على القلب لنقل الحديد والأكسجين للعضلات المجهدة.' },
+
+            // --- متلازمة RED-S والتعافي ---
+            { cat: 'reds', catName: 'متلازمة RED-S والتعافي', front: 'ما هي متلازمة نقص الطاقة النسبي في الرياضة (RED-S)؟', backTitle: 'Deficit in Sport Energy', backText: 'حالة خلل ناتجة عن عدم كفاية الطاقة المتناولة لـ (المجهود التدريبي + الوظائف البيولوجية الحيوية للجسم).' },
+            { cat: 'reds', catName: 'متلازمة RED-S والتعافي', front: 'ما هي العتبة الحرجة للطاقة المتاحة التي تفعل وضع الطوارئ بالدماغ؟', backTitle: 'عتبة 30 سعرة حرارية / كجم LBM', backText: 'عند هبوط الطاقة عن 30 سعرة حرارية/كجم من الكتلة الخالية من الدهون يومياً، يدخل الدماغ في وضع تقنين الطاقة وتوزيعها على الحيوية فقط.' },
+            { cat: 'reds', catName: 'متلازمة RED-S والتعافي', front: 'ما هي هرمية البقاء البيولوجية للجسم عند نقص السعرات الحرارية؟', backTitle: 'أولويات تقنين الطاقة بالدماغ', backText: '1. الدماغ والقلب والحركة الأساسية (حفظ الحياة).\n2. النظام الهرموني (انقطاع الطمث).\n3. ترميم العظام وبناء الكولاجين (كسور الإجهاد).' },
+            { cat: 'reds', catName: 'متلازمة RED-S والتعافي', front: 'لماذا يُعتبر ربط النحافة المفرطة بالأداء الرياضي خطأ تدريبياً جسيماً؟', backTitle: 'فخ الوزن مقابل الصدق البيولوجي', backText: 'خسران الوزن القسري يدمر الكتلة العضلية والأجهزة الهرمونية؛ فالأداء ينتج عن الكفاءة الأكسجينية وليس عن التجويع المفرط.' },
+            { cat: 'reds', catName: 'متلازمة RED-S والتعافي', front: 'ما هي المؤشرات الميدانية الثلاثة لمتلازمة RED-S دون استخدام الميزان؟', backTitle: 'العلامات البيولوجية للإجهاد', backText: '1. انقطاع الطمث لأكثر من 3 أشهر.\n2. الاصابات وكسور الإجهاد المتكررة.\n3. اضطراب النوم والتراجع غير المبرر في المستوى.' },
+            { cat: 'reds', catName: 'متلازمة RED-S والتعافي', front: 'كيف تسبب متلازمة RED-S حدوث كسور الإجهاد (Stress Fractures)؟', backTitle: 'توقف ترميم الكولاجين والعظام', backText: 'عند نقص الطاقة وهبوط الاستروجين، يوقف الجسم بناء الكولاجين وترميم العظام؛ فتتراكم الشروخ الميكانيكية لتتحول لكسور إجهادية.' },
+            { cat: 'reds', catName: 'متلازمة RED-S والتعافي', front: 'كيف تؤثر ساعات النوم المبكر قبل 10 مساءً على تعافي العداءة؟', backTitle: 'إفراز هرمون النمو وتنظيف الكبد', backText: 'النوم المبكر يطلق هرمون النمو (GH) ويسمح للكبد بإزالة السموم وتخزين الحديد والجلايكوجين، بينما يطيل النوم المتأخر الهدم العضلي.' },
+            { cat: 'reds', catName: 'متلازمة RED-S والتعافي', front: 'ما هي دورة الساعة البيولوجية (Circadian Rhythm) في بناء الأنسجة؟', backTitle: 'التكامل بين الهدم والتنقيب في الليل', backText: 'التدريب في النهار يمثل هدم محكوم (Catabolism)، بينما الليل والنوم يمثلان البناء والترميم (Anabolism) واختلال الليلة يراكم التعب.' },
+            { cat: 'reds', catName: 'متلازمة RED-S والتعافي', front: 'ما هي قاعدة الـ 3Rs في التعافي الرياضي بعد سباقات المسافات؟', backTitle: 'Rehydrate - Refuel - Repair', backText: '1. Rehydrate: تعويض السوائل والماء.\n2. Refuel: تعويض الجلايكوجين بالكربوهيدرات.\n3. Repair: بناء الأنسجة بالبروتين.' },
+            { cat: 'reds', catName: 'متلازمة RED-S والتعافي', front: 'لماذا يُنصح بإبعاد ميزان الوزن عن الميدان التدريبي؟', backTitle: 'منع الهوس والنحافة المرضية', backText: 'تركيز العداءة على الوزن يولد اضطرابات الأكل والهوس؛ والبديل هو تتبع مؤشرات القوة، النبض، التكنيك، والاستجابة الهوائية.' },
+            { cat: 'reds', catName: 'متلازمة RED-S والتعافي', front: 'ما تأثير الصيام أو انقطاع الطعام على حصص الشدة العالية؟', backTitle: 'مضاعفة الإجهاد الهرموني والعضلي', backText: 'أداء حصص الشدة العالية دون طاقة يرفع هرمون الكورتيزول (هرمون التوتر) ويسرع تكسر الأنسجة العضلية بدلاً من بنائها.' },
+            { cat: 'reds', catName: 'متلازمة RED-S والتعافي', front: 'كيف يعود الجسم للمنطقة الخضراء السليمة في الطاقة المتاحة؟', backTitle: 'رفع السعرات وتكييف الحجم التدريبي', backText: 'بزيادة المتناول الغذائي لأكثر من 45 سعرة/كجم LBM وتعديل أحمال التدريب، يستعيد الدماغ ثقته ويفعل وظائف العظام والهرمونات.' }
+        ];
+
+        let currentCards = [...fullCardsData];
+        let currentIndex = 0;
+
+        const cardElement = document.getElementById('card');
+        const cardTag = document.getElementById('cardTag');
+        const cardFrontText = document.getElementById('cardFrontText');
+        const cardBackTitle = document.getElementById('cardBackTitle');
+        const cardBackText = document.getElementById('cardBackText');
+        const counterElement = document.getElementById('counter');
+        const progressFill = document.getElementById('progressFill');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function renderCurrentCard() {
+            cardElement.classList.remove('flipped');
+            
+            setTimeout(() => {
+                if (currentCards.length === 0) {
+                    cardTag.innerText = 'تنبيه';
+                    cardFrontText.innerText = 'لا توجد بطاقات في هذا القسم حالياً.';
+                    cardBackTitle.innerText = 'تنبيه';
+                    cardBackText.innerText = 'يرجى اختيار قسم آخر.';
+                    counterElement.innerText = '0 / 0';
+                    progressFill.style.width = '0%';
+                    prevBtn.disabled = true;
+                    nextBtn.disabled = true;
+                    return;
+                }
+
+                const cardData = currentCards[currentIndex];
+                cardTag.innerText = cardData.catName;
+                cardFrontText.innerText = cardData.front;
+                cardBackTitle.innerText = cardData.backTitle;
+                cardBackText.innerText = cardData.backText;
+
+                counterElement.innerText = `${currentIndex + 1} / ${currentCards.length}`;
+                const progressPct = ((currentIndex + 1) / currentCards.length) * 100;
+                progressFill.style.width = `${progressPct}%`;
+
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex === currentCards.length - 1;
+            }, 150);
+        }
+
+        function flipCard() {
+            if (currentCards.length > 0) {
+                cardElement.classList.toggle('flipped');
+            }
+        }
+
+        function nextCard() {
+            if (currentIndex < currentCards.length - 1) {
+                currentIndex++;
+                renderCurrentCard();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCurrentCard();
+            }
+        }
+
+        function shuffleCards() {
+            for (let i = currentCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentCards[i], currentCards[j]] = [currentCards[j], currentCards[i]];
+            }
+            currentIndex = 0;
+            renderCurrentCard();
+        }
+
+        function resetCards() {
+            currentIndex = 0;
+            renderCurrentCard();
+        }
+
+        function filterCategory(cat, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            if (cat === 'all') {
+                currentCards = [...fullCardsData];
+            } else {
+                currentCards = fullCardsData.filter(c => c.cat === cat);
+            }
+            currentIndex = 0;
+            renderCurrentCard();
+        }
+
+        // دعم مفاتيح الكيبورد
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') nextCard();
+            if (e.key === 'ArrowRight') prevCard();
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+                flipCard();
+            }
+        });
+
+        // تهيئة العرض الأول
+        renderCurrentCard();
+    </script>
+</body>
+</html>
