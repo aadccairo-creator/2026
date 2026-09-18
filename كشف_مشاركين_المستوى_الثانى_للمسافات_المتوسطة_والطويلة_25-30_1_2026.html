@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المستوى الثانى للمسافات المتوسطة والطويلة — كشف المشاركين</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
+
+    :root {
+      --primary: #059669;
+      --primary-dark: #047857;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --row-alt: #fcfdfe;
+      --row-hover: #f1f5f9;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans Arabic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 32px 16px;
+      direction: rtl;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+      padding: 32px;
+    }
+
+    .header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+    }
+
+    .meta-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge-year {
+      display: inline-block;
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .badge-count {
+      display: inline-block;
+      background: #ecfdf5;
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .description {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.6;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 240px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+    }
+
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      text-align: right;
+    }
+
+    thead th {
+      background: #f8fafc;
+      color: #334155;
+      font-weight: 700;
+      padding: 14px 16px;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+
+    thead th.text-center {
+      text-align: center;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background-color 0.15s;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: var(--row-alt);
+    }
+
+    tbody tr:hover {
+      background-color: var(--row-hover);
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    td {
+      padding: 12px 16px;
+      vertical-align: middle;
+    }
+
+    .num {
+      width: 60px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .name-cell {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .federation-cell {
+      color: #334155;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .container {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        max-width: 100%;
+      }
+      .toolbar {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="meta-badges">
+        <span class="badge-year">التاريخ:  25-30يناير 2026 </span>
+        <span class="badge-count" id="countBadge">15 مشارك</span>
+      </div>
+      <h1>دراسة المستوى الثانى للمسافات المتوسطة والطويلة</h1>
+      
+    </header>
+
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="text" id="searchInput" class="search-input" placeholder="بحث باسم المشارك أو الاتحاد..." oninput="filterTable()">
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table id="participantsTable">
+        <thead>
+          <tr>
+            <th class="text-center" style="width: 60px;">م</th>
+            <th>اسم المشارك</th>
+            <th>الاتحاد </th>
+            <th>الدولة </th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          
+          <tr>
+            <td class="num text-center">1</td>
+            <td class="name-cell">سعيد علي محمد الزغيبي</td>
+            <td class="federation-cell">اليمن</td>
+                        <td class="federation-cell">اليمن</td>
+          </tr>
+          <tr>
+            <td class="num text-center">2</td>
+            <td class="name-cell">هيثم حافظ سلمان فرحان الزبيدي</td>
+            <td class="federation-cell">العراق</td>
+	        <td class="federation-cell">العراق</td>
+          </tr>
+          <tr>
+            <td class="num text-center">3</td>
+            <td class="name-cell">عمر عوض الرشيدى</td>
+            <td class="federation-cell">الكويت</td>
+            <td class="federation-cell">الكويت</td>
+          </tr>
+          <tr>
+            <td class="num text-center">4</td>
+            <td class="name-cell">صالح مهدي زعيتر</td>
+            <td class="federation-cell">لبنان</td>
+            <td class="federation-cell">لبنان</td>
+          </tr>
+          <tr>
+            <td class="num text-center">5</td>
+            <td class="name-cell">جمال حيران</td>
+            <td class="federation-cell">قطر</td>
+            <td class="federation-cell">قطر</td>
+          </tr>
+          <tr>
+            <td class="num text-center">6</td>
+            <td class="name-cell">محمد علاء حواس</td>
+            <td class="federation-cell">تونس</td>
+            <td class="federation-cell">تونس</td>
+          </tr>
+          <tr>
+            <td class="num text-center">7</td>
+            <td class="name-cell">عبد الحميد ضيف الله</td>
+            <td class="federation-cell">الجزائر</td>
+            <td class="federation-cell">الجزائر</td>
+          </tr>
+          <tr>
+            <td class="num text-center">8</td>
+            <td class="name-cell">هيثم سعيد الصالحي</td>
+            <td class="federation-cell">سلطنة عمان</td>
+            <td class="federation-cell">سلطنة عمان</td>
+          </tr>
+          <tr>
+            <td class="num text-center">9</td>
+            <td class="name-cell">أفلاح هلال الكيومي</td>
+            <td class="federation-cell">سلطنة عمان</td>
+            <td class="federation-cell">سلطنة عمان</td>
+          </tr>
+          <tr>
+            <td class="num text-center">10</td>
+            <td class="name-cell">سالم خميس المزروعي</td>
+            <td class="federation-cell">سلطنة عمان</td>
+            <td class="federation-cell">سلطنة عمان</td>
+          </tr>
+          <tr>
+            <td class="num text-center">11</td>
+            <td class="name-cell">سعيد خير الله العريني</td>
+            <td class="federation-cell">سلطنة عمان</td>
+            <td class="federation-cell">سلطنة عمان</td>
+          </tr>
+          <tr>
+            <td class="num text-center">12</td>
+            <td class="name-cell">قيس سالم المحروقي</td>
+            <td class="federation-cell">سلطنة عمان</td>
+            <td class="federation-cell">سلطنة عمان</td>
+          </tr>
+          <tr>
+            <td class="num text-center">13</td>
+            <td class="name-cell">صلاح خميس مبارك راشد الهنائي</td>
+            <td class="federation-cell">سلطنة عمان</td>
+            <td class="federation-cell">سلطنة عمان</td>
+          </tr>
+          <tr>
+            <td class="num text-center">14</td>
+            <td class="name-cell">يونس عبد الله عمر الجابري</td>
+            <td class="federation-cell">سلطنة عمان</td>
+            <td class="federation-cell">سلطنة عمان</td>
+          </tr>
+          <tr>
+            <td class="num text-center">15</td>
+            <td class="name-cell">لهبوب احجري</td>
+            <td class="federation-cell">المغرب</td>
+            <td class="federation-cell">المغرب</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function filterTable() {
+      var query = (document.getElementById('searchInput') ? document.getElementById('searchInput').value : '').trim().toLowerCase();
+      var rows = document.querySelectorAll('#tableBody tr');
+      var visibleCount = 0;
+
+      rows.forEach(function(row) {
+        var nameEl = row.querySelector('.name-cell');
+        var fedEl = row.querySelector('.federation-cell');
+        if (!nameEl && !fedEl) return;
+
+        var name = (nameEl ? nameEl.textContent : '').toLowerCase();
+        var fed = (fedEl ? fedEl.textContent : '').toLowerCase();
+
+        if (name.includes(query) || fed.includes(query)) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      var badge = document.getElementById('countBadge');
+      if (badge) {
+        badge.textContent = query ? (visibleCount + ' مشارك مطابق') : ('15 مشارك');
+      }
+    }
+  </script>
+</body>
+</html>
