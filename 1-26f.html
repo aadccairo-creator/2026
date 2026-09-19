@@ -1,0 +1,648 @@
+<!-- بداية تطبيق بطاقات الاستذكار المطور مع نظام التقييم -->
+<div id="studio-flashcards-app" dir="rtl">
+  <style>
+    #studio-flashcards-app {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 920px;
+      margin: 20px auto;
+      padding: 25px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 20px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+      color: #212529;
+    }
+
+    .app-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .app-header h2 {
+      font-size: 26px;
+      color: #111827;
+      margin-bottom: 6px;
+    }
+    .app-header p {
+      font-size: 14px;
+      color: #6b7280;
+      margin: 0;
+    }
+
+    /* Assessment Stats Dashboard */
+    .stats-dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      background: #ffffff;
+      padding: 15px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .stat-box {
+      text-align: center;
+      padding: 8px;
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+    .stat-num {
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    /* Controls Bar */
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: #2563eb;
+    }
+
+    .btn-tab {
+      padding: 7px 12px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #374151;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-tab.active, .btn-tab:hover {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+    .btn-reset-stats {
+      background: #ef4444;
+      color: white;
+      border: none;
+    }
+    .btn-reset-stats:hover {
+      background: #dc2626;
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      max-width: 650px;
+      margin-bottom: 15px;
+    }
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+      color: #4b5563;
+      margin-bottom: 6px;
+    }
+    .progress-bar-bg {
+      height: 8px;
+      background: #cbd5e1;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #2563eb;
+      transition: width 0.3s ease;
+    }
+
+    /* 3D Card */
+    .deck-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .flashcard-3d {
+      width: 100%;
+      max-width: 650px;
+      height: 330px;
+      perspective: 1000px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+    .flashcard-3d.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      padding: 25px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+    }
+    .card-front {
+      color: #111827;
+    }
+    .card-back {
+      background: #f8fafc;
+      color: #0f172a;
+      transform: rotateY(180deg);
+    }
+    .card-status-indicator {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      font-size: 18px;
+    }
+    .card-category-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid #bfdbfe;
+    }
+    .card-text {
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.6;
+      margin-top: 35px;
+    }
+
+    /* Rating Buttons inside Back Card */
+    .rating-actions {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .btn-rate {
+      flex: 1;
+      max-width: 180px;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    .btn-rate:hover {
+      opacity: 0.9;
+      transform: scale(1.02);
+    }
+    .btn-know { background: #22c55e; color: white; }
+    .btn-review { background: #f97316; color: white; }
+
+    /* Nav Buttons */
+    .deck-nav-btns {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-nav {
+      padding: 9px 18px;
+      font-size: 13.5px;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #2563eb;
+      color: #ffffff;
+      transition: background 0.2s;
+    }
+    .btn-nav:hover { background: #1d4ed8; }
+    .btn-nav-secondary { background: #64748b; }
+    .btn-nav-secondary:hover { background: #475569; }
+
+    /* Grid View */
+    .grid-view {
+      display: none;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 15px;
+    }
+    .grid-card {
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .grid-card:hover {
+      border-color: #2563eb;
+      transform: translateY(-3px);
+    }
+    .grid-card-q {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #1f2937;
+      padding-top: 15px;
+    }
+    .grid-card-a {
+      display: none;
+      font-size: 13px;
+      color: #1e293b;
+      background: #f1f5f9;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+    .grid-card.open .grid-card-a { display: block; }
+  </style>
+
+  <div class="app-header">
+    <h2>بطاقات استذكار ألعاب القوى التفاعلية 🏃‍♂️</h2>
+    <p>قيم نفسك وتابع إنجازك في الـ 30 مفهومًا فسيولوجياً وتكنيكياً</p>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="stats-dashboard">
+    <div class="stat-box">
+      <div class="stat-num" id="statTotal">30</div>
+      <div class="stat-label">إجمالي البطاقات</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color: #22c55e;" id="statKnow">0</div>
+      <div class="stat-label">عرفتها ✅</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color: #f97316;" id="statReview">0</div>
+      <div class="stat-label">محتاجة مراجعة ❌</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color: #64748b;" id="statUnrated">30</div>
+      <div class="stat-label">لم تُقيّم بعد ⚪</div>
+    </div>
+  </div>
+
+  <!-- Search & View Modes -->
+  <div class="controls-row">
+    <input type="text" id="appSearch" class="search-input" placeholder="ابحث في الأسئلة والإجابات..." onkeyup="onSearchOrFilter()">
+    <div style="display:flex; gap:6px;">
+      <button class="btn-tab active" id="btnModeDeck" onclick="switchViewMode('deck')">🎴 بطاقة ببطاقة</button>
+      <button class="btn-tab" id="btnModeGrid" onclick="switchViewMode('grid')">📱 عرض الكل</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="controls-row">
+    <div style="display:flex; gap:5px; flex-wrap:wrap;">
+      <button class="btn-tab active" onclick="setCategory('all', this)">الكل</button>
+      <button class="btn-tab" onclick="setCategory('الفسيولوجيا', this)">الفسيولوجيا</button>
+      <button class="btn-tab" onclick="setCategory('التكنيك', this)">التكنيك</button>
+      <button class="btn-tab" onclick="setCategory('الموانع', this)">الموانع</button>
+      <button class="btn-tab" onclick="setCategory('المشي', this)">المشي</button>
+      <button class="btn-tab" onclick="setCategory('التخطيط', this)">التخطيط</button>
+      <button class="btn-tab" style="background:#fff7ed; color:#c2410c;" onclick="setRatingFilter('review', this)">🎯 محتاجة مراجعة</button>
+      <button class="btn-tab" style="background:#f0fdf4; color:#15803d;" onclick="setRatingFilter('know', this)">✅ تم إتقانها</button>
+    </div>
+    <button class="btn-tab btn-reset-stats" onclick="resetAllRatings()">🔄 إعادة تقييم الكل</button>
+  </div>
+
+  <!-- Deck Mode -->
+  <div id="deckMode" class="deck-view">
+    <div class="progress-container">
+      <div class="progress-info">
+        <span id="deckProgressText">البطاقة 1 من 30</span>
+        <span id="deckCategoryText">القسم: الفسيولوجيا</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="deckProgressBar"></div>
+      </div>
+    </div>
+
+    <div class="flashcard-3d" id="mainCard" onclick="handleCardClick(event)">
+      <div class="card-inner">
+        <!-- Front -->
+        <div class="card-front">
+          <span class="card-status-indicator" id="frontStatusIcon">⚪</span>
+          <span class="card-category-badge" id="cardCatBadge">الفسيولوجيا</span>
+          <div class="card-text" id="cardQuestionText">جاري التحميل...</div>
+          <div style="font-size:12px; color:#9ca3af;">💡 اضغط على البطاقة لإظهار الإجابة والتقييم</div>
+        </div>
+        <!-- Back -->
+        <div class="card-back">
+          <span class="card-status-indicator" id="backStatusIcon">⚪</span>
+          <div class="card-text" id="cardAnswerText">جاري التحميل...</div>
+          <div style="width:100%;">
+            <div style="font-size:12px; color:#64748b; margin-bottom:8px;">كيف كان مستواك في هذا السؤال؟</div>
+            <div class="rating-actions">
+              <button class="btn-rate btn-know" onclick="rateCurrentCard('know', event)">عرفتها ✅</button>
+              <button class="btn-rate btn-review" onclick="rateCurrentCard('review', event)">محتاجة مراجعة ❌</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="deck-nav-btns">
+      <button class="btn-nav btn-nav-secondary" onclick="prevCard()">السابق ⬅️</button>
+      <button class="btn-nav" onclick="toggleCardFlip()">اقلب البطاقة 🔄</button>
+      <button class="btn-nav btn-nav-secondary" onclick="shuffleCards()">عشوائي 🔀</button>
+      <button class="btn-nav" onclick="nextCard()">التالي ➡️</button>
+    </div>
+  </div>
+
+  <!-- Grid Mode -->
+  <div id="gridMode" class="grid-view"></div>
+</div>
+
+<script>
+  // 30 Clean Flashcards Database
+  const cardsDatabase = [
+    { id: 1, q: "1. ما هو التعريف العلمي للحد الأقصى لاستهلاك الأكسجين (VO2max)؟", a: "أعلى معدل يستطيع الجسم من خلاله امتصاص واستخدام الأكسجين أثناء التمارين الشديدة.", cat: "الفسيولوجيا" },
+    { id: 2, q: "2. ما هي العوامل المركزية المؤثرة في VO2max ونسبتها؟", a: "تشكل 75% وتضم سعة الانتشار الرئوي، حجم الضربة (الدفع القلبي)، والقابلية على حمل الأكسجين في الدم.", cat: "الفسيولوجيا" },
+    { id: 3, q: "3. ما هي العوامل الطرفية المؤثرة في VO2max ونسبتها؟", a: "تشكل 25% وتضم مستويات إنزيمات الميتوكوندريا، كثافة الشعيرات الدموية، الميوجلوبين، ونوع ومقطع الألياف العضلية.", cat: "الفسيولوجيا" },
+    { id: 4, q: "4. ما هي الشدة ونسب الطاقة الهوائية واللاهوائية في سباق 800م؟", a: "الشدة 115 إلى 130% من VO2max، المساهمة الهوائية 60 إلى 70%، واللاهوائية 30 إلى 40%.", cat: "الفسيولوجيا" },
+    { id: 5, q: "5. ما هي الشدة ونسب الطاقة الهوائية واللاهوائية في سباق 1500م؟", a: "الشدة 105 إلى 115% من VO2max، المساهمة الهوائية 80 إلى 85%، واللاهوائية 15 إلى 20%.", cat: "الفسيولوجيا" },
+    { id: 6, q: "6. ما هي الشدة ونسب الطاقة الهوائية واللاهوائية في سباق 3000م؟", a: "الشدة 100% من VO2max، المساهمة الهوائية 85 إلى 90%، واللاهوائية 10 إلى 15%.", cat: "الفسيولوجيا" },
+    { id: 7, q: "7. ما هي الشدة ونسب الطاقة الهوائية واللاهوائية في سباق 5000م؟", a: "الشدة 95 إلى 100% من VO2max، المساهمة الهوائية 90 إلى 95%، واللاهوائية 5 إلى 10%.", cat: "الفسيولوجيا" },
+    { id: 8, q: "8. ما هي الشدة ونسب الطاقة الفسيولوجية في سباق 10000م؟", a: "الشدة 90 إلى 95% من VO2max، المساهمة الهوائية 97%، واللاهوائية 3%.", cat: "الفسيولوجيا" },
+    { id: 9, q: "9. ما هي الشدة ونسب الطاقة الفسيولوجية في سباق الماراثون؟", a: "الشدة 75 إلى 80% من VO2max، المساهمة الهوائية 99.9%، واللاهوائية 0.1%.", cat: "الفسيولوجيا" },
+    { id: 10, q: "10. ما هي المكونات الثلاثة الرئيسية لطول الخطوة في الجري؟", a: "مسافة هبوط القدم أمام الجسم، مسافة دفع القدم خلف الجسم، ومسافة الطيران في الهواء.", cat: "التكنيك" },
+    { id: 11, q: "11. ما هو خطأ الخطو الزائد (Overstriding) ولماذا يُحذر منه؟", a: "هبوط القدم بمسافة كبيرة أمام مركز ثقل الجسم، مما يزيد من قوى الفرملة المعطلة للحركة ويهدر الطاقة.", cat: "التكنيك" },
+    { id: 12, q: "12. ما هي الوضعية الميكانيكية الصحيحة للجذع أثناء الجري؟", a: "استقرار الجذع والسيطرة عليه طوال السباق يمنع تشتت الطاقة ويضمن أقصى دفع للأمام.", cat: "التكنيك" },
+    { id: 13, q: "13. كيف تكون زاوية الركبة أثناء مرحلة دفع الأرض في المسافات المتوسطة؟", a: "تكون الزاوية أقل من 180 درجة ولا يحدث مد كامل، مما يدل على الدور الأكبر للعمل العضلي الخلفي.", cat: "التكنيك" },
+    { id: 14, q: "14. كيف يتم الامتصاص الصحيح عند هبوط القدم في الجري؟", a: "ضرب الأرض بالكعب مع انثناء سريع، وتوضع القدم أسفل الحوض مباشرة لامتصاص الوزن الكلي.", cat: "التكنيك" },
+    { id: 15, q: "15. ما الأسباب العضلية لخلل انهيار الركبة للداخل (Knee Valgus)؟", a: "ضعف عضلات الكاحل والقدم لامتصاص الصدمة، وضعف عضلات الحوض (خاصة الألية الوسطى).", cat: "التكنيك" },
+    { id: 16, q: "16. ما هو عدد الموانع العادية والمائية في سباق 3000م موانع؟", a: "يواجه العداء 28 مانعاً عادياً و7 موانع مائية طوال مسافة السباق.", cat: "الموانع" },
+    { id: 17, q: "17. ما هي أبعاد وتكنيك المانع المائي في سباق الموانع؟", a: "عرض العارضة 3.66 م وهي ثابته تليها حفرة ماء، ويتطلب الارتقاء الحفاظ على مركز ثقل منخفض.", cat: "الموانع" },
+    { id: 18, q: "18. ما هو خطأ أذرع الهليكوبتر في سباق الموانع؟", a: "رمي الذراعين للجانبين عند تعدية المانع مما يسبب اختلال التوازن والفعالية البيوميكانيكية.", cat: "الموانع" },
+    { id: 19, q: "19. ما هي القاعدة الأولى لسباق المشي الرياضي (القاعدة 54.2)؟", a: "الاتصال الدائم بالأرض بحيث لا يحدث فقدان مرئي بالعين المجردة للمتسابق.", cat: "المشي" },
+    { id: 20, q: "20. ما هي القاعدة الثانية لسباق المشي الرياضي فيما يخص الركبة؟", a: "استقامة الركبة الأمامية تماماً دون انثناء من لحظة الملامسة الأولى للأرض حتى الوضع العمودي.", cat: "المشي" },
+    { id: 21, q: "21. ما هو الدور الميكانيكي لحركة الحوض في سباق المشي؟", a: "يساعد دوران الحوض حول المحور العمودي في زيادة طول الخطوة والإيقاع ومنع الانثناء.", cat: "المشي" },
+    { id: 22, q: "22. ما هي نسب مكونات طول الخطوة في المشي لرجال النخبة؟", a: "القدم للأمام 33%، القدم خلف الجسم 39%، مسافة الطيران 14%، وحركة القدم 14%.", cat: "المشي" },
+    { id: 23, q: "23. متى يُرفع الكارت الأصفر والأحمر في منافسات المشي؟", a: "الأصفر للتحذير عند الشك في التكنيك، والأحمر يُرسل عند الملاحظة الواضحة لعدم الالتزام بالقواعد.", cat: "المشي" },
+    { id: 24, q: "24. كيف يُصحح خطأ الانحناء الأمامي المفرط في المشي؟", a: "طلب وضع اليدين مشبكتين خلف الفخذين والدفع بقوة لمساعدة العمود الفقري على المحاذاة الصحيحة.", cat: "المشي" },
+    { id: 25, q: "25. ما هي الشدة والهدف في المنطقة الأولى للتدريب (Z1)؟", a: "تكون الشدة تحت العتبة الأولى (أقل من LT1) لتطوير القاعدة الهوائية والاستشفاء ومخاطر إصابة منخفضة.", cat: "التخطيط" },
+    { id: 26, q: "26. ما هي حدود المنطقة الثانية للتدريب (Z2)؟", a: "تقع الشدة بين العتبة الفسيولوجية الأولى والعتبة الثانية (بين LT1 و LT2).", cat: "التخطيط" },
+    { id: 27, q: "27. ما هي الشدة والخطورة في المنطقة الثالثة للتدريب (Z3)؟", a: "تكون فوق العتبة الثانية (أعلى من LT2) وذات تأثير كبير على الطاقة الهوائية القصوى ولكن بخطر إصابة أعلى.", cat: "التخطيط" },
+    { id: 28, q: "28. ما المقصود بديناميكية الأحمال (2:1، 3:1، 4:1) في الدورة الصغرى؟", a: "تنظيم أسابيع التدرج في الحمل المرتفع يليه أسبوع استشفاء لتسهيل عمليات التكيف البيولوجي.", cat: "التخطيط" },
+    { id: 29, q: "29. ما الفرق بين الحمل التدريبي الخارجي والحمل الداخلي؟", a: "الخارجي يمثل ما يُطلب كالسرعة والمسافة، بينما الداخلي هو الاستجابة الحيوية كضربات القلب و RPE.", cat: "التخطيط" },
+    { id: 30, q: "30. كيف يُحسب الحمل الداخلي بطريقة فوستر وطريقة Lucia TRIMP؟", a: "فوستر = RPE ضرب دقائق التمرين. طريقة Lucia = (زمن Z1 x 1) + (زمن Z2 x 2) + (زمن Z3 x 3).", cat: "التخطيط" }
+  ];
+
+  let userRatings = {}; // Stores { id: 'know' | 'review' }
+  let currentCategory = 'all';
+  let currentRatingFilter = 'all';
+  let filteredCards = [...cardsDatabase];
+  let currentCardIndex = 0;
+  let viewMode = 'deck';
+
+  function initApp() {
+    loadRatingsFromStorage();
+    updateDashboardStats();
+    onSearchOrFilter();
+  }
+
+  function loadRatingsFromStorage() {
+    try {
+      const saved = localStorage.getItem('athletics_flashcards_ratings');
+      if (saved) userRatings = JSON.parse(saved);
+    } catch(e) { userRatings = {}; }
+  }
+
+  function saveRatingsToStorage() {
+    try {
+      localStorage.setItem('athletics_flashcards_ratings', JSON.stringify(userRatings));
+    } catch(e) {}
+  }
+
+  function updateDashboardStats() {
+    let knowCount = 0;
+    let reviewCount = 0;
+
+    cardsDatabase.forEach(card => {
+      if (userRatings[card.id] === 'know') knowCount++;
+      else if (userRatings[card.id] === 'review') reviewCount++;
+    });
+
+    const total = cardsDatabase.length;
+    const unratedCount = total - (knowCount + reviewCount);
+
+    document.getElementById('statTotal').innerText = total;
+    document.getElementById('statKnow').innerText = knowCount;
+    document.getElementById('statReview').innerText = reviewCount;
+    document.getElementById('statUnrated').innerText = unratedCount;
+  }
+
+  function setCategory(cat, btn) {
+    currentCategory = cat;
+    document.querySelectorAll('.controls-row .btn-tab').forEach(b => {
+      if (!b.classList.contains('btn-reset-stats')) b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    onSearchOrFilter();
+  }
+
+  function setRatingFilter(type, btn) {
+    currentRatingFilter = type;
+    document.querySelectorAll('.controls-row .btn-tab').forEach(b => {
+      if (!b.classList.contains('btn-reset-stats')) b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    onSearchOrFilter();
+  }
+
+  function onSearchOrFilter() {
+    const query = document.getElementById('appSearch').value.toLowerCase();
+    filteredCards = cardsDatabase.filter(card => {
+      const matchCat = (currentCategory === 'all' || card.cat === currentCategory);
+      const matchText = card.q.toLowerCase().includes(query) || card.a.toLowerCase().includes(query);
+      
+      let matchRating = true;
+      if (currentRatingFilter === 'know') matchRating = (userRatings[card.id] === 'know');
+      else if (currentRatingFilter === 'review') matchRating = (userRatings[card.id] === 'review');
+
+      return matchCat && matchText && matchRating;
+    });
+
+    currentCardIndex = 0;
+    renderDeckCard();
+    renderGrid();
+  }
+
+  function renderDeckCard() {
+    const mainCard = document.getElementById('mainCard');
+    mainCard.classList.remove('flipped');
+
+    if (filteredCards.length === 0) {
+      document.getElementById('cardCatBadge').innerText = "-";
+      document.getElementById('cardQuestionText').innerText = "لا توجد بطاقات تطابق التصفية الحالية.";
+      document.getElementById('cardAnswerText').innerText = "جرّب تغيير البحث أو اختيار قسم آخر.";
+      document.getElementById('frontStatusIcon').innerText = "⚪";
+      document.getElementById('backStatusIcon').innerText = "⚪";
+      document.getElementById('deckProgressText').innerText = "0 من 0";
+      document.getElementById('deckProgressBar').style.width = "0%";
+      return;
+    }
+
+    const card = filteredCards[currentCardIndex];
+    document.getElementById('cardCatBadge').innerText = card.cat;
+    document.getElementById('cardQuestionText').innerText = card.q;
+    document.getElementById('cardAnswerText').innerText = card.a;
+    document.getElementById('deckCategoryText').innerText = "القسم: " + card.cat;
+
+    const rating = userRatings[card.id];
+    let icon = "⚪";
+    if (rating === 'know') icon = "✅";
+    else if (rating === 'review') icon = "❌";
+
+    document.getElementById('frontStatusIcon').innerText = icon;
+    document.getElementById('backStatusIcon').innerText = icon;
+
+    document.getElementById('deckProgressText').innerText = `البطاقة ${currentCardIndex + 1} من ${filteredCards.length}`;
+    const percent = ((currentCardIndex + 1) / filteredCards.length) * 100;
+    document.getElementById('deckProgressBar').style.width = percent + "%";
+  }
+
+  function handleCardClick(e) {
+    // Avoid flipping if user clicked on rating buttons
+    if (e.target.tagName === 'BUTTON') return;
+    toggleCardFlip();
+  }
+
+  function toggleCardFlip() {
+    document.getElementById('mainCard').classList.toggle('flipped');
+  }
+
+  function rateCurrentCard(type, event) {
+    if (event) event.stopPropagation();
+    if (filteredCards.length === 0) return;
+
+    const card = filteredCards[currentCardIndex];
+    userRatings[card.id] = type;
+
+    saveRatingsToStorage();
+    updateDashboardStats();
+    renderDeckCard();
+
+    // Auto move to next card after rating
+    setTimeout(() => {
+      nextCard();
+    }, 300);
+  }
+
+  function resetAllRatings() {
+    if (confirm("هل أنت تأكد من إعاده ضبط جميع التقييمات والأرقام المتقنة؟")) {
+      userRatings = {};
+      saveRatingsToStorage();
+      updateDashboardStats();
+      onSearchOrFilter();
+    }
+  }
+
+  function nextCard() {
+    if (filteredCards.length === 0) return;
+    currentCardIndex = (currentCardIndex + 1) % filteredCards.length;
+    renderDeckCard();
+  }
+
+  function prevCard() {
+    if (filteredCards.length === 0) return;
+    currentCardIndex = (currentCardIndex - 1 + filteredCards.length) % filteredCards.length;
+    renderDeckCard();
+  }
+
+  function shuffleCards() {
+    for (let i = filteredCards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [filteredCards[i], filteredCards[j]] = [filteredCards[j], filteredCards[i]];
+    }
+    currentCardIndex = 0;
+    renderDeckCard();
+    renderGrid();
+  }
+
+  function switchViewMode(mode) {
+    viewMode = mode;
+    if (mode === 'deck') {
+      document.getElementById('deckMode').style.display = 'flex';
+      document.getElementById('gridMode').style.display = 'none';
+      document.getElementById('btnModeDeck').classList.add('active');
+      document.getElementById('btnModeGrid').classList.remove('active');
+    } else {
+      document.getElementById('deckMode').style.display = 'none';
+      document.getElementById('gridMode').style.display = 'grid';
+      document.getElementById('btnModeGrid').classList.add('active');
+      document.getElementById('btnModeDeck').classList.remove('active');
+    }
+  }
+
+  function renderGrid() {
+    const gridContainer = document.getElementById('gridMode');
+    gridContainer.innerHTML = '';
+
+    if (filteredCards.length === 0) {
+      gridContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #64748b;">لا توجد بطاقات تطابق التصفية الحالية.</p>';
+      return;
+    }
+
+    filteredCards.forEach((card) => {
+      const rating = userRatings[card.id];
+      let icon = "⚪";
+      let borderStyle = "";
+      if (rating === 'know') { icon = "✅"; borderStyle = "border-color: #22c55e;"; }
+      else if (rating === 'review') { icon = "❌"; borderStyle = "border-color: #f97316;"; }
+
+      const cardEl = document.createElement('div');
+      cardEl.className = 'grid-card';
+      cardEl.style = borderStyle;
+      cardEl.onclick = () => cardEl.classList.toggle('open');
+      cardEl.innerHTML = `
+        <span style="position:absolute; top:12px; left:12px; font-size:14px;">${icon}</span>
+        <div style="font-size:11px; font-weight:bold; color:#2563eb;">${card.cat}</div>
+        <div class="grid-card-q">${card.q}</div>
+        <div class="grid-card-a">${card.a}</div>
+        <div style="font-size:10px; color:#9ca3af; margin-top:6px; text-align:left;">اضغط للتوضيح 👆</div>
+      `;
+      gridContainer.appendChild(cardEl);
+    });
+  }
+
+  // Initialize
+  initApp();
+</script>
+<!-- نهاية الكود -->
