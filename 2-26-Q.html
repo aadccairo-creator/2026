@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار القوى</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Baloo 2', 'Comic Sans MS', 'Trebuchet MS', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #ff6b6b 0%, #feca57 45%, #48dbfb 75%, #ff9ff3 100%);
+  background-size: 300% 300%;
+  animation: bgshift 12s ease infinite;
+  min-height: 100vh; padding: 20px; color: #2d2d2d;
+}
+@keyframes bgshift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 26px 20px; }
+.header h1 { font-size: 30px; font-weight: 800; margin-bottom: 6px; text-shadow: 0 3px 0 rgba(0,0,0,0.15); }
+.header .meta { font-size: 14px; opacity: 0.95; font-weight: 600; }
+.progress-bar { background: rgba(255,255,255,0.35); border-radius: 20px; height: 12px; margin: 18px 0; overflow: hidden; border: 2px solid rgba(255,255,255,0.5); }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 20px; }
+.question { background: #fff; border-radius: 24px; padding: 28px; box-shadow: 0 14px 0 rgba(0,0,0,0.12); display: none; border: 4px solid #2d2d2d; position: relative; overflow: hidden; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; font-size: 13px; }
+.q-number { font-weight: 800; color: #ff6b6b; background: #fff0f0; padding: 6px 12px; border-radius: 20px; }
+.streak { font-weight: 800; color: #e67e22; }
+.streak:empty { display: none; }
+.q-text { font-size: 19px; font-weight: 700; line-height: 1.5; margin-bottom: 22px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: center; gap: 12px; padding: 16px 18px;
+  border: 3px solid #2d2d2d; border-radius: 18px; background: #fffdf5;
+  cursor: pointer; transition: transform 0.12s, background 0.2s; text-align: left; font-size: 15px; font-weight: 600; width: 100%;
+  box-shadow: 0 4px 0 #2d2d2d;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { transform: translateY(-2px); background: #fff7e0; }
+.option:active:not(.disabled) { transform: translateY(2px); box-shadow: 0 2px 0 #2d2d2d; }
+.option.selected { background: #eef2ff; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-emoji { font-size: 20px; flex-shrink: 0; }
+.opt-text { line-height: 1.5; }
+
+.option-feedback { margin: 6px 0 4px 4px; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.5; border: 2px dashed transparent; }
+.option-feedback.correct-feedback { background: #dcfce7; border-color: #22c55e; }
+.option-feedback.incorrect-feedback { background: #fef3f2; border-color: #fca5a5; }
+.feedback-status { font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+.hint-box { margin: 12px 0; border-radius: 16px; overflow: hidden; background: #fffbeb; border: 2px solid #fcd34d; }
+.hint-toggle { width: 100%; padding: 10px 16px; background: transparent; border: none; cursor: pointer; font-size: 14px; font-weight: 700; color: #92400e; text-align: left; display: flex; align-items: center; gap: 8px; }
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content { padding: 0 16px; max-height: 0; overflow: hidden; transition: max-height 0.3s, padding 0.3s; font-size: 14px; color: #78350f; line-height: 1.5; }
+.hint-box.show .hint-content { padding: 0 16px 12px; max-height: 200px; }
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 15px;
+  background: #ff6b6b; color: #fff; border: 3px solid #2d2d2d;
+  border-radius: 18px; font-size: 16px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 5px 0 #2d2d2d; transition: transform 0.12s;
+}
+.next-btn:hover { transform: translateY(-2px); }
+.next-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #2d2d2d; }
+.hidden { display: none !important; }
+
+.results { background: #fff; border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 14px 0 rgba(0,0,0,0.12); border: 4px solid #2d2d2d; display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 30px; margin-bottom: 6px; color: #333; font-weight: 800; }
+.stars { font-size: 40px; margin: 14px 0; letter-spacing: 4px; }
+.results .score { font-size: 60px; font-weight: 800; color: #ff6b6b; margin: 10px 0; }
+.results .score-text { font-size: 17px; color: #666; margin-bottom: 26px; font-weight: 600; }
+.restart-btn {
+  padding: 15px 40px; background: #48dbfb; color: #103a45; border: 3px solid #2d2d2d;
+  border-radius: 18px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 5px 0 #2d2d2d;
+}
+.restart-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #2d2d2d; }
+
+.confetti-piece { position: fixed; top: -10px; width: 8px; height: 14px; opacity: 0.9; pointer-events: none; z-index: 999; animation: fall linear forwards; }
+@keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: 0.3; } }
+
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🎉 اختبار القوى</h1>
+    <div class="meta">10 أسئلة</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 1 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">في سباق العدو الريفي لمسافة <span class="math">2.5</span> كم، كم عدد الشارات (التوكنز) اللي لازم المتسابق يجمعها قبل ما يخلص اللفة الأخيرة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في عدد المرات اللي المتسابق بيعدي فيها على خط البداية قبل اللفة الأخيرة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="استلام شارة واحدة بس مش هيكفي للتأكد إن المتسابق كمل كل اللفات المطلوبة في المسار القصير.">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">شارة واحدة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">استلام شارة واحدة بس مش هيكفي للتأكد إن المتسابق كمل كل اللفات المطلوبة في المسار القصير.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="ده عدد الشارات في حالة لو كان السباق $5$ لفات بس في مسار أطول، مش سباق الـ $10$ لفات.">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text"><span class="math">5</span> شارات</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ده عدد الشارات في حالة لو كان السباق <span class="math">5</span> لفات بس في مسار أطول، مش سباق الـ <span class="math">10</span> لفات.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="اللفتة العاشرة هي لفة النهاية اللي بيتم فيها تسجيل الوقت الفردي بدل استلام شارة.">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text"><span class="math">10</span> شارات</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">اللفتة العاشرة هي لفة النهاية اللي بيتم فيها تسجيل الوقت الفردي بدل استلام شارة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="المتسابق بيستلم شارة عند نهاية كل لفة من اللفات التسعة الأولى، والوقت بيتحسب في اللفة العاشرة والأخيرة من غير شارة.">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text"><span class="math">9</span> شارات</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المتسابق بيستلم شارة عند نهاية كل لفة من اللفات التسعة الأولى، والوقت بيتحسب في اللفة العاشرة والأخيرة من غير شارة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 2 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">إيه هي النصيحة الصحيحة للركض 'أسفل التلة' (المنحدرات) في سباق العدو الريفي؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">استغل قوة الجاذبية الأرضية عشان تزيد من المسافة اللي بتقطعها في كل خطوة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="الارتكاز على الكعب بيقلل من السرعة وبيزود الصدمات على المفاصل، ولازم نتجنبه في كل أنواع الجري.">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">الجري بالارتكاز على الكعب</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الارتكاز على الكعب بيقلل من السرعة وبيزود الصدمات على المفاصل، ولازم نتجنبه في كل أنواع الجري.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="الجاذبية بتساعد في المنحدرات، فتركيز العداء على طول الخطوة بيساعده يستغل السرعة الناتجة عن الميل.">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">زيادة طول الخطوات</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الجاذبية بتساعد في المنحدرات، فتركيز العداء على طول الخطوة بيساعده يستغل السرعة الناتجة عن الميل.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="زيادة التكرار (التردد) بتكون هي النصيحة الأساسية عند الجري 'أعلى' التلة لمواجهة المقاومة.">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">زيادة معدل تكرار الخطوات</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">زيادة التكرار (التردد) بتكون هي النصيحة الأساسية عند الجري 'أعلى' التلة لمواجهة المقاومة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="تقصير الخطوة بشكل مبالغ فيه بيضيع ميزة الجاذبية في المنحدرات وبيقلل من كفاءة الحركة.">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">تقصير طول الخطوة للأدنى</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تقصير الخطوة بشكل مبالغ فيه بيضيع ميزة الجاذبية في المنحدرات وبيقلل من كفاءة الحركة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 3 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">في 'السباق التتابعي المختلط'، إيه هي الطريقة المعتمدة لتسليم الدور بين أعضاء الفريق؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في حركة سريعة بالإيد بتأكد التواصل بين المتسابق اللي خلص واللي هيبدأ.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="رغم إنها الطريقة التقليدية، بس دليل البرنامج بيحدد ضرب التحية بالأيدي في بعض أنواع سباقات التتابع للأطفال.">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">تسليم عصا التتابع</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">رغم إنها الطريقة التقليدية، بس دليل البرنامج بيحدد ضرب التحية بالأيدي في بعض أنواع سباقات التتابع للأطفال.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="الأدوات زي الزجاجات بتستخدم كرايات بس مش هي الوسيلة الأساسية للتسليم في النسخة المختلطة المذكورة.">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">تمرير زجاجة مياه</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الأدوات زي الزجاجات بتستخدم كرايات بس مش هي الوسيلة الأساسية للتسليم في النسخة المختلطة المذكورة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="لمس الكتف ممكن يسبب اختلال في التوازن أو اصطدام، والتحية بالكف بتكون أوضح وأسرع.">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">لمس الكتف من الخلف</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لمس الكتف ممكن يسبب اختلال في التوازن أو اصطدام، والتحية بالكف بتكون أوضح وأسرع.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="في منطقة التسليم، بيضرب أعضاء الفريق كفوفهم ببعض كإشارة لبدء دور المتسابق التالي بدل العصا التقليدية.">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">ضرب تحية بالأكف (هاي فايف)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">في منطقة التسليم، بيضرب أعضاء الفريق كفوفهم ببعض كإشارة لبدء دور المتسابق التالي بدل العصا التقليدية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 4 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">في مسابقة 'الوثب بعد خمس خطوات'، إيه اللي بيخلي المحاولة تعتبر غير صحيحة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في الأخطاء الشائعة اللي بتحصل عند نقطة بداية القفز.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="الهبوط على القدمين مع بعض هو الوضع المفضل والآمن اللي القواعد بتشجع عليه لسلامة اللاعب.">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">الهبوط على القدمين معاً</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الهبوط على القدمين مع بعض هو الوضع المفضل والآمن اللي القواعد بتشجع عليه لسلامة اللاعب.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="الوثب لازم يبدأ بالارتكاز على قدم واحدة عشان يقدر اللاعب يولد قوة دفع كافية للقفز.">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">الانطلاق بالارتكاز على قدم واحدة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الوثب لازم يبدأ بالارتكاز على قدم واحدة عشان يقدر اللاعب يولد قوة دفع كافية للقفز.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="القواعد بتنص إن الانطلاق لازم يكون من ورا الخط، وأي لمس للخط بيخلي القفزة غير محسوبة.">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">لمس خط الانطلاق أو تجاوزه</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القواعد بتنص إن الانطلاق لازم يكون من ورا الخط، وأي لمس للخط بيخلي القفزة غير محسوبة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="مسافة الـ $5$ أمتار مسموح بيها كحد أقصى لفئات عمرية معينة زي سن $12$ لـ $13$ سنة.">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">اختيار مسافة ركض تحضيري <span class="math">5</span> أمتار</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">مسافة الـ <span class="math">5</span> أمتار مسموح بيها كحد أقصى لفئات عمرية معينة زي سن <span class="math">12</span> لـ <span class="math">13</span> سنة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 5 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">فريق 'القفز الخماسي' لازم يتكون من كام لاعب حسب القواعد المذكورة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">المسابقة بتعتمد على التوازن بين الولاد والبنات في الفريق.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="عدد مناطق الهبوط الـ $8$ ده خاص بالقياس والمسافات، مش بعدد أعضاء الفريق المشارك.">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text"><span class="math">8</span> لاعبين حسب عدد مناطق الهبوط</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">عدد مناطق الهبوط الـ <span class="math">8</span> ده خاص بالقياس والمسافات، مش بعدد أعضاء الفريق المشارك.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="المسابقة مصممة كنشاط جماعي مختلط بيشجع على المساواة والمشاركة بين الجنسين بنفس العدد.">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text"><span class="math">10</span> لاعبين (<span class="math">5</span> فتيات و<span class="math">5</span> فتيان)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المسابقة مصممة كنشاط جماعي مختلط بيشجع على المساواة والمشاركة بين الجنسين بنفس العدد.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="البرنامج بيركز على التنوع والعمل الجماعي المختلط، وتكوين فريق من جنس واحد بيخالف المبدأ ده.">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text"><span class="math">5</span> لاعبين من نفس الجنس</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">البرنامج بيركز على التنوع والعمل الجماعي المختلط، وتكوين فريق من جنس واحد بيخالف المبدأ ده.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="العدد المحدد في دليل التنظيم هو $10$ لاعبين بس لضمان سهولة الإدارة وحساب النقاط.">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text"><span class="math">12</span> لاعب مقسمين لمجموعتين</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">العدد المحدد في دليل التنظيم هو <span class="math">10</span> لاعبين بس لضمان سهولة الإدارة وحساب النقاط.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 6 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">أثناء أداء 'الرمي الجانبي' (أو الدوراني)، إيه هي النصيحة الأساسية للحفاظ على القوة والدقة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في طول 'ذراع الرافعة' اللي بيساعد في رمي الحاجات لمسافات بعيدة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="الدليل بينصح بعدم لمس الأداة لراحة اليد لضمان تحكم أفضل بالأصابع وقت الإطلاق.">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">جعل الأداة تلمس راحة اليد بالكامل</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الدليل بينصح بعدم لمس الأداة لراحة اليد لضمان تحكم أفضل بالأصابع وقت الإطلاق.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="مد الذراع بيخلق نصف قطر أكبر للدوران، وده بيزود السرعة المحيطية للأداة قبل ما تخرج من إيد اللاعب.">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">إبقاء ذراع الرمي ممدودة قدر المستطاع</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">مد الذراع بيخلق نصف قطر أكبر للدوران، وده بيزود السرعة المحيطية للأداة قبل ما تخرج من إيد اللاعب.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="ثني الكوع بيقلل من عزم الدوران وبيخلي الرمية تفتقد للقوة الاندفاعية المطلوبة.">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">ثني الكوع بقوة أثناء الدوران</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ثني الكوع بيقلل من عزم الدوران وبيخلي الرمية تفتقد للقوة الاندفاعية المطلوبة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="القوة المتفجرة في الرمي بتيجي أساساً من الرجلين والجذع، مش من الذراع لوحدها.">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">الوقوف بثبات بدون استخدام قوة الرجلين</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القوة المتفجرة في الرمي بتيجي أساساً من الرجلين والجذع، مش من الذراع لوحدها.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 7 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">في مسار 'السباق التتابعي متعدد المهارات'، كام عدد المهام أو الأنشطة اللي لازم المتسابق يخلصها قبل ما يرجع لمنطقة التسليم؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">العدد ده بيمثل إجمالي المحطات اللي المتسابق بيعدي عليها في اللفة الواحدة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="رغم وجود $3$ مجالات أساسية (ركض، قفز، رمي)، المسار ده بيصمم بـ $6$ محطات محددة.">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text"><span class="math">3</span> أنشطة أساسية</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">رغم وجود <span class="math">3</span> مجالات أساسية (ركض، قفز، رمي)، المسار ده بيصمم بـ <span class="math">6</span> محطات محددة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="عدد اللفات في العدو الريفي هو اللي $10$، لكن المهام في سباق المهارات عددها أقل ومكثف أكتر.">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text"><span class="math">10</span> أنشطة بعدد اللفات</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">عدد اللفات في العدو الريفي هو اللي <span class="math">10</span>، لكن المهام في سباق المهارات عددها أقل ومكثف أكتر.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="المخلص بيحدد إن المسار بيشتمل على $6$ مهام متنوعة لازم كل عضو في الفريق يخلصهم بالترتيب.">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text"><span class="math">6</span> أنشطة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المخلص بيحدد إن المسار بيشتمل على <span class="math">6</span> مهام متنوعة لازم كل عضو في الفريق يخلصهم بالترتيب.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="السباق اسمه 'متعدد المهارات' وده معناه إنه بيختبر أكتر من قدرة حركية في نفس اللفة.">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">نشاط واحد بس</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">السباق اسمه 'متعدد المهارات' وده معناه إنه بيختبر أكتر من قدرة حركية في نفس اللفة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 8 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">في 'القفز الخماسي'، إيه هو إيقاع القفز المطلوب في الجولة الأولى للمتسابقين؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">الإيقاع ده بيبدأ بالرجل اليمين مرتين ورا بعض.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="ده الإيقاع المخصص للجولة الثانية، والبرنامج بيفرق بينهم عشان ينمي مهارات الرجلين بالتساوي.">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">يسرى-يسرى-يمنى-يمنى-يسرى</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ده الإيقاع المخصص للجولة الثانية، والبرنامج بيفرق بينهم عشان ينمي مهارات الرجلين بالتساوي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="ده وصف عام للحركة مش الإيقاع التفصيلي للأقدام (يمنى ويسرى) اللي القواعد بتلزم بيه.">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">خطوة-قفزة-خطوة-قفزة-هبوط</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ده وصف عام للحركة مش الإيقاع التفصيلي للأقدام (يمنى ويسرى) اللي القواعد بتلزم بيه.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="القفز على نفس الرجل طول الوقت مش بيحقق هدف 'تبادل الحركات الثنائية' والتنسيق المطلوب.">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">يمنى-يمنى-يمنى-يمنى-يمنى</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القفز على نفس الرجل طول الوقت مش بيحقق هدف 'تبادل الحركات الثنائية' والتنسيق المطلوب.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="ده الإيقاع المحدد لتبادل الأقدام في الجولة الأولى لضمان اختبار التوازن على الناحيتين بشكل منتظم.">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">يمنى-يمنى-يسرى-يسرى-يمنى</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ده الإيقاع المحدد لتبادل الأقدام في الجولة الأولى لضمان اختبار التوازن على الناحيتين بشكل منتظم.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 9 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">ليه برنامج 'ألعاب القوى للأطفال' بيستخدم 'شجرة المهارات'؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في معنى الاختصار <span class="math">PI</span> اللي بيركز على اللاعب نفسه مش على منافسيه.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="التركيز الأساسي هو تعليم المهارات الحركية والقيم الرياضية، مش القياسات الطبية أو الحيوية.">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">لحساب السعرات الحرارية اللي اتحرقت</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التركيز الأساسي هو تعليم المهارات الحركية والقيم الرياضية، مش القياسات الطبية أو الحيوية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="الهدف مش مقارنة الطفل بغيره، لكن إنه يرتقي في المستويات من $1$ لـ $5$ بناءً على مهاراته هو.">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">لتحقيق التطور الشخصي (<span class="math">PI</span>) للاعب</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الهدف مش مقارنة الطفل بغيره، لكن إنه يرتقي في المستويات من <span class="math">1</span> لـ <span class="math">5</span> بناءً على مهاراته هو.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="البرنامج بيصلح 'لجميع' الأطفال والشباب بغض النظر عن قدراتهم الحالية وبيشجعهم يتعلموا.">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">لاستبعاد الأطفال اللي مش بيعرفوا ينطوا</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">البرنامج بيصلح 'لجميع' الأطفال والشباب بغض النظر عن قدراتهم الحالية وبيشجعهم يتعلموا.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="البرنامج بيركز على التطور الفردي والمشاركة، مش بس على اختيار أسرع حد أو النخبة الرياضية.">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">لتحديد مين أسرع طفل في الفريق</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">البرنامج بيركز على التطور الفردي والمشاركة، مش بس على اختيار أسرع حد أو النخبة الرياضية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">🎯 سؤال 10 / 10</span>
+            <span class="streak" id="streak-badge"></span>
+          </div>
+          <div class="q-text">إيه هو التصرف الصحيح للمسؤول لو متسابق بدأ الجري قبل كلمة 'انطلق' في سباق العدو الريفي؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">الهدف هو تعليم المتسابقين الصبر والالتزام بالقواعد بدون حرمانهم من المشاركة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="منهجية البرنامج تعليمية وتربوية، فبيتم تجنب الاستبعاد عشان ميتسببش في إحباط الأطفال.">
+            <span class="opt-emoji">🅰️</span>
+            <span class="opt-text">استبعاد المتسابق فوراً من السباق</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">منهجية البرنامج تعليمية وتربوية، فبيتم تجنب الاستبعاد عشان ميتسببش في إحباط الأطفال.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="الشارات بتستخدم لعد اللفات بس، ومش بتستخدم كعقوبات على أخطاء البداية.">
+            <span class="opt-emoji">🅱️</span>
+            <span class="opt-text">خصم شارة واحدة من رصيد المتسابق</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الشارات بتستخدم لعد اللفات بس، ومش بتستخدم كعقوبات على أخطاء البداية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="القواعد بتقول مفيش استبعاد للاعبين، بس لازم يتم التنبيه والبدء مرة تانية بشكل صحيح.">
+            <span class="opt-emoji">🅲️</span>
+            <span class="opt-text">إطلاق الصافرة لاستدعاء اللاعبين والبدء من جديد</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القواعد بتقول مفيش استبعاد للاعبين، بس لازم يتم التنبيه والبدء مرة تانية بشكل صحيح.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="الجزاءات الزمنية مش هي الطريقة المفضلة للتعامل مع أخطاء البداية في المستوى ده من البرنامج.">
+            <span class="opt-emoji">🅳️</span>
+            <span class="opt-text">إضافة <span class="math">10</span> ثوانٍ لوقت المتسابق النهائي</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الجزاءات الزمنية مش هي الطريقة المفضلة للتعامل مع أخطاء البداية في المستوى ده من البرنامج.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>اكتمل الاختبار!</h2>
+    <div class="stars" id="stars"></div>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">🔁 حاول مرة أخرى</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"في سباق العدو الريفي لمسافة $2.5$ كم، كم عدد الشارات (التوكنز) اللي لازم المتسابق يجمعها قبل ما يخلص اللفة الأخيرة؟","hint":"فكر في عدد المرات اللي المتسابق بيعدي فيها على خط البداية قبل اللفة الأخيرة.","options":[{"label":"A","text":"شارة واحدة","isCorrect":false,"rationale":"استلام شارة واحدة بس مش هيكفي للتأكد إن المتسابق كمل كل اللفات المطلوبة في المسار القصير."},{"label":"B","text":"$5$ شارات","isCorrect":false,"rationale":"ده عدد الشارات في حالة لو كان السباق $5$ لفات بس في مسار أطول، مش سباق الـ $10$ لفات."},{"label":"C","text":"$10$ شارات","isCorrect":false,"rationale":"اللفتة العاشرة هي لفة النهاية اللي بيتم فيها تسجيل الوقت الفردي بدل استلام شارة."},{"label":"D","text":"$9$ شارات","isCorrect":true,"rationale":"المتسابق بيستلم شارة عند نهاية كل لفة من اللفات التسعة الأولى، والوقت بيتحسب في اللفة العاشرة والأخيرة من غير شارة."}]},{"question":"إيه هي النصيحة الصحيحة للركض 'أسفل التلة' (المنحدرات) في سباق العدو الريفي؟","hint":"استغل قوة الجاذبية الأرضية عشان تزيد من المسافة اللي بتقطعها في كل خطوة.","options":[{"label":"A","text":"الجري بالارتكاز على الكعب","isCorrect":false,"rationale":"الارتكاز على الكعب بيقلل من السرعة وبيزود الصدمات على المفاصل، ولازم نتجنبه في كل أنواع الجري."},{"label":"B","text":"زيادة طول الخطوات","isCorrect":true,"rationale":"الجاذبية بتساعد في المنحدرات، فتركيز العداء على طول الخطوة بيساعده يستغل السرعة الناتجة عن الميل."},{"label":"C","text":"زيادة معدل تكرار الخطوات","isCorrect":false,"rationale":"زيادة التكرار (التردد) بتكون هي النصيحة الأساسية عند الجري 'أعلى' التلة لمواجهة المقاومة."},{"label":"D","text":"تقصير طول الخطوة للأدنى","isCorrect":false,"rationale":"تقصير الخطوة بشكل مبالغ فيه بيضيع ميزة الجاذبية في المنحدرات وبيقلل من كفاءة الحركة."}]},{"question":"في 'السباق التتابعي المختلط'، إيه هي الطريقة المعتمدة لتسليم الدور بين أعضاء الفريق؟","hint":"فكر في حركة سريعة بالإيد بتأكد التواصل بين المتسابق اللي خلص واللي هيبدأ.","options":[{"label":"A","text":"تسليم عصا التتابع","isCorrect":false,"rationale":"رغم إنها الطريقة التقليدية، بس دليل البرنامج بيحدد ضرب التحية بالأيدي في بعض أنواع سباقات التتابع للأطفال."},{"label":"B","text":"تمرير زجاجة مياه","isCorrect":false,"rationale":"الأدوات زي الزجاجات بتستخدم كرايات بس مش هي الوسيلة الأساسية للتسليم في النسخة المختلطة المذكورة."},{"label":"C","text":"لمس الكتف من الخلف","isCorrect":false,"rationale":"لمس الكتف ممكن يسبب اختلال في التوازن أو اصطدام، والتحية بالكف بتكون أوضح وأسرع."},{"label":"D","text":"ضرب تحية بالأكف (هاي فايف)","isCorrect":true,"rationale":"في منطقة التسليم، بيضرب أعضاء الفريق كفوفهم ببعض كإشارة لبدء دور المتسابق التالي بدل العصا التقليدية."}]},{"question":"في مسابقة 'الوثب بعد خمس خطوات'، إيه اللي بيخلي المحاولة تعتبر غير صحيحة؟","hint":"فكر في الأخطاء الشائعة اللي بتحصل عند نقطة بداية القفز.","options":[{"label":"A","text":"الهبوط على القدمين معاً","isCorrect":false,"rationale":"الهبوط على القدمين مع بعض هو الوضع المفضل والآمن اللي القواعد بتشجع عليه لسلامة اللاعب."},{"label":"B","text":"الانطلاق بالارتكاز على قدم واحدة","isCorrect":false,"rationale":"الوثب لازم يبدأ بالارتكاز على قدم واحدة عشان يقدر اللاعب يولد قوة دفع كافية للقفز."},{"label":"C","text":"لمس خط الانطلاق أو تجاوزه","isCorrect":true,"rationale":"القواعد بتنص إن الانطلاق لازم يكون من ورا الخط، وأي لمس للخط بيخلي القفزة غير محسوبة."},{"label":"D","text":"اختيار مسافة ركض تحضيري $5$ أمتار","isCorrect":false,"rationale":"مسافة الـ $5$ أمتار مسموح بيها كحد أقصى لفئات عمرية معينة زي سن $12$ لـ $13$ سنة."}]},{"question":"فريق 'القفز الخماسي' لازم يتكون من كام لاعب حسب القواعد المذكورة؟","hint":"المسابقة بتعتمد على التوازن بين الولاد والبنات في الفريق.","options":[{"label":"A","text":"$8$ لاعبين حسب عدد مناطق الهبوط","isCorrect":false,"rationale":"عدد مناطق الهبوط الـ $8$ ده خاص بالقياس والمسافات، مش بعدد أعضاء الفريق المشارك."},{"label":"B","text":"$10$ لاعبين ($5$ فتيات و$5$ فتيان)","isCorrect":true,"rationale":"المسابقة مصممة كنشاط جماعي مختلط بيشجع على المساواة والمشاركة بين الجنسين بنفس العدد."},{"label":"C","text":"$5$ لاعبين من نفس الجنس","isCorrect":false,"rationale":"البرنامج بيركز على التنوع والعمل الجماعي المختلط، وتكوين فريق من جنس واحد بيخالف المبدأ ده."},{"label":"D","text":"$12$ لاعب مقسمين لمجموعتين","isCorrect":false,"rationale":"العدد المحدد في دليل التنظيم هو $10$ لاعبين بس لضمان سهولة الإدارة وحساب النقاط."}]},{"question":"أثناء أداء 'الرمي الجانبي' (أو الدوراني)، إيه هي النصيحة الأساسية للحفاظ على القوة والدقة؟","hint":"فكر في طول 'ذراع الرافعة' اللي بيساعد في رمي الحاجات لمسافات بعيدة.","options":[{"label":"A","text":"جعل الأداة تلمس راحة اليد بالكامل","isCorrect":false,"rationale":"الدليل بينصح بعدم لمس الأداة لراحة اليد لضمان تحكم أفضل بالأصابع وقت الإطلاق."},{"label":"B","text":"إبقاء ذراع الرمي ممدودة قدر المستطاع","isCorrect":true,"rationale":"مد الذراع بيخلق نصف قطر أكبر للدوران، وده بيزود السرعة المحيطية للأداة قبل ما تخرج من إيد اللاعب."},{"label":"C","text":"ثني الكوع بقوة أثناء الدوران","isCorrect":false,"rationale":"ثني الكوع بيقلل من عزم الدوران وبيخلي الرمية تفتقد للقوة الاندفاعية المطلوبة."},{"label":"D","text":"الوقوف بثبات بدون استخدام قوة الرجلين","isCorrect":false,"rationale":"القوة المتفجرة في الرمي بتيجي أساساً من الرجلين والجذع، مش من الذراع لوحدها."}]},{"question":"في مسار 'السباق التتابعي متعدد المهارات'، كام عدد المهام أو الأنشطة اللي لازم المتسابق يخلصها قبل ما يرجع لمنطقة التسليم؟","hint":"العدد ده بيمثل إجمالي المحطات اللي المتسابق بيعدي عليها في اللفة الواحدة.","options":[{"label":"A","text":"$3$ أنشطة أساسية","isCorrect":false,"rationale":"رغم وجود $3$ مجالات أساسية (ركض، قفز، رمي)، المسار ده بيصمم بـ $6$ محطات محددة."},{"label":"B","text":"$10$ أنشطة بعدد اللفات","isCorrect":false,"rationale":"عدد اللفات في العدو الريفي هو اللي $10$، لكن المهام في سباق المهارات عددها أقل ومكثف أكتر."},{"label":"C","text":"$6$ أنشطة","isCorrect":true,"rationale":"المخلص بيحدد إن المسار بيشتمل على $6$ مهام متنوعة لازم كل عضو في الفريق يخلصهم بالترتيب."},{"label":"D","text":"نشاط واحد بس","isCorrect":false,"rationale":"السباق اسمه 'متعدد المهارات' وده معناه إنه بيختبر أكتر من قدرة حركية في نفس اللفة."}]},{"question":"في 'القفز الخماسي'، إيه هو إيقاع القفز المطلوب في الجولة الأولى للمتسابقين؟","hint":"الإيقاع ده بيبدأ بالرجل اليمين مرتين ورا بعض.","options":[{"label":"A","text":"يسرى-يسرى-يمنى-يمنى-يسرى","isCorrect":false,"rationale":"ده الإيقاع المخصص للجولة الثانية، والبرنامج بيفرق بينهم عشان ينمي مهارات الرجلين بالتساوي."},{"label":"B","text":"خطوة-قفزة-خطوة-قفزة-هبوط","isCorrect":false,"rationale":"ده وصف عام للحركة مش الإيقاع التفصيلي للأقدام (يمنى ويسرى) اللي القواعد بتلزم بيه."},{"label":"C","text":"يمنى-يمنى-يمنى-يمنى-يمنى","isCorrect":false,"rationale":"القفز على نفس الرجل طول الوقت مش بيحقق هدف 'تبادل الحركات الثنائية' والتنسيق المطلوب."},{"label":"D","text":"يمنى-يمنى-يسرى-يسرى-يمنى","isCorrect":true,"rationale":"ده الإيقاع المحدد لتبادل الأقدام في الجولة الأولى لضمان اختبار التوازن على الناحيتين بشكل منتظم."}]},{"question":"ليه برنامج 'ألعاب القوى للأطفال' بيستخدم 'شجرة المهارات'؟","hint":"فكر في معنى الاختصار $PI$ اللي بيركز على اللاعب نفسه مش على منافسيه.","options":[{"label":"A","text":"لحساب السعرات الحرارية اللي اتحرقت","isCorrect":false,"rationale":"التركيز الأساسي هو تعليم المهارات الحركية والقيم الرياضية، مش القياسات الطبية أو الحيوية."},{"label":"B","text":"لتحقيق التطور الشخصي ($PI$) للاعب","isCorrect":true,"rationale":"الهدف مش مقارنة الطفل بغيره، لكن إنه يرتقي في المستويات من $1$ لـ $5$ بناءً على مهاراته هو."},{"label":"C","text":"لاستبعاد الأطفال اللي مش بيعرفوا ينطوا","isCorrect":false,"rationale":"البرنامج بيصلح 'لجميع' الأطفال والشباب بغض النظر عن قدراتهم الحالية وبيشجعهم يتعلموا."},{"label":"D","text":"لتحديد مين أسرع طفل في الفريق","isCorrect":false,"rationale":"البرنامج بيركز على التطور الفردي والمشاركة، مش بس على اختيار أسرع حد أو النخبة الرياضية."}]},{"question":"إيه هو التصرف الصحيح للمسؤول لو متسابق بدأ الجري قبل كلمة 'انطلق' في سباق العدو الريفي؟","hint":"الهدف هو تعليم المتسابقين الصبر والالتزام بالقواعد بدون حرمانهم من المشاركة.","options":[{"label":"A","text":"استبعاد المتسابق فوراً من السباق","isCorrect":false,"rationale":"منهجية البرنامج تعليمية وتربوية، فبيتم تجنب الاستبعاد عشان ميتسببش في إحباط الأطفال."},{"label":"B","text":"خصم شارة واحدة من رصيد المتسابق","isCorrect":false,"rationale":"الشارات بتستخدم لعد اللفات بس، ومش بتستخدم كعقوبات على أخطاء البداية."},{"label":"C","text":"إطلاق الصافرة لاستدعاء اللاعبين والبدء من جديد","isCorrect":true,"rationale":"القواعد بتقول مفيش استبعاد للاعبين، بس لازم يتم التنبيه والبدء مرة تانية بشكل صحيح."},{"label":"D","text":"إضافة $10$ ثوانٍ لوقت المتسابق النهائي","isCorrect":false,"rationale":"الجزاءات الزمنية مش هي الطريقة المفضلة للتعامل مع أخطاء البداية في المستوى ده من البرنامج."}]}];
+const tr = {"correct":"صحيح!","incorrect":"خطأ","next":"السؤال التالي ←","seeResults":"عرض النتائج","complete":"اكتمل الاختبار!","scoreText":"أجبت {correct} من {total} بشكل صحيح","tryAgain":"حاول مرة أخرى","rightAnswer":"إجابة صحيحة","notQuite":"ليس تماماً"};
+let currentQ = 0, correctCount = 0, streak = 0, answered = false;
+const CONFETTI_COLORS = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#1dd1a1'];
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  updateStreakBadge();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function updateStreakBadge() {
+  const badge = document.getElementById('streak-badge');
+  if (!badge) return;
+  badge.textContent = streak >= 2 ? ('🔥 ' + streak) : '';
+}
+
+function burstConfetti() {
+  for (let i = 0; i < 24; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+    piece.style.animationDuration = (1.6 + Math.random() * 1.2) + 's';
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 3000);
+  }
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+
+  options.forEach(o => o.classList.add('disabled'));
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+
+  if (isCorrect) { correctCount++; streak++; burstConfetti(); } else { streak = 0; }
+  updateStreakBadge();
+
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect ? ('🎉 ' + tr.rightAnswer) : ('😅 ' + tr.notQuite);
+    }
+  });
+
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = '🏁 ' + tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+  updateStreakBadge();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  const starCount = Math.max(1, Math.round(pct / 20));
+  document.getElementById('stars').textContent = '⭐'.repeat(starCount) + '☆'.repeat(5 - starCount);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+  if (pct >= 80) burstConfetti();
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; streak = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+  updateStreakBadge();
+}
+
+init();
+</script>
+</body>
+</html>
