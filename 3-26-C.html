@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بطاقات التحكيم الـ 60 - إدارة وتطوير الحكام</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #0f766e;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 10px;
+        }
+
+        header h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            max-width: 1200px;
+            margin: 0 auto 30px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 30px;
+            border: 2px solid #e2e8f0;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        .categories-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .cat-btn {
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .cat-btn:hover, .cat-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            border-top: 5px solid var(--primary-light);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-number {
+            background: #eff6ff;
+            color: var(--primary-light);
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .card-category {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            font-weight: 700;
+            background: #f0fdf4;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .card-question {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            font-weight: 500;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border-right: 3px solid var(--accent);
+        }
+
+        .card-answer {
+            font-size: 0.92rem;
+            color: #334155;
+            line-height: 1.6;
+            margin-top: 10px;
+            display: none;
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .card-answer.show {
+            display: block;
+        }
+
+        .toggle-btn {
+            margin-top: 15px;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary);
+            color: #ffffff;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            background: var(--primary-light);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>بطاقات التحكيم الـ 60 الشاملة</h1>
+        <p>دليل إدارة المنافسات وتطوير الحكام في ألعاب القوى</p>
+    </header>
+
+    <div class="controls">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="ابحث في بطاقات التحكيم..." onkeyup="filterCards()">
+        </div>
+
+        <div class="categories-filter" id="categoriesFilter">
+            <button class="cat-btn active" onclick="filterCategory('all', this)">الكل (60)</button>
+            <button class="cat-btn" onclick="filterCategory('الإداريون الدوليون وطاقم إدارة المنافسات', this)">الإداريون الدوليون وطاقم إدارة المنافسات (10)</button>
+            <button class="cat-btn" onclick="filterCategory('البطاقات الملونة والإشارات الميدانية في ألعاب القوى', this)">البطاقات الملونة والإشارات الميدانية في ألعاب القوى (10)</button>
+            <button class="cat-btn" onclick="filterCategory('الهيكل التنظيمي ورئاسة لجنة الحكام', this)">الهيكل التنظيمي ورئاسة لجنة الحكام (10)</button>
+            <button class="cat-btn" onclick="filterCategory('فئات الحكام ودرجاتهم والترقيات', this)">فئات الحكام ودرجاتهم والترقيات (10)</button>
+            <button class="cat-btn" onclick="filterCategory('فلسفة التحكيم والشروط والسلوك الميداني', this)">فلسفة التحكيم والشروط والسلوك الميداني (10)</button>
+            <button class="cat-btn" onclick="filterCategory('واجبات وصلاحيات رئيس واللجنة والعقوبات', this)">واجبات وصلاحيات رئيس واللجنة والعقوبات (10)</button>
+        </div>
+    </div>
+
+    <div class="cards-grid" id="cardsGrid">
+        <div class="card" data-category="الهيكل التنظيمي ورئاسة لجنة الحكام" data-search="الصفة الإدارية لرئيس لجنة الحكام (الأصل) ما هي الصفة الإدارية الأصلية لرئيس لجنة الحكام في الاتحادات الرياضية وكيف يتولى منصبه؟ الأصل أن يكون رئيس لجنة الحكام عضواً بمجلس إدارة الاتحاد منتخباً من الجمعية العمومية، وتكليفه برئاسة اللجنة يتم في أول اجتماع لمجلس الإدارة عند توزيع المناصب الإدارية.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #1</span>
+                    <span class="card-category">الهيكل التنظيمي ورئاسة لجنة الحكام</span>
+                </div>
+                <h3 class="card-title">الصفة الإدارية لرئيس لجنة الحكام (الأصل)</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي الصفة الإدارية الأصلية لرئيس لجنة الحكام في الاتحادات الرياضية وكيف يتولى منصبه؟</div>
+                <div class="card-answer" id="ans-1"><strong>الإجابة:</strong> الأصل أن يكون رئيس لجنة الحكام عضواً بمجلس إدارة الاتحاد منتخباً من الجمعية العمومية، وتكليفه برئاسة اللجنة يتم في أول اجتماع لمجلس الإدارة عند توزيع المناصب الإدارية.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(1, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الهيكل التنظيمي ورئاسة لجنة الحكام" data-search="الهدف من كون رئيس اللجنة عضو مجلس إدارة لماذا يُفضل أن يكون رئيس لجنة الحكام عضواً منتخباً في مجلس إدارة الاتحاد؟ ليكون حلقة وصل مباشرة وسريعة ونشطة بين الحكام ومجلس الإدارة، مما يسهل نقل قضاياهم ومشاكلهم ومطالبهم ومقترحاتهم إلى مجلس الإدارة مباشرة.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #2</span>
+                    <span class="card-category">الهيكل التنظيمي ورئاسة لجنة الحكام</span>
+                </div>
+                <h3 class="card-title">الهدف من كون رئيس اللجنة عضو مجلس إدارة</h3>
+                <div class="card-question"><strong>السؤال:</strong> لماذا يُفضل أن يكون رئيس لجنة الحكام عضواً منتخباً في مجلس إدارة الاتحاد؟</div>
+                <div class="card-answer" id="ans-2"><strong>الإجابة:</strong> ليكون حلقة وصل مباشرة وسريعة ونشطة بين الحكام ومجلس الإدارة، مما يسهل نقل قضاياهم ومشاكلهم ومطالبهم ومقترحاتهم إلى مجلس الإدارة مباشرة.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(2, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الهيكل التنظيمي ورئاسة لجنة الحكام" data-search="التعيين الاستثنائي لرئيس لجنة الحكام متى وكيف يتم تعيين رئيس لجنة الحكام من خارج أعضاء مجلس الإدارة؟ يتم تعيينه من الخارج إذا لم يتوفر بين أعضاء مجلس الإدارة المنتخَبين حكم أو خبير فني، فيختار مجلس الإدارة شخصاً خبيراً من بين الحكام العاملين أو غير العاملين ليكون حلقة وصل مع المجلس.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #3</span>
+                    <span class="card-category">الهيكل التنظيمي ورئاسة لجنة الحكام</span>
+                </div>
+                <h3 class="card-title">التعيين الاستثنائي لرئيس لجنة الحكام</h3>
+                <div class="card-question"><strong>السؤال:</strong> متى وكيف يتم تعيين رئيس لجنة الحكام من خارج أعضاء مجلس الإدارة؟</div>
+                <div class="card-answer" id="ans-3"><strong>الإجابة:</strong> يتم تعيينه من الخارج إذا لم يتوفر بين أعضاء مجلس الإدارة المنتخَبين حكم أو خبير فني، فيختار مجلس الإدارة شخصاً خبيراً من بين الحكام العاملين أو غير العاملين ليكون حلقة وصل مع المجلس.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(3, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الهيكل التنظيمي ورئاسة لجنة الحكام" data-search="العدد الاشتراطي لأعضاء لجنة الحكام ما المشترط في عدد أعضاء لجنة الحكام ولماذا؟ يُشترط أن يكون إجمالي عدد الأعضاء مع الرئيس عدداً فردياً (مثل 5 أو 7 أو 9 أعضاء) لضمان ترجيح كفة التصويت وحسم القرارات عند اتخاذها.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #4</span>
+                    <span class="card-category">الهيكل التنظيمي ورئاسة لجنة الحكام</span>
+                </div>
+                <h3 class="card-title">العدد الاشتراطي لأعضاء لجنة الحكام</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما المشترط في عدد أعضاء لجنة الحكام ولماذا؟</div>
+                <div class="card-answer" id="ans-4"><strong>الإجابة:</strong> يُشترط أن يكون إجمالي عدد الأعضاء مع الرئيس عدداً فردياً (مثل 5 أو 7 أو 9 أعضاء) لضمان ترجيح كفة التصويت وحسم القرارات عند اتخاذها.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(4, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الهيكل التنظيمي ورئاسة لجنة الحكام" data-search="اختيار أعضاء اللجنة بالانتخاب كيف تتم عملية اختيار أعضاء لجنة الحكام عن طريق الانتخاب؟ تُدعى الجمعية العمومية للحكام العاملين لاجتماع بحضور رئيس اللجنة، ويُفتح باب الترشيح للموجودين ثم يُجرى تصويت مباشر لانتخاب العدد المطلوب بعضوية اللجنة.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #5</span>
+                    <span class="card-category">الهيكل التنظيمي ورئاسة لجنة الحكام</span>
+                </div>
+                <h3 class="card-title">اختيار أعضاء اللجنة بالانتخاب</h3>
+                <div class="card-question"><strong>السؤال:</strong> كيف تتم عملية اختيار أعضاء لجنة الحكام عن طريق الانتخاب؟</div>
+                <div class="card-answer" id="ans-5"><strong>الإجابة:</strong> تُدعى الجمعية العمومية للحكام العاملين لاجتماع بحضور رئيس اللجنة، ويُفتح باب الترشيح للموجودين ثم يُجرى تصويت مباشر لانتخاب العدد المطلوب بعضوية اللجنة.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(5, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الهيكل التنظيمي ورئاسة لجنة الحكام" data-search="اختيار أعضاء اللجنة بالتعيين وأسبابه لماذا تفضل بعض الاتحادات آلية التعيين المباشر لأعضاء لجنة الحكام بدلاً من الانتخاب؟ لأن التعيين يتيح لرئيس اللجنة اختيار أفضل الخبرات الفنية والعناصر المتكافئة المتفاهمة معه، وتجنب ما قد تفرزه الانتخابات من التكتلات أو خسارة الكفاءات الفنية.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #6</span>
+                    <span class="card-category">الهيكل التنظيمي ورئاسة لجنة الحكام</span>
+                </div>
+                <h3 class="card-title">اختيار أعضاء اللجنة بالتعيين وأسبابه</h3>
+                <div class="card-question"><strong>السؤال:</strong> لماذا تفضل بعض الاتحادات آلية التعيين المباشر لأعضاء لجنة الحكام بدلاً من الانتخاب؟</div>
+                <div class="card-answer" id="ans-6"><strong>الإجابة:</strong> لأن التعيين يتيح لرئيس اللجنة اختيار أفضل الخبرات الفنية والعناصر المتكافئة المتفاهمة معه، وتجنب ما قد تفرزه الانتخابات من التكتلات أو خسارة الكفاءات الفنية.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(6, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الهيكل التنظيمي ورئاسة لجنة الحكام" data-search="دور مقرر لجنة الحكام ما هي مهام مقرر لجنة الحكام وما دوره عند غياب الرئيس؟ يتولى المقرر كتدوين المحاضر، إعداد السجلات، والترتيبات الكتابية اللازمة، كما يتولى رئاسة الجلسة في حال غياب رئيس اللجنة إذا لم ينص النظام على وجود نائب للرئيس.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #7</span>
+                    <span class="card-category">الهيكل التنظيمي ورئاسة لجنة الحكام</span>
+                </div>
+                <h3 class="card-title">دور مقرر لجنة الحكام</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي مهام مقرر لجنة الحكام وما دوره عند غياب الرئيس؟</div>
+                <div class="card-answer" id="ans-7"><strong>الإجابة:</strong> يتولى المقرر كتدوين المحاضر، إعداد السجلات، والترتيبات الكتابية اللازمة، كما يتولى رئاسة الجلسة في حال غياب رئيس اللجنة إذا لم ينص النظام على وجود نائب للرئيس.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(7, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الهيكل التنظيمي ورئاسة لجنة الحكام" data-search="مدة عضوية لجنة الحكام كيف تحدد مدة عضوية لجنة الحكام ومتى تنتهي رسمياً؟ تحدد بقرار من مجلس الإدارة وترتبط بالدورة الأولمبية (4 سنوات عادة)، وتنتهي مدة عمل اللجنة تلقائياً بانتهاء أو حل مجلس إدارة الاتحاد.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #8</span>
+                    <span class="card-category">الهيكل التنظيمي ورئاسة لجنة الحكام</span>
+                </div>
+                <h3 class="card-title">مدة عضوية لجنة الحكام</h3>
+                <div class="card-question"><strong>السؤال:</strong> كيف تحدد مدة عضوية لجنة الحكام ومتى تنتهي رسمياً؟</div>
+                <div class="card-answer" id="ans-8"><strong>الإجابة:</strong> تحدد بقرار من مجلس الإدارة وترتبط بالدورة الأولمبية (4 سنوات عادة)، وتنتهي مدة عمل اللجنة تلقائياً بانتهاء أو حل مجلس إدارة الاتحاد.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(8, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الهيكل التنظيمي ورئاسة لجنة الحكام" data-search="اجتماعات لجنة الحكام ما هو النظام المتبع لعقد اجتماعات لجنة الحكام ومن يملك حق الدعوة إليها؟ تعقد الاجتماعات بصفة دورية وكلما دعت الحاجة لذلك، بناءً على دعوة رسمية يوجهها رئيس لجنة الحكام إلى جميع الأعضاء.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #9</span>
+                    <span class="card-category">الهيكل التنظيمي ورئاسة لجنة الحكام</span>
+                </div>
+                <h3 class="card-title">اجتماعات لجنة الحكام</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هو النظام المتبع لعقد اجتماعات لجنة الحكام ومن يملك حق الدعوة إليها؟</div>
+                <div class="card-answer" id="ans-9"><strong>الإجابة:</strong> تعقد الاجتماعات بصفة دورية وكلما دعت الحاجة لذلك، بناءً على دعوة رسمية يوجهها رئيس لجنة الحكام إلى جميع الأعضاء.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(9, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الهيكل التنظيمي ورئاسة لجنة الحكام" data-search="اختصاصات لجنة الحكام الحصرية ما هي الحدود التنظيمية لاختصاصات لجنة الحكام داخل الاتحاد؟ تختص اللجنة حكراً بشؤون التحكيم والحكام وتنظيم إدارة المنافسات، ولا تتدخل مطلقاً في شؤون المنتخبات الوطنية أو الفرق الأهلية أو الأمور الإعلامية.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #10</span>
+                    <span class="card-category">الهيكل التنظيمي ورئاسة لجنة الحكام</span>
+                </div>
+                <h3 class="card-title">اختصاصات لجنة الحكام الحصرية</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي الحدود التنظيمية لاختصاصات لجنة الحكام داخل الاتحاد؟</div>
+                <div class="card-answer" id="ans-10"><strong>الإجابة:</strong> تختص اللجنة حكراً بشؤون التحكيم والحكام وتنظيم إدارة المنافسات، ولا تتدخل مطلقاً في شؤون المنتخبات الوطنية أو الفرق الأهلية أو الأمور الإعلامية.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(10, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فئات الحكام ودرجاتهم والترقيات" data-search="تعريف الحكم العامل من هو الحكم العامل وفق اللوائح التنظيمية للتحكيم؟ هو الحكم الذي يزاول التحكيم والعمل الميداني بانتظام في مختلف البرامج والبطولات التي ينظمها أو يشرف عليها الاتحاد.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #11</span>
+                    <span class="card-category">فئات الحكام ودرجاتهم والترقيات</span>
+                </div>
+                <h3 class="card-title">تعريف الحكم العامل</h3>
+                <div class="card-question"><strong>السؤال:</strong> من هو الحكم العامل وفق اللوائح التنظيمية للتحكيم؟</div>
+                <div class="card-answer" id="ans-11"><strong>الإجابة:</strong> هو الحكم الذي يزاول التحكيم والعمل الميداني بانتظام في مختلف البرامج والبطولات التي ينظمها أو يشرف عليها الاتحاد.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(11, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فئات الحكام ودرجاتهم والترقيات" data-search="تعريف الحكم غير العامل وشروط عودته من هو الحكم غير العامل وما هي كيفية إعادة قيده كحكم عامل؟ هو حكم انقطع عن التحكيم لظروف خاصة أو بطلبه أو بقرار عقوبة إدارية. ويجوز إعادته كحكم عامل بعد اجتياز الامتحانات المطلوبة لنفس درجته.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #12</span>
+                    <span class="card-category">فئات الحكام ودرجاتهم والترقيات</span>
+                </div>
+                <h3 class="card-title">تعريف الحكم غير العامل وشروط عودته</h3>
+                <div class="card-question"><strong>السؤال:</strong> من هو الحكم غير العامل وما هي كيفية إعادة قيده كحكم عامل؟</div>
+                <div class="card-answer" id="ans-12"><strong>الإجابة:</strong> هو حكم انقطع عن التحكيم لظروف خاصة أو بطلبه أو بقرار عقوبة إدارية. ويجوز إعادته كحكم عامل بعد اجتياز الامتحانات المطلوبة لنفس درجته.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(12, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فئات الحكام ودرجاتهم والترقيات" data-search="تعريف الحكم المتقاعد متى يُصنف الحكم كـ 'حكم متقاعد'؟ عندما يظل مسجلاً في كشوف الحكام غير العاملين لأكثر من موسمين متتاليين دون ممارسة، أو إذا تقدم بطلب اعتزال رسمي للتحكيم.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #13</span>
+                    <span class="card-category">فئات الحكام ودرجاتهم والترقيات</span>
+                </div>
+                <h3 class="card-title">تعريف الحكم المتقاعد</h3>
+                <div class="card-question"><strong>السؤال:</strong> متى يُصنف الحكم كـ 'حكم متقاعد'؟</div>
+                <div class="card-answer" id="ans-13"><strong>الإجابة:</strong> عندما يظل مسجلاً في كشوف الحكام غير العاملين لأكثر من موسمين متتاليين دون ممارسة، أو إذا تقدم بطلب اعتزال رسمي للتحكيم.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(13, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فئات الحكام ودرجاتهم والترقيات" data-search="حكم الدرجة الثالثة ما هي متطلبات الحصول على درجة 'حكم درجة ثالثة'؟ هو حكم جديد اجتاز دراسات واختبارات التحكيم المستجدة التي يقيمها الاتحاد، وأمضى سنة واحدة على الأقل في ممارسة التحكيم.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #14</span>
+                    <span class="card-category">فئات الحكام ودرجاتهم والترقيات</span>
+                </div>
+                <h3 class="card-title">حكم الدرجة الثالثة</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي متطلبات الحصول على درجة 'حكم درجة ثالثة'؟</div>
+                <div class="card-answer" id="ans-14"><strong>الإجابة:</strong> هو حكم جديد اجتاز دراسات واختبارات التحكيم المستجدة التي يقيمها الاتحاد، وأمضى سنة واحدة على الأقل في ممارسة التحكيم.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(14, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فئات الحكام ودرجاتهم والترقيات" data-search="الترقية للدرجة الثانية ما هي شروط الترقية من حكم درجة ثالثة إلى حكم درجة ثانية؟ أن يمضي الحكم سنتين كاملتين في ممارسة التحكيم بالدرجة الثالثة، ويتأهل لدخول امتحان الترقية ويحصل على نسبة النجاح المقررة.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #15</span>
+                    <span class="card-category">فئات الحكام ودرجاتهم والترقيات</span>
+                </div>
+                <h3 class="card-title">الترقية للدرجة الثانية</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي شروط الترقية من حكم درجة ثالثة إلى حكم درجة ثانية؟</div>
+                <div class="card-answer" id="ans-15"><strong>الإجابة:</strong> أن يمضي الحكم سنتين كاملتين في ممارسة التحكيم بالدرجة الثالثة، ويتأهل لدخول امتحان الترقية ويحصل على نسبة النجاح المقررة.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(15, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فئات الحكام ودرجاتهم والترقيات" data-search="الترقية للدرجة الأولى ما هي شروط الترقية من حكم درجة ثانية إلى حكم درجة أولى؟ أن يمضي الحكم سنتين كاملتين في التحكيم بالدرجة الثانية، ويجتاز امتحانات الترقية (الشفهية والتحريرية والعملية) المخصصة للدرجة الأولى.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #16</span>
+                    <span class="card-category">فئات الحكام ودرجاتهم والترقيات</span>
+                </div>
+                <h3 class="card-title">الترقية للدرجة الأولى</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي شروط الترقية من حكم درجة ثانية إلى حكم درجة أولى؟</div>
+                <div class="card-answer" id="ans-16"><strong>الإجابة:</strong> أن يمضي الحكم سنتين كاملتين في التحكيم بالدرجة الثانية، ويجتاز امتحانات الترقية (الشفهية والتحريرية والعملية) المخصصة للدرجة الأولى.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(16, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فئات الحكام ودرجاتهم والترقيات" data-search="الشارات الدولية الرسمية للتحكيم ما هي الشارات الدولية الرسمية المعتمدة حالياً للحكام من الاتحاد العالمي لألعاب القوى؟ تتمثل في الشارات الدولية الثلاث: الشارة البرونزية، الشارة الفضية، والشارة الذهبية، بعد اجتياز الدراسات والامتحانات المعتمدة دولياً.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #17</span>
+                    <span class="card-category">فئات الحكام ودرجاتهم والترقيات</span>
+                </div>
+                <h3 class="card-title">الشارات الدولية الرسمية للتحكيم</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي الشارات الدولية الرسمية المعتمدة حالياً للحكام من الاتحاد العالمي لألعاب القوى؟</div>
+                <div class="card-answer" id="ans-17"><strong>الإجابة:</strong> تتمثل في الشارات الدولية الثلاث: الشارة البرونزية، الشارة الفضية، والشارة الذهبية، بعد اجتياز الدراسات والامتحانات المعتمدة دولياً.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(17, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فئات الحكام ودرجاتهم والترقيات" data-search="شرط اللغة الإنجليزية للشارات الدولية لماذا تُعد إتقان اللغة الإنجليزية شرطاً حاسماً للحكام للحصول على الشارتين الفضية والذهبية؟ لأن إدارة البطولات العالمية والتعامل الميداني مع اللاعبين والمدربين والاتحاد الدولي والمراسلات تتم بالكامل باللغة الإنجليزية بطلاقة.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #18</span>
+                    <span class="card-category">فئات الحكام ودرجاتهم والترقيات</span>
+                </div>
+                <h3 class="card-title">شرط اللغة الإنجليزية للشارات الدولية</h3>
+                <div class="card-question"><strong>السؤال:</strong> لماذا تُعد إتقان اللغة الإنجليزية شرطاً حاسماً للحكام للحصول على الشارتين الفضية والذهبية؟</div>
+                <div class="card-answer" id="ans-18"><strong>الإجابة:</strong> لأن إدارة البطولات العالمية والتعامل الميداني مع اللاعبين والمدربين والاتحاد الدولي والمراسلات تتم بالكامل باللغة الإنجليزية بطلاقة.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(18, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فئات الحكام ودرجاتهم والترقيات" data-search="نسب النجاح واختبارات الصقل كيف تحدد مستويات النجاح في امتحانات ترقية وصقل الحكام؟ تضع لجنة الحكام نسباً مئوية محددة كحد أدنى للنجاح لكل درجة تحكيمية، وتشمل الاختبارات الشفهية والنظرية والعملية.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #19</span>
+                    <span class="card-category">فئات الحكام ودرجاتهم والترقيات</span>
+                </div>
+                <h3 class="card-title">نسب النجاح واختبارات الصقل</h3>
+                <div class="card-question"><strong>السؤال:</strong> كيف تحدد مستويات النجاح في امتحانات ترقية وصقل الحكام؟</div>
+                <div class="card-answer" id="ans-19"><strong>الإجابة:</strong> تضع لجنة الحكام نسباً مئوية محددة كحد أدنى للنجاح لكل درجة تحكيمية، وتشمل الاختبارات الشفهية والنظرية والعملية.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(19, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فئات الحكام ودرجاتهم والترقيات" data-search="حظر الجمع بين التحكيم والتدريب هل يجوز للحكم العامل ممارسة التدريب أو الإشراف على الأندية في نفس الوقت؟ يحظر ذلك في أغلب الاتحادات؛ إذ يجب ألا تكون للحكم أي علاقة بالتدريب أو الإشراف على اللعبة (بأجر أو بدون أجر) لمنع التضارب وازدواجية المصالح.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #20</span>
+                    <span class="card-category">فئات الحكام ودرجاتهم والترقيات</span>
+                </div>
+                <h3 class="card-title">حظر الجمع بين التحكيم والتدريب</h3>
+                <div class="card-question"><strong>السؤال:</strong> هل يجوز للحكم العامل ممارسة التدريب أو الإشراف على الأندية في نفس الوقت؟</div>
+                <div class="card-answer" id="ans-20"><strong>الإجابة:</strong> يحظر ذلك في أغلب الاتحادات؛ إذ يجب ألا تكون للحكم أي علاقة بالتدريب أو الإشراف على اللعبة (بأجر أو بدون أجر) لمنع التضارب وازدواجية المصالح.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(20, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="واجبات وصلاحيات رئيس واللجنة والعقوبات" data-search="الإشراف وتوزيع التكاليف الميدانية ما هي مسؤولية لجنة الحكام في توزيع المهام الميدانية للبطولات؟ تتولى الإشراف الكامل على تحكيم البطولات وتعيين الحكام وتوزيعهم على مختلف المسابقات (ميدان، مضمار، مشي، مسابقات مركبة، غرفة مناداة) بحسب الاختصاص.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #21</span>
+                    <span class="card-category">واجبات وصلاحيات رئيس واللجنة والعقوبات</span>
+                </div>
+                <h3 class="card-title">الإشراف وتوزيع التكاليف الميدانية</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي مسؤولية لجنة الحكام في توزيع المهام الميدانية للبطولات؟</div>
+                <div class="card-answer" id="ans-21"><strong>الإجابة:</strong> تتولى الإشراف الكامل على تحكيم البطولات وتعيين الحكام وتوزيعهم على مختلف المسابقات (ميدان، مضمار، مشي، مسابقات مركبة، غرفة مناداة) بحسب الاختصاص.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(21, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="واجبات وصلاحيات رئيس واللجنة والعقوبات" data-search="الترشيح للبطولات والدراسات الخارجية ما هي آلية اعتماد ترشيحات الحكام للمشاركات والدراسات الخارجية؟ ترفع لجنة الحكام توصياتها بأسماء الحكام المرشحين لمجلس الإدارة، وتعتبر التوصية غير نافذة إلا بعد اعتمادها الرسمى من مجلس الإدارة.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #22</span>
+                    <span class="card-category">واجبات وصلاحيات رئيس واللجنة والعقوبات</span>
+                </div>
+                <h3 class="card-title">الترشيح للبطولات والدراسات الخارجية</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي آلية اعتماد ترشيحات الحكام للمشاركات والدراسات الخارجية؟</div>
+                <div class="card-answer" id="ans-22"><strong>الإجابة:</strong> ترفع لجنة الحكام توصياتها بأسماء الحكام المرشحين لمجلس الإدارة، وتعتبر التوصية غير نافذة إلا بعد اعتمادها الرسمى من مجلس الإدارة.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(22, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="واجبات وصلاحيات رئيس واللجنة والعقوبات" data-search="إعداد مشروع الميزانية السنوية لماذا تلتزم لجنة الحكام بإعداد مشروع ميزانية سنوية تقديرية للاتحاد؟ لحساب تكاليف ومكافآت وبدلات التحكيم بناءً على برنامج المسابقات، وتجنب إحراج أو مفاجأة مجلس الإدارة بمبالغ مالية غير مرصودة.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #23</span>
+                    <span class="card-category">واجبات وصلاحيات رئيس واللجنة والعقوبات</span>
+                </div>
+                <h3 class="card-title">إعداد مشروع الميزانية السنوية</h3>
+                <div class="card-question"><strong>السؤال:</strong> لماذا تلتزم لجنة الحكام بإعداد مشروع ميزانية سنوية تقديرية للاتحاد؟</div>
+                <div class="card-answer" id="ans-23"><strong>الإجابة:</strong> لحساب تكاليف ومكافآت وبدلات التحكيم بناءً على برنامج المسابقات، وتجنب إحراج أو مفاجأة مجلس الإدارة بمبالغ مالية غير مرصودة.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(23, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="واجبات وصلاحيات رئيس واللجنة والعقوبات" data-search="التقرير السنوي الشامل متى يُقدم التقرير السنوي للجنة الحكام وما هي محتوياته؟ يُقدم في نهاية كل موسم رياضي لمجلس الإدارة، ويستعرض تقييماً شاملاً للسلبيات والإيجابيات والاحتياجات والتوصيات لتطوير التحكيم للموسم القادم.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #24</span>
+                    <span class="card-category">واجبات وصلاحيات رئيس واللجنة والعقوبات</span>
+                </div>
+                <h3 class="card-title">التقرير السنوي الشامل</h3>
+                <div class="card-question"><strong>السؤال:</strong> متى يُقدم التقرير السنوي للجنة الحكام وما هي محتوياته؟</div>
+                <div class="card-answer" id="ans-24"><strong>الإجابة:</strong> يُقدم في نهاية كل موسم رياضي لمجلس الإدارة، ويستعرض تقييماً شاملاً للسلبيات والإيجابيات والاحتياجات والتوصيات لتطوير التحكيم للموسم القادم.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(24, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="واجبات وصلاحيات رئيس واللجنة والعقوبات" data-search="الفصل في الشكاوى المتعلقة بالحكام ما هي الجهة المخولة حصرياً بالبت والفصل في الشكاوى الخاصة بالحكام؟ لجنة الحكام هي الجهة الحصرية المخولة بالبحث والفصل في كافة الشكاوى المتعلقة بالحكام وأدائهم الميداني.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #25</span>
+                    <span class="card-category">واجبات وصلاحيات رئيس واللجنة والعقوبات</span>
+                </div>
+                <h3 class="card-title">الفصل في الشكاوى المتعلقة بالحكام</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي الجهة المخولة حصرياً بالبت والفصل في الشكاوى الخاصة بالحكام؟</div>
+                <div class="card-answer" id="ans-25"><strong>الإجابة:</strong> لجنة الحكام هي الجهة الحصرية المخولة بالبحث والفصل في كافة الشكاوى المتعلقة بالحكام وأدائهم الميداني.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(25, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="واجبات وصلاحيات رئيس واللجنة والعقوبات" data-search="تدرج العقوبات الإدارية على الحكام ما هو التدرج القانوني للعقوبات التي تقترحها لجنة الحكام على الحكم المخالف؟ تبدأ بلفت النظر، ثم الإنذار، ثم الإنذار النهائي، ثم الإيقاف لفترة محددة، ويتم رفع التوصية لمجلس الإدارة للاعتماد.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #26</span>
+                    <span class="card-category">واجبات وصلاحيات رئيس واللجنة والعقوبات</span>
+                </div>
+                <h3 class="card-title">تدرج العقوبات الإدارية على الحكام</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هو التدرج القانوني للعقوبات التي تقترحها لجنة الحكام على الحكم المخالف؟</div>
+                <div class="card-answer" id="ans-26"><strong>الإجابة:</strong> تبدأ بلفت النظر، ثم الإنذار، ثم الإنذار النهائي، ثم الإيقاف لفترة محددة، ويتم رفع التوصية لمجلس الإدارة للاعتماد.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(26, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="واجبات وصلاحيات رئيس واللجنة والعقوبات" data-search="إجراءات شطب الحكم نهائياً كيف يتم تطبيق عقوبة شطب الحكم نهائياً وما هي أسبابها؟ تقترح لجنة الحكام شطب الحكم بناءً على أسباب فنية أو سلوكية قوية ومثبتة، ولا يعتبر قرار الشطب نافذاً إلا بعد دراسته واعتماده رسمياً من مجلس الإدارة.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #27</span>
+                    <span class="card-category">واجبات وصلاحيات رئيس واللجنة والعقوبات</span>
+                </div>
+                <h3 class="card-title">إجراءات شطب الحكم نهائياً</h3>
+                <div class="card-question"><strong>السؤال:</strong> كيف يتم تطبيق عقوبة شطب الحكم نهائياً وما هي أسبابها؟</div>
+                <div class="card-answer" id="ans-27"><strong>الإجابة:</strong> تقترح لجنة الحكام شطب الحكم بناءً على أسباب فنية أو سلوكية قوية ومثبتة، ولا يعتبر قرار الشطب نافذاً إلا بعد دراسته واعتماده رسمياً من مجلس الإدارة.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(27, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="واجبات وصلاحيات رئيس واللجنة والعقوبات" data-search="جزاء التغيب والتأخير عن المنافسات ما هي الجزاءات المترتبة على تأخر الحكم أو تغيبه عن المنافسة؟ تطبق لائحة الجزاءات (إنذار أو خصم أو توقيف)؛ حيث يُلزم الحكم بالحضور قبل البطولة بساعة على الأقل، ويُحاسب عند التأخير أو التغيب دون عذر مقبول.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #28</span>
+                    <span class="card-category">واجبات وصلاحيات رئيس واللجنة والعقوبات</span>
+                </div>
+                <h3 class="card-title">جزاء التغيب والتأخير عن المنافسات</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي الجزاءات المترتبة على تأخر الحكم أو تغيبه عن المنافسة؟</div>
+                <div class="card-answer" id="ans-28"><strong>الإجابة:</strong> تطبق لائحة الجزاءات (إنذار أو خصم أو توقيف)؛ حيث يُلزم الحكم بالحضور قبل البطولة بساعة على الأقل، ويُحاسب عند التأخير أو التغيب دون عذر مقبول.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(28, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="واجبات وصلاحيات رئيس واللجنة والعقوبات" data-search="السجل الفني والسيرة لكل حكم ما أهمية إنشاء ملف وسجل خاص لكل حكم داخل لجنة الحكام؟ يضم السجل كافة بيانات الحكم، تاريخ انضمامه، درجاته التحكيمية، الدورات والمشاركات والتقييمات، ليكون مرجعاً جاهزاً للترشيح والتقييم.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #29</span>
+                    <span class="card-category">واجبات وصلاحيات رئيس واللجنة والعقوبات</span>
+                </div>
+                <h3 class="card-title">السجل الفني والسيرة لكل حكم</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما أهمية إنشاء ملف وسجل خاص لكل حكم داخل لجنة الحكام؟</div>
+                <div class="card-answer" id="ans-29"><strong>الإجابة:</strong> يضم السجل كافة بيانات الحكم، تاريخ انضمامه، درجاته التحكيمية، الدورات والمشاركات والتقييمات، ليكون مرجعاً جاهزاً للترشيح والتقييم.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(29, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="واجبات وصلاحيات رئيس واللجنة والعقوبات" data-search="تطبيق مبدأ الثواب والعقاب كيف يساهم رئيس اللجنة في ضمان النزاهة والانضباط بين الحكام؟ من خلال المتابعة المستمرة لتقييم قراراتهم الميدانية وتطبيق مبدأ الثواب والعقاب وتحفيز المتميزين ومحاسبة المخالفين وفق اللوائح.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #30</span>
+                    <span class="card-category">واجبات وصلاحيات رئيس واللجنة والعقوبات</span>
+                </div>
+                <h3 class="card-title">تطبيق مبدأ الثواب والعقاب</h3>
+                <div class="card-question"><strong>السؤال:</strong> كيف يساهم رئيس اللجنة في ضمان النزاهة والانضباط بين الحكام؟</div>
+                <div class="card-answer" id="ans-30"><strong>الإجابة:</strong> من خلال المتابعة المستمرة لتقييم قراراتهم الميدانية وتطبيق مبدأ الثواب والعقاب وتحفيز المتميزين ومحاسبة المخالفين وفق اللوائح.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(30, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فلسفة التحكيم والشروط والسلوك الميداني" data-search="مبدأ تكافؤ الفرص والعدالة ماذا يعني مبدأ 'تكافؤ الفرص والعدالة' في فلسفة تحكيم ألعاب القوى؟ يعني التعامل مع جميع المتنافسين بسواسية مطلقاً أمام القانون، ودون منح أي لاعب (مهما بلغت نجوميته أو بطولاته) أي امتياز غير عادل على حساب الآخرين.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #31</span>
+                    <span class="card-category">فلسفة التحكيم والشروط والسلوك الميداني</span>
+                </div>
+                <h3 class="card-title">مبدأ تكافؤ الفرص والعدالة</h3>
+                <div class="card-question"><strong>السؤال:</strong> ماذا يعني مبدأ 'تكافؤ الفرص والعدالة' في فلسفة تحكيم ألعاب القوى؟</div>
+                <div class="card-answer" id="ans-31"><strong>الإجابة:</strong> يعني التعامل مع جميع المتنافسين بسواسية مطلقاً أمام القانون، ودون منح أي لاعب (مهما بلغت نجوميته أو بطولاته) أي امتياز غير عادل على حساب الآخرين.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(31, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فلسفة التحكيم والشروط والسلوك الميداني" data-search="المتنافس هو العنصر الأساسي ما هو المحور الأساسي لعمل جميع الحكام والإداريين داخل الملعب؟ المتنافس (اللاعب) هو العنصر الأساسي في البطولة، ووظيفة جميع الحكام والإداريين هي خادمة له لتهيئة أفضل الظروف الملائمة لتحقيق أرقامه وإنجازاته.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #32</span>
+                    <span class="card-category">فلسفة التحكيم والشروط والسلوك الميداني</span>
+                </div>
+                <h3 class="card-title">المتنافس هو العنصر الأساسي</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هو المحور الأساسي لعمل جميع الحكام والإداريين داخل الملعب؟</div>
+                <div class="card-answer" id="ans-32"><strong>الإجابة:</strong> المتنافس (اللاعب) هو العنصر الأساسي في البطولة، ووظيفة جميع الحكام والإداريين هي خادمة له لتهيئة أفضل الظروف الملائمة لتحقيق أرقامه وإنجازاته.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(32, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فلسفة التحكيم والشروط والسلوك الميداني" data-search="النزاهة والحيادية الميدانية كيف يتعامل الحكم العادل مع لاعب من نفس بلده أو بناءً على توصية مسؤول؟ يتعامل بنزاهة وحيادية تامة دون أي انحياز، فيحسب الخطأ على لاعبه بدقة ولا يخشى في الحق لومة لائم أو ضغوطات مسؤولي اتحاده.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #33</span>
+                    <span class="card-category">فلسفة التحكيم والشروط والسلوك الميداني</span>
+                </div>
+                <h3 class="card-title">النزاهة والحيادية الميدانية</h3>
+                <div class="card-question"><strong>السؤال:</strong> كيف يتعامل الحكم العادل مع لاعب من نفس بلده أو بناءً على توصية مسؤول؟</div>
+                <div class="card-answer" id="ans-33"><strong>الإجابة:</strong> يتعامل بنزاهة وحيادية تامة دون أي انحياز، فيحسب الخطأ على لاعبه بدقة ولا يخشى في الحق لومة لائم أو ضغوطات مسؤولي اتحاده.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(33, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فلسفة التحكيم والشروط والسلوك الميداني" data-search="المجال المعرفي ومتابعة المستجدات ما الواجب الفني على الحكم قبل توجهه لإدارة مسابقة معينة؟ أن يراجع كافة تفاصيل وقواعد ومستجدات قانون اللعبة المخصصة لهذه المسابقة تحديداُ، ليكون على دراية تامة بكل الحالات الفنية الاستثنائية.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #34</span>
+                    <span class="card-category">فلسفة التحكيم والشروط والسلوك الميداني</span>
+                </div>
+                <h3 class="card-title">المجال المعرفي ومتابعة المستجدات</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما الواجب الفني على الحكم قبل توجهه لإدارة مسابقة معينة؟</div>
+                <div class="card-answer" id="ans-34"><strong>الإجابة:</strong> أن يراجع كافة تفاصيل وقواعد ومستجدات قانون اللعبة المخصصة لهذه المسابقة تحديداُ، ليكون على دراية تامة بكل الحالات الفنية الاستثنائية.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(34, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فلسفة التحكيم والشروط والسلوك الميداني" data-search="الكفاءة البدنية والحركية للحكم لماذا يُشترط التمتع باللياقة البدنية العالية لحكام ألعاب القوى؟ لأن ملعب ألعاب القوى واسع ويتطلب الحركة والتحمل والوقوف لفترات طويلة، والقدرة على متابعة المسابقات بتركيز دون إجهاد بدني.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #35</span>
+                    <span class="card-category">فلسفة التحكيم والشروط والسلوك الميداني</span>
+                </div>
+                <h3 class="card-title">الكفاءة البدنية والحركية للحكم</h3>
+                <div class="card-question"><strong>السؤال:</strong> لماذا يُشترط التمتع باللياقة البدنية العالية لحكام ألعاب القوى؟</div>
+                <div class="card-answer" id="ans-35"><strong>الإجابة:</strong> لأن ملعب ألعاب القوى واسع ويتطلب الحركة والتحمل والوقوف لفترات طويلة، والقدرة على متابعة المسابقات بتركيز دون إجهاد بدني.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(35, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فلسفة التحكيم والشروط والسلوك الميداني" data-search="قوة البصر وسرعة رد الفعل ما أهمية قوة البصر وسرعة رد الفعل في قرارات حكام ألعاب القوى؟ لملاحظة تفاصيل الأخطاء الدقيقة (مثل لمس الصلصال أو تجاوز الزمن) واتخاذ قرار حاسم وسريع برفع العلم المناسب دون تردد يربك المتسابق.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #36</span>
+                    <span class="card-category">فلسفة التحكيم والشروط والسلوك الميداني</span>
+                </div>
+                <h3 class="card-title">قوة البصر وسرعة رد الفعل</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما أهمية قوة البصر وسرعة رد الفعل في قرارات حكام ألعاب القوى؟</div>
+                <div class="card-answer" id="ans-36"><strong>الإجابة:</strong> لملاحظة تفاصيل الأخطاء الدقيقة (مثل لمس الصلصال أو تجاوز الزمن) واتخاذ قرار حاسم وسريع برفع العلم المناسب دون تردد يربك المتسابق.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(36, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فلسفة التحكيم والشروط والسلوك الميداني" data-search="الهندام والسلوك الشخصي الميداني ما هي المواصفات المظهرية والسلوكية الميدانية الواجب توفرها في الحكم الناجح؟ أن يكون ذو هندام موحد ونظيف ومقبول، وبشخصية هادئة ولبقة وسمحة ابتسامتها تطمئن المتنافسين وتتجنب الاستفزاز أو الحركات الاستعراضية.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #37</span>
+                    <span class="card-category">فلسفة التحكيم والشروط والسلوك الميداني</span>
+                </div>
+                <h3 class="card-title">الهندام والسلوك الشخصي الميداني</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي المواصفات المظهرية والسلوكية الميدانية الواجب توفرها في الحكم الناجح؟</div>
+                <div class="card-answer" id="ans-37"><strong>الإجابة:</strong> أن يكون ذو هندام موحد ونظيف ومقبول، وبشخصية هادئة ولبقة وسمحة ابتسامتها تطمئن المتنافسين وتتجنب الاستفزاز أو الحركات الاستعراضية.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(37, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فلسفة التحكيم والشروط والسلوك الميداني" data-search="حظر التدخين والأكل داخل المضمار ما هي التعليمات المشددة بشأن التدخين والأكل للحكام داخل الملعب؟ يُحظر تماماً التدخين أو تناول الطعام داخل المضمار والملعب، ويُسمح فقط بشرب الماء عند العطش للحفاظ على المظهر الرياضي والانضباط.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #38</span>
+                    <span class="card-category">فلسفة التحكيم والشروط والسلوك الميداني</span>
+                </div>
+                <h3 class="card-title">حظر التدخين والأكل داخل المضمار</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي التعليمات المشددة بشأن التدخين والأكل للحكام داخل الملعب؟</div>
+                <div class="card-answer" id="ans-38"><strong>الإجابة:</strong> يُحظر تماماً التدخين أو تناول الطعام داخل المضمار والملعب، ويُسمح فقط بشرب الماء عند العطش للحفاظ على المظهر الرياضي والانضباط.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(38, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فلسفة التحكيم والشروط والسلوك الميداني" data-search="استخدام الهاتف المحمول والكاميرا ما هي محظورات استخدام الهاتف المحمول والتصوير للحكام أثناء البطولات؟ يجب إغلاق الهاتف ولا يُستخدم إلا للضرورة القصوى، ويُمنع منعاً باتاً التقاط الصور الشخصية مع الأبطال أو إشغالهم أثناء استعدادهم للمنافسة.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #39</span>
+                    <span class="card-category">فلسفة التحكيم والشروط والسلوك الميداني</span>
+                </div>
+                <h3 class="card-title">استخدام الهاتف المحمول والكاميرا</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي محظورات استخدام الهاتف المحمول والتصوير للحكام أثناء البطولات؟</div>
+                <div class="card-answer" id="ans-39"><strong>الإجابة:</strong> يجب إغلاق الهاتف ولا يُستخدم إلا للضرورة القصوى، ويُمنع منعاً باتاً التقاط الصور الشخصية مع الأبطال أو إشغالهم أثناء استعدادهم للمنافسة.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(39, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="فلسفة التحكيم والشروط والسلوك الميداني" data-search="محظورات التصريح الإعلامي ونقد الزملاء ما هي الضوابط السلوكية الحاكمة للحكم تجاه وسائل الإعلام وزملائه الحكام؟ يحظر الإدلاء بأي تصريح صحفي وإعلامي بدون تصريح من الاتحاد، ويحظر بتاتاً نقد زملائه الحكام أمام الجمهور أو الوسائل الإعلامية أو الاجتماعات.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #40</span>
+                    <span class="card-category">فلسفة التحكيم والشروط والسلوك الميداني</span>
+                </div>
+                <h3 class="card-title">محظورات التصريح الإعلامي ونقد الزملاء</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي الضوابط السلوكية الحاكمة للحكم تجاه وسائل الإعلام وزملائه الحكام؟</div>
+                <div class="card-answer" id="ans-40"><strong>الإجابة:</strong> يحظر الإدلاء بأي تصريح صحفي وإعلامي بدون تصريح من الاتحاد، ويحظر بتاتاً نقد زملائه الحكام أمام الجمهور أو الوسائل الإعلامية أو الاجتماعات.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(40, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="البطاقات الملونة والإشارات الميدانية في ألعاب القوى" data-search="البطاقة الحمراء والسوداء (Red/Black) متى تُرفع البطاقة المقسومة باللونين الأحمر والأسود وما أثرها في المسابقات الفردية؟ تُرفع عند ارتكاب العداء خطأ بداية (Volt Start) في المسابقات الفردية، وتؤدي إلى استبعاده المباشر والفوري من مسابقة الجري.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #41</span>
+                    <span class="card-category">البطاقات الملونة والإشارات الميدانية في ألعاب القوى</span>
+                </div>
+                <h3 class="card-title">البطاقة الحمراء والسوداء (Red/Black)</h3>
+                <div class="card-question"><strong>السؤال:</strong> متى تُرفع البطاقة المقسومة باللونين الأحمر والأسود وما أثرها في المسابقات الفردية؟</div>
+                <div class="card-answer" id="ans-41"><strong>الإجابة:</strong> تُرفع عند ارتكاب العداء خطأ بداية (Volt Start) في المسابقات الفردية، وتؤدي إلى استبعاده المباشر والفوري من مسابقة الجري.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(41, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="البطاقات الملونة والإشارات الميدانية في ألعاب القوى" data-search="البطاقة الصفراء والسوداء (Yellow/Black) متى تُرفع البطاقة المقسومة باللونين الأصفر والأسود وما هو استخدامها؟ تُرفع لتوجيه تحذير لأول خطأ بداية في المسابقات المركبة (Decathlon/Heptathlon)، وتُشعر في وجه المخطئ ثم تكشف لجميع العدائين.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #42</span>
+                    <span class="card-category">البطاقات الملونة والإشارات الميدانية في ألعاب القوى</span>
+                </div>
+                <h3 class="card-title">البطاقة الصفراء والسوداء (Yellow/Black)</h3>
+                <div class="card-question"><strong>السؤال:</strong> متى تُرفع البطاقة المقسومة باللونين الأصفر والأسود وما هو استخدامها؟</div>
+                <div class="card-answer" id="ans-42"><strong>الإجابة:</strong> تُرفع لتوجيه تحذير لأول خطأ بداية في المسابقات المركبة (Decathlon/Heptathlon)، وتُشعر في وجه المخطئ ثم تكشف لجميع العدائين.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(42, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="البطاقات الملونة والإشارات الميدانية في ألعاب القوى" data-search="البطاقة الصفراء الكاملة (Yellow Card) ما هو دلالة واستخدام البطاقة الصفراء بالكامل في ألعاب القوى؟ تُشهد كموجّه إنذار رسمي للاعب بسبب ارتكابه سلوكاً غير رياضي أو مخالفة انضباطية داخل الملعب.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #43</span>
+                    <span class="card-category">البطاقات الملونة والإشارات الميدانية في ألعاب القوى</span>
+                </div>
+                <h3 class="card-title">البطاقة الصفراء الكاملة (Yellow Card)</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هو دلالة واستخدام البطاقة الصفراء بالكامل في ألعاب القوى؟</div>
+                <div class="card-answer" id="ans-43"><strong>الإجابة:</strong> تُشهد كموجّه إنذار رسمي للاعب بسبب ارتكابه سلوكاً غير رياضي أو مخالفة انضباطية داخل الملعب.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(43, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="البطاقات الملونة والإشارات الميدانية في ألعاب القوى" data-search="البطاقة الحمراء الكاملة (Red Card) ما الفرق بين اثر البطاقة الحمراء بالكامل والبطاقة الحمراء/الأسود؟ البطاقة الحمراء بالكامل تُشهد لسوء السلوك المشين وتؤدي إلى طرد اللاعب كلياً من كامل البطولة ومنعه من كافة المسابقات المتبقية.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #44</span>
+                    <span class="card-category">البطاقات الملونة والإشارات الميدانية في ألعاب القوى</span>
+                </div>
+                <h3 class="card-title">البطاقة الحمراء الكاملة (Red Card)</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما الفرق بين اثر البطاقة الحمراء بالكامل والبطاقة الحمراء/الأسود؟</div>
+                <div class="card-answer" id="ans-44"><strong>الإجابة:</strong> البطاقة الحمراء بالكامل تُشهد لسوء السلوك المشين وتؤدي إلى طرد اللاعب كلياً من كامل البطولة ومنعه من كافة المسابقات المتبقية.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(44, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="البطاقات الملونة والإشارات الميدانية في ألعاب القوى" data-search="البطاقة الخضراء (Green Card) متى يُشهر مساعد إذن البدء البطاقة الخضراء لجميع المتسابقين؟ تُشهر عند إرجاع البدء بسبب خطأ فني في الجهاز أو الحكام وليس بسبب أي خطأ من المتسابقين، لإعلام الجميع بعدم وجود مسؤولية على العدائين.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #45</span>
+                    <span class="card-category">البطاقات الملونة والإشارات الميدانية في ألعاب القوى</span>
+                </div>
+                <h3 class="card-title">البطاقة الخضراء (Green Card)</h3>
+                <div class="card-question"><strong>السؤال:</strong> متى يُشهر مساعد إذن البدء البطاقة الخضراء لجميع المتسابقين؟</div>
+                <div class="card-answer" id="ans-45"><strong>الإجابة:</strong> تُشهر عند إرجاع البدء بسبب خطأ فني في الجهاز أو الحكام وليس بسبب أي خطأ من المتسابقين، لإعلام الجميع بعدم وجود مسؤولية على العدائين.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(45, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="البطاقات الملونة والإشارات الميدانية في ألعاب القوى" data-search="البطاقة البيضاء والحمراء (White/Red) ما هي وظيفة البطاقة المقسومة باللونين الأبيض والأحمر؟ تُقدم للاعب لتمكينه من استكمال السباق والجري تحت طائلة الاحتجاج (Under Protest)، لحين النظر في صحة شكوته ودراستها لاحقاً.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #46</span>
+                    <span class="card-category">البطاقات الملونة والإشارات الميدانية في ألعاب القوى</span>
+                </div>
+                <h3 class="card-title">البطاقة البيضاء والحمراء (White/Red)</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي وظيفة البطاقة المقسومة باللونين الأبيض والأحمر؟</div>
+                <div class="card-answer" id="ans-46"><strong>الإجابة:</strong> تُقدم للاعب لتمكينه من استكمال السباق والجري تحت طائلة الاحتجاج (Under Protest)، لحين النظر في صحة شكوته ودراستها لاحقاً.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(46, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="البطاقات الملونة والإشارات الميدانية في ألعاب القوى" data-search="الأعلام الملونة الرئيسية في قضاة الميدان ما هي الأعلام الملونة الأساسية التي يستخدمها قضاة مسابقات الميدان ودلالاتها؟ العلم الأبيض لإعلان صحة المحاولة ونجاحها، والعلم الأحمر لإعلان فشل المحاولة أو ارتكاب خطأ فني.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #47</span>
+                    <span class="card-category">البطاقات الملونة والإشارات الميدانية في ألعاب القوى</span>
+                </div>
+                <h3 class="card-title">الأعلام الملونة الرئيسية في قضاة الميدان</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي الأعلام الملونة الأساسية التي يستخدمها قضاة مسابقات الميدان ودلالاتها؟</div>
+                <div class="card-answer" id="ans-47"><strong>الإجابة:</strong> العلم الأبيض لإعلان صحة المحاولة ونجاحها، والعلم الأحمر لإعلان فشل المحاولة أو ارتكاب خطأ فني.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(47, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="البطاقات الملونة والإشارات الميدانية في ألعاب القوى" data-search="العلم الأصفر في مسابقات الميدان متى وكيف يُستخدم العلم الأصفر لدى قضاة الزمن في مسابقات الميدان؟ يُرفع العلم الأصفر لتنبيه المتسابق عندما يتبقى آخر 15 ثانية فقط من المهل الزمنية المحددة لمحاولته (الدقيقة الواحدة).">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #48</span>
+                    <span class="card-category">البطاقات الملونة والإشارات الميدانية في ألعاب القوى</span>
+                </div>
+                <h3 class="card-title">العلم الأصفر في مسابقات الميدان</h3>
+                <div class="card-question"><strong>السؤال:</strong> متى وكيف يُستخدم العلم الأصفر لدى قضاة الزمن في مسابقات الميدان؟</div>
+                <div class="card-answer" id="ans-48"><strong>الإجابة:</strong> يُرفع العلم الأصفر لتنبيه المتسابق عندما يتبقى آخر 15 ثانية فقط من المهل الزمنية المحددة لمحاولته (الدقيقة الواحدة).</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(48, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="البطاقات الملونة والإشارات الميدانية في ألعاب القوى" data-search="العلم الأصفر لمراقبي المضمار كيف يعلن مراقب المضمار عن وقوع مخالفة أثناء سباقات الجري؟ يرفع العلم الأصفر ويظل رافعاً له حتى حضور رئيس المراقبين لتدوين نوع المخالفة (إعاقة، خروج من الحارة، أو خطأ تسليم العصا).">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #49</span>
+                    <span class="card-category">البطاقات الملونة والإشارات الميدانية في ألعاب القوى</span>
+                </div>
+                <h3 class="card-title">العلم الأصفر لمراقبي المضمار</h3>
+                <div class="card-question"><strong>السؤال:</strong> كيف يعلن مراقب المضمار عن وقوع مخالفة أثناء سباقات الجري؟</div>
+                <div class="card-answer" id="ans-49"><strong>الإجابة:</strong> يرفع العلم الأصفر ويظل رافعاً له حتى حضور رئيس المراقبين لتدوين نوع المخالفة (إعاقة، خروج من الحارة، أو خطأ تسليم العصا).</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(49, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="البطاقات الملونة والإشارات الميدانية في ألعاب القوى" data-search="المسؤول عن إشهار بطاقات البداية من هو الحكم المكلف ميدانياً بمسك وإشهار بطاقات التحذير والاستبعاد في الجري؟ هو مساعد إذن البدء (Assistant Starter) بناءً على أوامر وبناءً على التوجيهات المباشرة الصادرة من إذن البدء (Starter).">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #50</span>
+                    <span class="card-category">البطاقات الملونة والإشارات الميدانية في ألعاب القوى</span>
+                </div>
+                <h3 class="card-title">المسؤول عن إشهار بطاقات البداية</h3>
+                <div class="card-question"><strong>السؤال:</strong> من هو الحكم المكلف ميدانياً بمسك وإشهار بطاقات التحذير والاستبعاد في الجري؟</div>
+                <div class="card-answer" id="ans-50"><strong>الإجابة:</strong> هو مساعد إذن البدء (Assistant Starter) بناءً على أوامر وبناءً على التوجيهات المباشرة الصادرة من إذن البدء (Starter).</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(50, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الإداريون الدوليون وطاقم إدارة المنافسات" data-search="مندوب التنظيم الدولي (Organizational Delegate) ما هي أبرز مهام مندوب التنظيم الدولي المعين من الاتحاد العالمي؟ يتولى التنسيق مع اللجنة المنظمة المحلية، ويحضر قبل البطولة لمتابعة الترتيبات التنظيمية والمالية والإقامة، ونقل التقارير للاتحاد الدولي.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #51</span>
+                    <span class="card-category">الإداريون الدوليون وطاقم إدارة المنافسات</span>
+                </div>
+                <h3 class="card-title">مندوب التنظيم الدولي (Organizational Delegate)</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي أبرز مهام مندوب التنظيم الدولي المعين من الاتحاد العالمي؟</div>
+                <div class="card-answer" id="ans-51"><strong>الإجابة:</strong> يتولى التنسيق مع اللجنة المنظمة المحلية، ويحضر قبل البطولة لمتابعة الترتيبات التنظيمية والمالية والإقامة، ونقل التقارير للاتحاد الدولي.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(51, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الإداريون الدوليون وطاقم إدارة المنافسات" data-search="المندوب الفني الدولي (Technical Delegate - TD) ما هو دور المندوب الفني الدولي (TD) في البطولات الرسمية؟ هو المسؤول الفني الأول عن تطبيق القواعد الفنية، وضع جدول المسابقات وشروط المشاركة، وتفقد الملعب والتجهيزات والأجهزة مع رئيس لجنة الحكام.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #52</span>
+                    <span class="card-category">الإداريون الدوليون وطاقم إدارة المنافسات</span>
+                </div>
+                <h3 class="card-title">المندوب الفني الدولي (Technical Delegate - TD)</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هو دور المندوب الفني الدولي (TD) في البطولات الرسمية؟</div>
+                <div class="card-answer" id="ans-52"><strong>الإجابة:</strong> هو المسؤول الفني الأول عن تطبيق القواعد الفنية، وضع جدول المسابقات وشروط المشاركة، وتفقد الملعب والتجهيزات والأجهزة مع رئيس لجنة الحكام.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(52, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الإداريون الدوليون وطاقم إدارة المنافسات" data-search="المندوب الطبي ومندوب الكشف عن المنشطات ما هي الاختصاصات الميدانية للمندوب الطبي ومندوب فحص المنشطات الدوليين؟ المندوب الطبي يُشرف على الترتيبات والخدمات الطبية بالاستاد، ومندوب المنشطات يتولى إدارة مكتب الفحوصات والإشراف على سحب العينات.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #53</span>
+                    <span class="card-category">الإداريون الدوليون وطاقم إدارة المنافسات</span>
+                </div>
+                <h3 class="card-title">المندوب الطبي ومندوب الكشف عن المنشطات</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي الاختصاصات الميدانية للمندوب الطبي ومندوب فحص المنشطات الدوليين؟</div>
+                <div class="card-answer" id="ans-53"><strong>الإجابة:</strong> المندوب الطبي يُشرف على الترتيبات والخدمات الطبية بالاستاد، ومندوب المنشطات يتولى إدارة مكتب الفحوصات والإشراف على سحب العينات.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(53, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الإداريون الدوليون وطاقم إدارة المنافسات" data-search="الإداريون الفنيون الدوليون (ITOs) من هم الـ ITOs وما هو دورهم الميداني أثناء إدارة المسابقات؟ هم حكام دوليون يحملون الشارة الفضية أو الذهبية، يتوزعون على مسابقات الميدان والمضمار لمعاونة وتوجيه الحكام المحليين وسد أي ثغرة فنية.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #54</span>
+                    <span class="card-category">الإداريون الدوليون وطاقم إدارة المنافسات</span>
+                </div>
+                <h3 class="card-title">الإداريون الفنيون الدوليون (ITOs)</h3>
+                <div class="card-question"><strong>السؤال:</strong> من هم الـ ITOs وما هو دورهم الميداني أثناء إدارة المسابقات؟</div>
+                <div class="card-answer" id="ans-54"><strong>الإجابة:</strong> هم حكام دوليون يحملون الشارة الفضية أو الذهبية، يتوزعون على مسابقات الميدان والمضمار لمعاونة وتوجيه الحكام المحليين وسد أي ثغرة فنية.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(54, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الإداريون الدوليون وطاقم إدارة المنافسات" data-search="قضاة المشي الدوليون (Race Walking Judges) ما المعيار القانوني في تشكيل لجنة قضاة المشي الدوليين للبطولة؟ يشترط القانون تعيين 8 قضاة مشي دوليين ينتمون لـ 8 دول مختلفة لضمان أقصى درجات الحيادية والاستقلالية عن باقي حكام الميدان والمضمار.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #55</span>
+                    <span class="card-category">الإداريون الدوليون وطاقم إدارة المنافسات</span>
+                </div>
+                <h3 class="card-title">قضاة المشي الدوليون (Race Walking Judges)</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما المعيار القانوني في تشكيل لجنة قضاة المشي الدوليين للبطولة؟</div>
+                <div class="card-answer" id="ans-55"><strong>الإجابة:</strong> يشترط القانون تعيين 8 قضاة مشي دوليين ينتمون لـ 8 دول مختلفة لضمان أقصى درجات الحيادية والاستقلالية عن باقي حكام الميدان والمضمار.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(55, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الإداريون الدوليون وطاقم إدارة المنافسات" data-search="مساح الطريق الدولي (Course Measurer) ما هي مسؤولية مساح الطريق الدولي المصنف (A/B/C)؟ يتولى قياس ورسم مسارات سباقات الطريق والماراثون واختراق الضاحية، واعتماد الخريطة القياسية الرسمية مع المندوب الفني وإرسالها للولايات المشاركة.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #56</span>
+                    <span class="card-category">الإداريون الدوليون وطاقم إدارة المنافسات</span>
+                </div>
+                <h3 class="card-title">مساح الطريق الدولي (Course Measurer)</h3>
+                <div class="card-question"><strong>السؤال:</strong> ما هي مسؤولية مساح الطريق الدولي المصنف (A/B/C)؟</div>
+                <div class="card-answer" id="ans-56"><strong>الإجابة:</strong> يتولى قياس ورسم مسارات سباقات الطريق والماراثون واختراق الضاحية، واعتماد الخريطة القياسية الرسمية مع المندوب الفني وإرسالها للولايات المشاركة.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(56, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الإداريون الدوليون وطاقم إدارة المنافسات" data-search="إذن البدء الدولي وقاضي تصوير النهاية الدولي لماذا يتم إيفاد إذن بدء دولي وقاضي تصوير نهاية دولي للبطولات الكبرى؟ لأنها مهام تخصصية دقيقة ومستقلة تضمن أقصى معايير الدقة والحيادية في إطلاق سباقات الجري وتحديد أزمنة وترتيب الوصول الإلكتروني (Photo Finish).">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #57</span>
+                    <span class="card-category">الإداريون الدوليون وطاقم إدارة المنافسات</span>
+                </div>
+                <h3 class="card-title">إذن البدء الدولي وقاضي تصوير النهاية الدولي</h3>
+                <div class="card-question"><strong>السؤال:</strong> لماذا يتم إيفاد إذن بدء دولي وقاضي تصوير نهاية دولي للبطولات الكبرى؟</div>
+                <div class="card-answer" id="ans-57"><strong>الإجابة:</strong> لأنها مهام تخصصية دقيقة ومستقلة تضمن أقصى معايير الدقة والحيادية في إطلاق سباقات الجري وتحديد أزمنة وترتيب الوصول الإلكتروني (Photo Finish).</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(57, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الإداريون الدوليون وطاقم إدارة المنافسات" data-search="هيئة الاحتكام (Jury of Appeal) كيف تشكل هيئة الاحتكام في البطولات وما هي آليتها عند نظر احتجاجات المشي؟ تشكل من عدد فردي (3 أو 5 أو 7)، وتختص بالبت النهائي في الاحتجاجات، وتستدعي قاضي مشي دولي ضمن جلساتها عند النظر في احتجاج متعلق بسباق المشي.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #58</span>
+                    <span class="card-category">الإداريون الدوليون وطاقم إدارة المنافسات</span>
+                </div>
+                <h3 class="card-title">هيئة الاحتكام (Jury of Appeal)</h3>
+                <div class="card-question"><strong>السؤال:</strong> كيف تشكل هيئة الاحتكام في البطولات وما هي آليتها عند نظر احتجاجات المشي؟</div>
+                <div class="card-answer" id="ans-58"><strong>الإجابة:</strong> تشكل من عدد فردي (3 أو 5 أو 7)، وتختص بالبت النهائي في الاحتجاجات، وتستدعي قاضي مشي دولي ضمن جلساتها عند النظر في احتجاج متعلق بسباق المشي.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(58, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الإداريون الدوليون وطاقم إدارة المنافسات" data-search="مسجل عداد اللفات وإدارة لوحات الإشارات متى يتم تعيين مسجلي اللفات وما هي ضوابط تغيير لوحة الأرقام وقرع الجرس؟ تُعين لسباقات 1500م فما فوق، وتُغير لوحة اللفات عند دخول العداء الأول في الخط المستقيم لخط النهاية، ويُقرع الجرس لتنبيه المتسابقين عند دخول اللفة الأخيرة.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #59</span>
+                    <span class="card-category">الإداريون الدوليون وطاقم إدارة المنافسات</span>
+                </div>
+                <h3 class="card-title">مسجل عداد اللفات وإدارة لوحات الإشارات</h3>
+                <div class="card-question"><strong>السؤال:</strong> متى يتم تعيين مسجلي اللفات وما هي ضوابط تغيير لوحة الأرقام وقرع الجرس؟</div>
+                <div class="card-answer" id="ans-59"><strong>الإجابة:</strong> تُعين لسباقات 1500م فما فوق، وتُغير لوحة اللفات عند دخول العداء الأول في الخط المستقيم لخط النهاية، ويُقرع الجرس لتنبيه المتسابقين عند دخول اللفة الأخيرة.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(59, this)">إظهار الإجابة</button>
+        </div>
+        <div class="card" data-category="الإداريون الدوليون وطاقم إدارة المنافسات" data-search="غرفة المناداة (Call Room - المطبخ الفني) لماذا تُوصف غرفة المناداة بـ 'المطبخ الفني' للبطولة وما هي مخرجاتها؟ لأنها النقطة الفنية الحاسمة لمراجعة هويات المتسابقين، مطابقة الأرقام والصدريات، معاينة أحذية ومسامير اللاعبين والأدوات المصرح بها لضمان نزول العداء للميدان جاهزاً 100%.">
+            <div>
+                <div class="card-header">
+                    <span class="card-number">بطاقة #60</span>
+                    <span class="card-category">الإداريون الدوليون وطاقم إدارة المنافسات</span>
+                </div>
+                <h3 class="card-title">غرفة المناداة (Call Room - المطبخ الفني)</h3>
+                <div class="card-question"><strong>السؤال:</strong> لماذا تُوصف غرفة المناداة بـ 'المطبخ الفني' للبطولة وما هي مخرجاتها؟</div>
+                <div class="card-answer" id="ans-60"><strong>الإجابة:</strong> لأنها النقطة الفنية الحاسمة لمراجعة هويات المتسابقين، مطابقة الأرقام والصدريات، معاينة أحذية ومسامير اللاعبين والأدوات المصرح بها لضمان نزول العداء للميدان جاهزاً 100%.</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleAnswer(60, this)">إظهار الإجابة</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>تم إعداد وتجهيز بطاقات التحكيم الـ 60 استناداً إلى دورة إدارة وتطوير الحكام في ألعاب القوى</p>
+    </footer>
+
+    <script>
+        let currentCategory = 'all';
+
+        function toggleAnswer(id, btn) {
+            const ans = document.getElementById('ans-' + id);
+            if (ans.classList.contains('show')) {
+                ans.classList.remove('show');
+                btn.innerText = 'إظهار الإجابة';
+            } else {
+                ans.classList.add('show');
+                btn.innerText = 'إخفاء الإجابة';
+            }
+        }
+
+        function filterCategory(cat, btn) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterCards();
+        }
+
+        function filterCards() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.card');
+
+            cards.forEach(card => {
+                const cat = card.getAttribute('data-category');
+                const text = card.getAttribute('data-search').toLowerCase();
+
+                const matchesCat = (currentCategory === 'all' || cat === currentCategory);
+                const matchesSearch = (query === '' || text.includes(query));
+
+                if (matchesCat && matchesSearch) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
