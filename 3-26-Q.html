@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار تحكيم</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>اختبار تحكيم</h1>
+    <div class="meta">10 أسئلة</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">سؤال 1</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">إيه هو السبب الرئيسي اللي بيخلي رئيس لجنة الحكام يفضل يكون عضو في مجلس إدارة الاتحاد؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في أهمية التواصل والربط بين الهيكل الإداري للاتحاد وبين الكادر الفني للحكام.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="وجود رئيس اللجنة في مجلس الإدارة بيسهل وصول المعلومات والتقارير الخاصة بالحكام وقضاياهم لأصحاب القرار بسرعة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">علشان يكون هو حلقة الوصل المباشرة بين الحكام ومجلس الإدارة وينقل مشاكلهم.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">وجود رئيس اللجنة في مجلس الإدارة بيسهل وصول المعلومات والتقارير الخاصة بالحكام وقضاياهم لأصحاب القرار بسرعة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="المادة العلمية وضحت إن الدور تنظيمي وإداري لخدمة الحكام وتطويرهم، مش للمنفعة الشخصية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">علشان يضمن لنفسه المكافآت المالية الأعلى في البطولات الدولية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المادة العلمية وضحت إن الدور تنظيمي وإداري لخدمة الحكام وتطويرهم، مش للمنفعة الشخصية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="المحاضرة أكدت إن لجنة الحكام تخصصها شؤون التحكيم والحكام بس، وملهاش علاقة بالمنتخبات أو التدريب.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">علشان يكون هو المسؤول الوحيد عن تدريب المنتخبات الوطنية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المحاضرة أكدت إن لجنة الحكام تخصصها شؤون التحكيم والحكام بس، وملهاش علاقة بالمنتخبات أو التدريب.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="تغيير قوانين اللعبة مش من صلاحيات رئيس اللجنة ولا مجلس الإدارة المحلي، ده بيكون من اختصاص الاتحاد الدولي.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">علشان يقدر يغير قانون اللعبة من غير ما يرجع للجمعية العمومية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تغيير قوانين اللعبة مش من صلاحيات رئيس اللجنة ولا مجلس الإدارة المحلي، ده بيكون من اختصاص الاتحاد الدولي.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">سؤال 2</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">إمتى بيتم اعتبار الحكم 'حكم متقاعد' حسب اللوائح المذكورة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">ركز على المدة الزمنية للانقطاع اللي بتنقل الحكم من حالة 'غير عامل' لحالة 'متقاعد'.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="الموسم الواحد بيخلي الحكم 'غير عامل' لكن مش 'متقاعد'.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">لو انقطع عن التحكيم لمدة موسم واحد بس.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الموسم الواحد بيخلي الحكم 'غير عامل' لكن مش 'متقاعد'.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="التقاعد بيحصل لما الحكم يغيب فترة طويلة تتعدى السنتين أو يقرر هو بنفسه إنه ينهي مشواره التحكيمي.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">لو غاب عن التحكيم لمدة أكتر من موسمين أو قدم طلب رسمي بالاعتزال.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التقاعد بيحصل لما الحكم يغيب فترة طويلة تتعدى السنتين أو يقرر هو بنفسه إنه ينهي مشواره التحكيمي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="الشهادة الذهبية هي أعلى درجات التحكيم الدولي مش سبب للتقاعد.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">بمجرد حصوله على الشهادة الذهبية من الاتحاد الدولي.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الشهادة الذهبية هي أعلى درجات التحكيم الدولي مش سبب للتقاعد.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="المصدر محددش سن معين للتقاعد، لكن ركز على مدة الانقطاع أو الطلب الشخصي.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">لو وصل لسن الستين بغض النظر عن رغبته في الاستمرار.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المصدر محددش سن معين للتقاعد، لكن ركز على مدة الانقطاع أو الطلب الشخصي.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">سؤال 3</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">في فلسفة التحكيم، إيه هو الدور الأساسي للحكم تجاه المتنافس (اللاعب) في الملعب؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">الهدف النهائي من وجود كل المسؤولين في الملعب هو خدمة الشخص اللي بينافس.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="ده بيخالف مبدأ 'تكافؤ الفرص والعدالة' اللي بيساوي بين المبتدئ والبطل أمام القانون.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">إنه يدي امتيازات خاصة للأبطال المعروفين عالمياً تشجيعاً ليهم.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ده بيخالف مبدأ 'تكافؤ الفرص والعدالة' اللي بيساوي بين المبتدئ والبطل أمام القانون.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="دور الحكم فني تحكيمي في الملعب، ومش من اختصاصه التدخل في شؤون التدريب.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">إنه يوجه المدربين في المدرجات إزاي يحسنوا أداء اللاعبين.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">دور الحكم فني تحكيمي في الملعب، ومش من اختصاصه التدخل في شؤون التدريب.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="الحكم موجود لخدمة المنافسة وتوفير جو ملائم يخلي اللاعب يركز في أداءه بعد تعب التدريب والمعسكرات.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">إنه يهيأ الظروف المناسبة للاعب ويساعده يحقق إنجاز وأرقام قياسية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الحكم موجود لخدمة المنافسة وتوفير جو ملائم يخلي اللاعب يركز في أداءه بعد تعب التدريب والمعسكرات.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="الصرامة الزيادة ممكن تتوتر اللاعب، والمصدر دعا لكون الحكم سمح ولطيف مع اللاعبين.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">إنه يكون صارم جداً ويمنع اللاعب من الكلام معاه نهائياً.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الصرامة الزيادة ممكن تتوتر اللاعب، والمصدر دعا لكون الحكم سمح ولطيف مع اللاعبين.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">سؤال 4</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">إيه هي الشروط اللازمة علشان الحكم يترقى من الدرجة التالتة للدرجة التانية؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">دي أول خطوة في سلم الترقيات بعد ما الشخص يبدأ مشواره كحكم جديد.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="حسب الدرجات المذكورة، الحكم الجديد (درجة تالتة) يقدر يترقى بعد سنة واحدة من الممارسة والنجاح في الاختبار.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">إنه يقضي سنة واحدة على الأقل في التحكيم ويجتاز الامتحانات المطلوبة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">حسب الدرجات المذكورة، الحكم الجديد (درجة تالتة) يقدر يترقى بعد سنة واحدة من الممارسة والنجاح في الاختبار.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="الشهادات الدولية ليها مسار منفصل واختبارات خاصة من الاتحاد الدولي مش ترقية محلية تلقائية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">إنه يحصل على شهادة البرونز الدولية مباشرة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الشهادات الدولية ليها مسار منفصل واختبارات خاصة من الاتحاد الدولي مش ترقية محلية تلقائية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="مدة السنتين مطلوبة للترقية من التانية للأولى، لكن من التالتة للتانية المدة مختلفة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">إنه يقضي سنتين في الدرجة التالتة وينجح في امتحان الترقية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">مدة السنتين مطلوبة للترقية من التانية للأولى، لكن من التالتة للتانية المدة مختلفة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="الترقيات المحلية بتعتمد على المدة الزمنية والامتحانات اللي بتعملها لجنة الحكام في الاتحاد المحلي.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">إنه يشترك في تحكيم 10 بطولات دولية خارج بلده.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الترقيات المحلية بتعتمد على المدة الزمنية والامتحانات اللي بتعملها لجنة الحكام في الاتحاد المحلي.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">سؤال 5</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">في مسابقات الميدان (زي الوثب أو الرمي)، الحكم بيرفع 'العلم الأصفر' إمتى؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في علاقة العلم ده بالوقت المخصص لكل لاعب قبل ما محاولته تعتبر لاغية.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="الأعلام في الميدان مخصصة لصحة المحاولة أو تنبيهات الوقت مش لتشغيل الأجهزة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">كإشارة لبدء القياس الإلكتروني للمسافة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الأعلام في الميدان مخصصة لصحة المحاولة أو تنبيهات الوقت مش لتشغيل الأجهزة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="المحاولة الناجحة بيرفع فيها العلم الأبيض والشك بيتحسم قبل رفع العلم.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">لما اللاعب يعمل محاولة ناجحة لكن فيها شك بسيط.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المحاولة الناجحة بيرفع فيها العلم الأبيض والشك بيتحسم قبل رفع العلم.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="العلم الأصفر بيستخدم كإشارة زمنية تحذيرية للاعب علشان يلحق يبدأ محاولته قبل ما الوقت يخلص.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">علشان ينبه اللاعب إن باقي 15 ثانية بس على نهاية زمن المحاولة المسموح بيه.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">العلم الأصفر بيستخدم كإشارة زمنية تحذيرية للاعب علشان يلحق يبدأ محاولته قبل ما الوقت يخلص.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="سوء السلوك بيتم التعامل معاه بالكروت (الأصفر أو الأحمر) مش بالأعلام الملونة الخاصة بالمحاولات.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">لما اللاعب يعترض على قرار الحكم بشكل غير لائق.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">سوء السلوك بيتم التعامل معاه بالكروت (الأصفر أو الأحمر) مش بالأعلام الملونة الخاصة بالمحاولات.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">سؤال 6</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">إمتى بيتم استخدام 'الكارت الأخضر' من قبل مساعد آذن البدء؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">الكارت ده بيطلع لما ميكونش فيه أي لاعب غلطان في البداية اللي اتلغت.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="في المسابقات المركبة الخطأ الأول بيستخدم له الكارت الأصفر والأسود.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">لما لاعب يعمل بداية خاطئة لأول مرة في المسابقات المركبة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">في المسابقات المركبة الخطأ الأول بيستخدم له الكارت الأصفر والأسود.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="الكارت الأخضر بيطمن اللاعبين والجمهور إن العودة للبداية مكنتش بسبب خطأ لاعب، وبالتالي محدش هيستبعد.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">لما يكون فيه خطأ في جهاز البداية أو من الحكام نفسهم مش من اللاعبين.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الكارت الأخضر بيطمن اللاعبين والجمهور إن العودة للبداية مكنتش بسبب خطأ لاعب، وبالتالي محدش هيستبعد.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="دخول الملعب له إجراءات تنظيمية تانية، والكروت الملونة بتستخدم في مواقف فنية أثناء البداية.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">كإشارة للاعبين إنهم يقدروا يدخلوا الملعب من غرفة النداء.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">دخول الملعب له إجراءات تنظيمية تانية، والكروت الملونة بتستخدم في مواقف فنية أثناء البداية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="الحالة دي بيستخدم لها الكارت الأبيض والأحمر (المقسوم نصين).">
+            <span class="opt-label">D</span>
+            <span class="opt-text">لما اللاعب يكمل السباق وهو تحت طائلة الاحتجاج.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الحالة دي بيستخدم لها الكارت الأبيض والأحمر (المقسوم نصين).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">سؤال 7</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">مين المسؤول عن فحص ملابس اللاعبين وعدد المسامير في الحذاء والتأكد من الأرقام قبل دخولهم الملعب؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">المكان ده هو آخر نقطة تفتيش بيمر عليها اللاعب قبل ما ينزل المنافسة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="مدير المنافسة دوره إداري عام وتنسيق بين الأطراف مش فحص فني دقيق لكل لاعب.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">مدير المنافسة (Competition Manager).</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">مدير المنافسة دوره إداري عام وتنسيق بين الأطراف مش فحص فني دقيق لكل لاعب.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="آذن البدء مسؤوليته بتبدأ من لحظة وقوف اللاعبين على خط البداية مش قبل كدة.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">آذن البدء الدولي (International Starter).</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">آذن البدء مسؤوليته بتبدأ من لحظة وقوف اللاعبين على خط البداية مش قبل كدة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="غرفة النداء هي 'المطبخ' اللي لازم يخرج منه اللاعب جاهز تماماً ومستوفي لكل الشروط الفنية.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">حكام غرفة النداء (Call Room).</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">غرفة النداء هي 'المطبخ' اللي لازم يخرج منه اللاعب جاهز تماماً ومستوفي لكل الشروط الفنية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="المندوب الطبي مسؤوليته طبية وإسعافية وملوش علاقة بمعدات اللاعبين الفنية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">المندوب الطبي (Medical Delegate).</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المندوب الطبي مسؤوليته طبية وإسعافية وملوش علاقة بمعدات اللاعبين الفنية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">سؤال 8</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ليه بيتم تعيين حكام للتوقيت اليدوي حتى في وجود أجهزة التصوير الإلكتروني (Photo Finish)؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في اللي ممكن يحصل لو التكنولوجيا خذلتنا فجأة وسط البطولة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="رغم إنه مفيد للخبرة، بس السبب الرسمي لتعيينهم هو مواجهة الطوارئ الفنية.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">كتدريب ليهم علشان يبقوا حكام دوليين في المستقبل.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">رغم إنه مفيد للخبرة، بس السبب الرسمي لتعيينهم هو مواجهة الطوارئ الفنية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="القانون بياخد بالزمن الإلكتروني كلياً لو متاح، ومبيعملش متوسط مع اليدوي.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">لأن القانون بيشترط حساب متوسط الزمن بين اليدوي والإلكتروني.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القانون بياخد بالزمن الإلكتروني كلياً لو متاح، ومبيعملش متوسط مع اليدوي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="النتائج بتعتمد على القواعد الفنية مش الأهواء، والتوقيت الإلكتروني هو الأساس.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">علشان يراجعوا النتائج ويعدلوها لو معجبتش رئيس الاتحاد.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">النتائج بتعتمد على القواعد الفنية مش الأهواء، والتوقيت الإلكتروني هو الأساس.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="وجود توقيت يدوي هو إجراء احترازي لضمان وجود نتائج للسباق لو حصلت أي مشكلة تقنية في المطبخ الإلكتروني.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">علشان يكونوا بدلاء جاهزين في حالة انقطاع الكهرباء أو حصل خلل مفاجئ في الجهاز الإلكتروني.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">وجود توقيت يدوي هو إجراء احترازي لضمان وجود نتائج للسباق لو حصلت أي مشكلة تقنية في المطبخ الإلكتروني.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">سؤال 9</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">إيه هو التصرف الممنوع على الحكم تجاه زميله حسب قواعد السلوك المهني المذكورة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">الاحترام المتبادل بين أعضاء فريق التحكيم قدام الناس ضروري لهيبة القانون.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="الحفاظ على صورة التحكيم ووحدة الحكام واجب، والنقد لازم يكون داخلي وبشكل احترافي مش علني.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">إنه ينقد زميله أو يغلط فيه قدام الجمهور أو في الصحافة ووسائل التواصل.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الحفاظ على صورة التحكيم ووحدة الحكام واجب، والنقد لازم يكون داخلي وبشكل احترافي مش علني.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="المناقشات الفنية في غرفة الاجتماعات مطلوبة لتصحيح الأخطاء وتطوير الأداء.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">إنه يتكلم معاه في أمور فنية تخص المسابقة داخل غرفة الاجتماعات.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المناقشات الفنية في غرفة الاجتماعات مطلوبة لتصحيح الأخطاء وتطوير الأداء.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="التقارير هي وظيفة لجنة الحكام لتقييم الأداء وتطويره.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">إنه يقدم له تقرير سنوي عن أداءه الفني.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التقارير هي وظيفة لجنة الحكام لتقييم الأداء وتطويره.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="التعاون بين الحكام في القياس والتحكيم هو أساس نجاح إدارة أي مسابقة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">إنه يطلب منه المساعدة في قياس مسافة معينة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التعاون بين الحكام في القياس والتحكيم هو أساس نجاح إدارة أي مسابقة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">سؤال 10</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">في المسابقات الفردية (مش المركبة)، الكارت اللي لونه 'أحمر وأسود' مع بعض بيعني إيه للاعب؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">الكارت ده مقسوم نصين ولونه بيوحي بنهاية مشاركة اللاعب في السباق ده.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="تعديل الوضعية بيكون بأوامر شفهية أو كروت تانية، لكن الكارت ده نتيجته الاستبعاد.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">تنبيه للاعب بضرورة تعديل وضعية 'الاستعداد' (Set).</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تعديل الوضعية بيكون بأوامر شفهية أو كروت تانية، لكن الكارت ده نتيجته الاستبعاد.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="الإنذار بسبب السلوك بيكون كارت أصفر سادة مش مختلط بالألوان.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">إنذار أصفر بسبب سوء السلوك الرياضي.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الإنذار بسبب السلوك بيكون كارت أصفر سادة مش مختلط بالألوان.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="الكروت الملونة عند البداية مخصصة للأخطاء والتحذيرات مش للنتائج النهائية.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">إشارة للاعب إنه فاز بالمركز الأول رسمياً.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الكروت الملونة عند البداية مخصصة للأخطاء والتحذيرات مش للنتائج النهائية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="في النظام الجديد للمسابقات الفردية، أي بداية خاطئة من المرة الأولى بتؤدي للاستبعاد بالكارت الأحمر والأسود.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">استبعاد نهائي من المسابقة بسبب البداية الخاطئة (False Start).</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">في النظام الجديد للمسابقات الفردية، أي بداية خاطئة من المرة الأولى بتؤدي للاستبعاد بالكارت الأحمر والأسود.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>اكتمل الاختبار!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">حاول مرة أخرى</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"إيه هو السبب الرئيسي اللي بيخلي رئيس لجنة الحكام يفضل يكون عضو في مجلس إدارة الاتحاد؟","hint":"فكر في أهمية التواصل والربط بين الهيكل الإداري للاتحاد وبين الكادر الفني للحكام.","options":[{"label":"A","text":"علشان يكون هو حلقة الوصل المباشرة بين الحكام ومجلس الإدارة وينقل مشاكلهم.","isCorrect":true,"rationale":"وجود رئيس اللجنة في مجلس الإدارة بيسهل وصول المعلومات والتقارير الخاصة بالحكام وقضاياهم لأصحاب القرار بسرعة."},{"label":"B","text":"علشان يضمن لنفسه المكافآت المالية الأعلى في البطولات الدولية.","isCorrect":false,"rationale":"المادة العلمية وضحت إن الدور تنظيمي وإداري لخدمة الحكام وتطويرهم، مش للمنفعة الشخصية."},{"label":"C","text":"علشان يكون هو المسؤول الوحيد عن تدريب المنتخبات الوطنية.","isCorrect":false,"rationale":"المحاضرة أكدت إن لجنة الحكام تخصصها شؤون التحكيم والحكام بس، وملهاش علاقة بالمنتخبات أو التدريب."},{"label":"D","text":"علشان يقدر يغير قانون اللعبة من غير ما يرجع للجمعية العمومية.","isCorrect":false,"rationale":"تغيير قوانين اللعبة مش من صلاحيات رئيس اللجنة ولا مجلس الإدارة المحلي، ده بيكون من اختصاص الاتحاد الدولي."}]},{"question":"إمتى بيتم اعتبار الحكم 'حكم متقاعد' حسب اللوائح المذكورة؟","hint":"ركز على المدة الزمنية للانقطاع اللي بتنقل الحكم من حالة 'غير عامل' لحالة 'متقاعد'.","options":[{"label":"A","text":"لو انقطع عن التحكيم لمدة موسم واحد بس.","isCorrect":false,"rationale":"الموسم الواحد بيخلي الحكم 'غير عامل' لكن مش 'متقاعد'."},{"label":"B","text":"لو غاب عن التحكيم لمدة أكتر من موسمين أو قدم طلب رسمي بالاعتزال.","isCorrect":true,"rationale":"التقاعد بيحصل لما الحكم يغيب فترة طويلة تتعدى السنتين أو يقرر هو بنفسه إنه ينهي مشواره التحكيمي."},{"label":"C","text":"بمجرد حصوله على الشهادة الذهبية من الاتحاد الدولي.","isCorrect":false,"rationale":"الشهادة الذهبية هي أعلى درجات التحكيم الدولي مش سبب للتقاعد."},{"label":"D","text":"لو وصل لسن الستين بغض النظر عن رغبته في الاستمرار.","isCorrect":false,"rationale":"المصدر محددش سن معين للتقاعد، لكن ركز على مدة الانقطاع أو الطلب الشخصي."}]},{"question":"في فلسفة التحكيم، إيه هو الدور الأساسي للحكم تجاه المتنافس (اللاعب) في الملعب؟","hint":"الهدف النهائي من وجود كل المسؤولين في الملعب هو خدمة الشخص اللي بينافس.","options":[{"label":"A","text":"إنه يدي امتيازات خاصة للأبطال المعروفين عالمياً تشجيعاً ليهم.","isCorrect":false,"rationale":"ده بيخالف مبدأ 'تكافؤ الفرص والعدالة' اللي بيساوي بين المبتدئ والبطل أمام القانون."},{"label":"B","text":"إنه يوجه المدربين في المدرجات إزاي يحسنوا أداء اللاعبين.","isCorrect":false,"rationale":"دور الحكم فني تحكيمي في الملعب، ومش من اختصاصه التدخل في شؤون التدريب."},{"label":"C","text":"إنه يهيأ الظروف المناسبة للاعب ويساعده يحقق إنجاز وأرقام قياسية.","isCorrect":true,"rationale":"الحكم موجود لخدمة المنافسة وتوفير جو ملائم يخلي اللاعب يركز في أداءه بعد تعب التدريب والمعسكرات."},{"label":"D","text":"إنه يكون صارم جداً ويمنع اللاعب من الكلام معاه نهائياً.","isCorrect":false,"rationale":"الصرامة الزيادة ممكن تتوتر اللاعب، والمصدر دعا لكون الحكم سمح ولطيف مع اللاعبين."}]},{"question":"إيه هي الشروط اللازمة علشان الحكم يترقى من الدرجة التالتة للدرجة التانية؟","hint":"دي أول خطوة في سلم الترقيات بعد ما الشخص يبدأ مشواره كحكم جديد.","options":[{"label":"A","text":"إنه يقضي سنة واحدة على الأقل في التحكيم ويجتاز الامتحانات المطلوبة.","isCorrect":true,"rationale":"حسب الدرجات المذكورة، الحكم الجديد (درجة تالتة) يقدر يترقى بعد سنة واحدة من الممارسة والنجاح في الاختبار."},{"label":"B","text":"إنه يحصل على شهادة البرونز الدولية مباشرة.","isCorrect":false,"rationale":"الشهادات الدولية ليها مسار منفصل واختبارات خاصة من الاتحاد الدولي مش ترقية محلية تلقائية."},{"label":"C","text":"إنه يقضي سنتين في الدرجة التالتة وينجح في امتحان الترقية.","isCorrect":false,"rationale":"مدة السنتين مطلوبة للترقية من التانية للأولى، لكن من التالتة للتانية المدة مختلفة."},{"label":"D","text":"إنه يشترك في تحكيم 10 بطولات دولية خارج بلده.","isCorrect":false,"rationale":"الترقيات المحلية بتعتمد على المدة الزمنية والامتحانات اللي بتعملها لجنة الحكام في الاتحاد المحلي."}]},{"question":"في مسابقات الميدان (زي الوثب أو الرمي)، الحكم بيرفع 'العلم الأصفر' إمتى؟","hint":"فكر في علاقة العلم ده بالوقت المخصص لكل لاعب قبل ما محاولته تعتبر لاغية.","options":[{"label":"A","text":"كإشارة لبدء القياس الإلكتروني للمسافة.","isCorrect":false,"rationale":"الأعلام في الميدان مخصصة لصحة المحاولة أو تنبيهات الوقت مش لتشغيل الأجهزة."},{"label":"B","text":"لما اللاعب يعمل محاولة ناجحة لكن فيها شك بسيط.","isCorrect":false,"rationale":"المحاولة الناجحة بيرفع فيها العلم الأبيض والشك بيتحسم قبل رفع العلم."},{"label":"C","text":"علشان ينبه اللاعب إن باقي 15 ثانية بس على نهاية زمن المحاولة المسموح بيه.","isCorrect":true,"rationale":"العلم الأصفر بيستخدم كإشارة زمنية تحذيرية للاعب علشان يلحق يبدأ محاولته قبل ما الوقت يخلص."},{"label":"D","text":"لما اللاعب يعترض على قرار الحكم بشكل غير لائق.","isCorrect":false,"rationale":"سوء السلوك بيتم التعامل معاه بالكروت (الأصفر أو الأحمر) مش بالأعلام الملونة الخاصة بالمحاولات."}]},{"question":"إمتى بيتم استخدام 'الكارت الأخضر' من قبل مساعد آذن البدء؟","hint":"الكارت ده بيطلع لما ميكونش فيه أي لاعب غلطان في البداية اللي اتلغت.","options":[{"label":"A","text":"لما لاعب يعمل بداية خاطئة لأول مرة في المسابقات المركبة.","isCorrect":false,"rationale":"في المسابقات المركبة الخطأ الأول بيستخدم له الكارت الأصفر والأسود."},{"label":"B","text":"لما يكون فيه خطأ في جهاز البداية أو من الحكام نفسهم مش من اللاعبين.","isCorrect":true,"rationale":"الكارت الأخضر بيطمن اللاعبين والجمهور إن العودة للبداية مكنتش بسبب خطأ لاعب، وبالتالي محدش هيستبعد."},{"label":"C","text":"كإشارة للاعبين إنهم يقدروا يدخلوا الملعب من غرفة النداء.","isCorrect":false,"rationale":"دخول الملعب له إجراءات تنظيمية تانية، والكروت الملونة بتستخدم في مواقف فنية أثناء البداية."},{"label":"D","text":"لما اللاعب يكمل السباق وهو تحت طائلة الاحتجاج.","isCorrect":false,"rationale":"الحالة دي بيستخدم لها الكارت الأبيض والأحمر (المقسوم نصين)."}]},{"question":"مين المسؤول عن فحص ملابس اللاعبين وعدد المسامير في الحذاء والتأكد من الأرقام قبل دخولهم الملعب؟","hint":"المكان ده هو آخر نقطة تفتيش بيمر عليها اللاعب قبل ما ينزل المنافسة.","options":[{"label":"A","text":"مدير المنافسة (Competition Manager).","isCorrect":false,"rationale":"مدير المنافسة دوره إداري عام وتنسيق بين الأطراف مش فحص فني دقيق لكل لاعب."},{"label":"B","text":"آذن البدء الدولي (International Starter).","isCorrect":false,"rationale":"آذن البدء مسؤوليته بتبدأ من لحظة وقوف اللاعبين على خط البداية مش قبل كدة."},{"label":"C","text":"حكام غرفة النداء (Call Room).","isCorrect":true,"rationale":"غرفة النداء هي 'المطبخ' اللي لازم يخرج منه اللاعب جاهز تماماً ومستوفي لكل الشروط الفنية."},{"label":"D","text":"المندوب الطبي (Medical Delegate).","isCorrect":false,"rationale":"المندوب الطبي مسؤوليته طبية وإسعافية وملوش علاقة بمعدات اللاعبين الفنية."}]},{"question":"ليه بيتم تعيين حكام للتوقيت اليدوي حتى في وجود أجهزة التصوير الإلكتروني (Photo Finish)؟","hint":"فكر في اللي ممكن يحصل لو التكنولوجيا خذلتنا فجأة وسط البطولة.","options":[{"label":"A","text":"كتدريب ليهم علشان يبقوا حكام دوليين في المستقبل.","isCorrect":false,"rationale":"رغم إنه مفيد للخبرة، بس السبب الرسمي لتعيينهم هو مواجهة الطوارئ الفنية."},{"label":"B","text":"لأن القانون بيشترط حساب متوسط الزمن بين اليدوي والإلكتروني.","isCorrect":false,"rationale":"القانون بياخد بالزمن الإلكتروني كلياً لو متاح، ومبيعملش متوسط مع اليدوي."},{"label":"C","text":"علشان يراجعوا النتائج ويعدلوها لو معجبتش رئيس الاتحاد.","isCorrect":false,"rationale":"النتائج بتعتمد على القواعد الفنية مش الأهواء، والتوقيت الإلكتروني هو الأساس."},{"label":"D","text":"علشان يكونوا بدلاء جاهزين في حالة انقطاع الكهرباء أو حصل خلل مفاجئ في الجهاز الإلكتروني.","isCorrect":true,"rationale":"وجود توقيت يدوي هو إجراء احترازي لضمان وجود نتائج للسباق لو حصلت أي مشكلة تقنية في المطبخ الإلكتروني."}]},{"question":"إيه هو التصرف الممنوع على الحكم تجاه زميله حسب قواعد السلوك المهني المذكورة؟","hint":"الاحترام المتبادل بين أعضاء فريق التحكيم قدام الناس ضروري لهيبة القانون.","options":[{"label":"A","text":"إنه ينقد زميله أو يغلط فيه قدام الجمهور أو في الصحافة ووسائل التواصل.","isCorrect":true,"rationale":"الحفاظ على صورة التحكيم ووحدة الحكام واجب، والنقد لازم يكون داخلي وبشكل احترافي مش علني."},{"label":"B","text":"إنه يتكلم معاه في أمور فنية تخص المسابقة داخل غرفة الاجتماعات.","isCorrect":false,"rationale":"المناقشات الفنية في غرفة الاجتماعات مطلوبة لتصحيح الأخطاء وتطوير الأداء."},{"label":"C","text":"إنه يقدم له تقرير سنوي عن أداءه الفني.","isCorrect":false,"rationale":"التقارير هي وظيفة لجنة الحكام لتقييم الأداء وتطويره."},{"label":"D","text":"إنه يطلب منه المساعدة في قياس مسافة معينة.","isCorrect":false,"rationale":"التعاون بين الحكام في القياس والتحكيم هو أساس نجاح إدارة أي مسابقة."}]},{"question":"في المسابقات الفردية (مش المركبة)، الكارت اللي لونه 'أحمر وأسود' مع بعض بيعني إيه للاعب؟","hint":"الكارت ده مقسوم نصين ولونه بيوحي بنهاية مشاركة اللاعب في السباق ده.","options":[{"label":"A","text":"تنبيه للاعب بضرورة تعديل وضعية 'الاستعداد' (Set).","isCorrect":false,"rationale":"تعديل الوضعية بيكون بأوامر شفهية أو كروت تانية، لكن الكارت ده نتيجته الاستبعاد."},{"label":"B","text":"إنذار أصفر بسبب سوء السلوك الرياضي.","isCorrect":false,"rationale":"الإنذار بسبب السلوك بيكون كارت أصفر سادة مش مختلط بالألوان."},{"label":"C","text":"إشارة للاعب إنه فاز بالمركز الأول رسمياً.","isCorrect":false,"rationale":"الكروت الملونة عند البداية مخصصة للأخطاء والتحذيرات مش للنتائج النهائية."},{"label":"D","text":"استبعاد نهائي من المسابقة بسبب البداية الخاطئة (False Start).","isCorrect":true,"rationale":"في النظام الجديد للمسابقات الفردية، أي بداية خاطئة من المرة الأولى بتؤدي للاستبعاد بالكارت الأحمر والأسود."}]}];
+const tr = {"correct":"صحيح!","incorrect":"خطأ","next":"السؤال التالي ←","seeResults":"عرض النتائج","complete":"اكتمل الاختبار!","scoreText":"أجبت {correct} من {total} بشكل صحيح","tryAgain":"حاول مرة أخرى","rightAnswer":"إجابة صحيحة","notQuite":"ليس تماماً"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
