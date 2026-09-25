@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار تحكيم</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>اختبار تحكيم</h1>
+    <div class="meta">12 أسئلة</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">سؤال 1</span>
+            <span class="q-of">/ 12</span>
+          </div>
+          <div class="q-text">بناءً على التعديلات الجديدة، إيه هو وضع تعيين &quot;لجنة الاحتكام&quot; في المنافسات الدولية الكبرى؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في التغيير اللي حصل بخصوص إلزامية وجود اللجنة دي في البطولات الكبيرة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="القانون الجديد خلى تعيين لجنة الاحتكام في البطولات الكبرى أمر اختياري بعد ما كان إلزامي، وده لتبسيط الإجراءات.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">بقى تعيينها اختياري وموكول لهيئة تسيير المنافسة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القانون الجديد خلى تعيين لجنة الاحتكام في البطولات الكبرى أمر اختياري بعد ما كان إلزامي، وده لتبسيط الإجراءات.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="القانون مش بيحصرها في الأولمبياد بس، هو خلاها اختيارية في كل المنافسات الدولية الكبرى بشكل عام.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">بقت مقتصرة بس على الألعاب الأولمبية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القانون مش بيحصرها في الأولمبياد بس، هو خلاها اختيارية في كل المنافسات الدولية الكبرى بشكل عام.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="لجنة الاحتكام لسه موجودة ككيان، وحكم الفيديو له دور تقني مختلف ومحدد في حالات الاختلاف.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">تم إلغاؤها تماماً واستبدالها بحكم الفيديو.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لجنة الاحتكام لسه موجودة ككيان، وحكم الفيديو له دور تقني مختلف ومحدد في حالات الاختلاف.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="ده كان النظام القديم، لكن القانون الجديد منح مرونة أكبر في اختيار تعيينها أو الاستغناء عنها.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">لازم تتعين في كل المنافسات الدولية والوطنية بدون استثناء.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ده كان النظام القديم، لكن القانون الجديد منح مرونة أكبر في اختيار تعيينها أو الاستغناء عنها.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">سؤال 2</span>
+            <span class="q-of">/ 12</span>
+          </div>
+          <div class="q-text">لو حصل اختلاف في القرار بين حكم المنافسة وحكم الفيديو (VAR)، مين اللي كلمته بتمشي في الآخر؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في الشخص اللي متاح قدامه شاشات وإعادة بطيئة للقطات.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="اللجنة مش بتدخل في اللحظة دي، القرار التقني السريع لازم يتاخد من خلال حكم الفيديو لتسيير المنافسة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">بيتم الرجوع فوراً للجنة الاحتكام لفك الاشتباك.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">اللجنة مش بتدخل في اللحظة دي، القرار التقني السريع لازم يتاخد من خلال حكم الفيديو لتسيير المنافسة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="رغم وجوده في الملعب، إلا أن القانون الجديد أعطى الأولوية للي عنده أدوات تقنية أدق.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">حكم المنافسة لأنه هو اللي موجود في الملعب.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">رغم وجوده في الملعب، إلا أن القانون الجديد أعطى الأولوية للي عنده أدوات تقنية أدق.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="إلغاء المحاولة مش حل قانوني للاختلاف في الرأي بين الحكام، القانون حدد جهة واحدة للحسم.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">بيتم إلغاء المحاولة أو السباق وإعادته.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">إلغاء المحاولة مش حل قانوني للاختلاف في الرأي بين الحكام، القانون حدد جهة واحدة للحسم.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="القانون أعطى كلمة الحسم لحكم الفيديو في حال الاختلاف لأنه بيعتمد على معدات تقنية وزوايا رؤية متعددة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">حكم الفيديو لأن عنده الصور والإعادة البطيئة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القانون أعطى كلمة الحسم لحكم الفيديو في حال الاختلاف لأنه بيعتمد على معدات تقنية وزوايا رؤية متعددة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">سؤال 3</span>
+            <span class="q-of">/ 12</span>
+          </div>
+          <div class="q-text">ليه قانون ملابس المتسابقين في &quot;سباقات المشي&quot; بيمنع لبس أي حاجة تغطي منطقة الركبة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في الأخطاء الشائعة اللي بيدور عليها حكام المشي في رجل المتسابق.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="في سباقات المشي، ثني الركبة بيعتبر خطأ فني، ولازم تكون الركبة مكشوفة للقضاة عشان يقدروا يقيموا الخطوة صح.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">عشان الحكام يقدروا يتأكدوا إن مفيش ثني في الركبة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">في سباقات المشي، ثني الركبة بيعتبر خطأ فني، ولازم تكون الركبة مكشوفة للقضاة عشان يقدروا يقيموا الخطوة صح.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="التبريد مهم، بس السبب الأساسي هنا هو وضوح الرؤية للحكام بخصوص قوانين حركة الرجل.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">عشان تبريد جسم اللاعب خلال السباقات الطويلة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التبريد مهم، بس السبب الأساسي هنا هو وضوح الرؤية للحكام بخصوص قوانين حركة الرجل.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="القوانين مش بتعتمد على الموضة، لكنها بتعتمد على تمكين الحكام من أداء وظيفتهم التقنية.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">عشان دي قوانين الموضة الجديدة في ألعاب القوى.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القوانين مش بتعتمد على الموضة، لكنها بتعتمد على تمكين الحكام من أداء وظيفتهم التقنية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="تأثير القماش على السرعة دي مسألة فنية للمتسابق، لكن القانون هنا هدفه الرقابة التحكيمية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">عشان القماش الواسع بيقلل من سرعة المتسابق.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تأثير القماش على السرعة دي مسألة فنية للمتسابق، لكن القانون هنا هدفه الرقابة التحكيمية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">سؤال 4</span>
+            <span class="q-of">/ 12</span>
+          </div>
+          <div class="q-text">في سباق التتابع، لو المتسابق (أ) عنده إنذار أصفر من سباق فردي سابق، وأخد إنذار أصفر تاني وهو بيلعب في التتابع، إيه النتيجة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">افتكر إن البطاقات الصفراء بتفضل مكملة مع اللاعب طول فترة البطولة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="قوانين التتابع بتعتبر الفريق وحدة واحدة في حال ارتكاب أحد أفراده خطأ يستوجب الاستبعاد أثناء السباق.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">المتسابق يستبعد لوحده والفريق يكمل ببديل.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">قوانين التتابع بتعتبر الفريق وحدة واحدة في حال ارتكاب أحد أفراده خطأ يستوجب الاستبعاد أثناء السباق.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="البطاقات الصفراء بتسجل على المتسابق في البطولة كلها، وبتتراكم بغض النظر عن نوع المسابقة.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">الإنذارين ملهومش علاقة ببعض لأن ده تتابع وده فردي.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">البطاقات الصفراء بتسجل على المتسابق في البطولة كلها، وبتتراكم بغض النظر عن نوع المسابقة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="حصول لاعب على إنذار ثانٍ يعني كارت أحمر آلياً، وده ليه عواقب مباشرة على نتيجة الفريق.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">الفريق ياخد إنذار بس والنتائج تفضل زي ما هي.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">حصول لاعب على إنذار ثانٍ يعني كارت أحمر آلياً، وده ليه عواقب مباشرة على نتيجة الفريق.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="تراكم البطاقات الصفراء على نفس الشخص (حتى لو في مسابقات مختلفة بنفس البطولة) بيؤدي للاستبعاد الشخصي وإقصاء فريق التتابع.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">المتسابق ياخد كارت أحمر ويستبعد هو وفريقه من السباق.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تراكم البطاقات الصفراء على نفس الشخص (حتى لو في مسابقات مختلفة بنفس البطولة) بيؤدي للاستبعاد الشخصي وإقصاء فريق التتابع.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">سؤال 5</span>
+            <span class="q-of">/ 12</span>
+          </div>
+          <div class="q-text">إيه هو التغيير اللي طرأ على قاعدة &quot;مكعبات البداية&quot; بخصوص خط البداية؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">ركز على الأجزاء المعدنية اللي بتشيل المكعبات نفسها.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="الإطار الحديدي جزء من المعدات وممنوع تماماً إنه يتخطى أو يلمس خط البداية.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">مسموح للإطار الحديدي بس إنه يلمس الخط.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الإطار الحديدي جزء من المعدات وممنوع تماماً إنه يتخطى أو يلمس خط البداية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="التدقيق الجديد في القانون شمل الإطار الحديدي الحامل للمكعبات، مش بس المكعبات نفسها، لضمان عدالة البداية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">ممنوع أي جزء من المكعب بما فيه الإطار الحديدي يلمس خط البداية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التدقيق الجديد في القانون شمل الإطار الحديدي الحامل للمكعبات، مش بس المكعبات نفسها، لضمان عدالة البداية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="المكعبات إلزامية في سباقات السرعة لضمان انطلاقة قوية وعادلة لجميع المتسابقين.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">مكعبات البداية بقت اختيارية في سباقات الـ <span class="math">100</span> متر.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المكعبات إلزامية في سباقات السرعة لضمان انطلاقة قوية وعادلة لجميع المتسابقين.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="لمس الخط باليد ممنوع تماماً في كل الأحوال عند أمر &quot;خذ مكانك&quot; أو &quot;استعد&quot;.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">ممكن المتسابق يلمس الخط بإيده لو المكعب سليم.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لمس الخط باليد ممنوع تماماً في كل الأحوال عند أمر &quot;خذ مكانك&quot; أو &quot;استعد&quot;.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">سؤال 6</span>
+            <span class="q-of">/ 12</span>
+          </div>
+          <div class="q-text">لو المتسابق وقعت منه &quot;عصا التتابع&quot;، إيه الإجراء الصحيح اللي لازم يعمله حسب التعديل الجديد؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في أسرع طريقة المتسابق يكمل بيها سباقه من غير ما يعطل غيره.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="دي كانت القاعدة القديمة اللي كانت بتسبب ارتباك وعرقلة، وتم تحديثها لتسهيل استكمال السباق.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">لازم يرجع للنقطة اللي وقعت فيها العصا بالضبط قبل ما يكمل.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">دي كانت القاعدة القديمة اللي كانت بتسبب ارتباك وعرقلة، وتم تحديثها لتسهيل استكمال السباق.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="القانون الجديد خفف القيود، المتسابق بياخد العصا ويكمل سباقه فوراً بشرط عدم عرقلة المنافسين، وما بقاش ملزم يرجع لنقطة السقوط.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">ياخد العصا ويكمل السباق من أي مكان بدون ما يعيق حد.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القانون الجديد خفف القيود، المتسابق بياخد العصا ويكمل سباقه فوراً بشرط عدم عرقلة المنافسين، وما بقاش ملزم يرجع لنقطة السقوط.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="المتسابق هو المسؤول عن استعادة عصاه بنفسه، وتدخل الحكام في ده ممنوع.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">لازم يستنى حكم الحارة يديله العصا في إيده.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المتسابق هو المسؤول عن استعادة عصاه بنفسه، وتدخل الحكام في ده ممنوع.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="سقوط العصا مش معناه استبعاد، طالما المتسابق استرجعها بنفسه وبطريقة قانونية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">الفريق بيستبعد فوراً لو العصا لمست الأرض.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">سقوط العصا مش معناه استبعاد، طالما المتسابق استرجعها بنفسه وبطريقة قانونية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">سؤال 7</span>
+            <span class="q-of">/ 12</span>
+          </div>
+          <div class="q-text">في سباقات التتابع المختلط (<span class="math">4 × 100</span>) و (<span class="math">4 × 400</span>)، إيه هو ترتيب الجري الإلزامي؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">افتكر إن السباق بيبدأ بجنس وبينتهي بجنس مختلف بشكل تبادلي.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="الاختيار كان متاح زمان، لكن دلوقتي القانون وضع ترتيب محدد لازم الكل يلتزم بيه.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">الفريق يختار الترتيب اللي يعجبه حسب الخطة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الاختيار كان متاح زمان، لكن دلوقتي القانون وضع ترتيب محدد لازم الكل يلتزم بيه.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="القانون حدد الترتيب ده رسمياً عشان يوحد المنافسة بعد ما كانت بتتم بأي ترتيب في بعض البطولات السابقة.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">رجل، ثم امرأة، ثم رجل، ثم امرأة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القانون حدد الترتيب ده رسمياً عشان يوحد المنافسة بعد ما كانت بتتم بأي ترتيب في بعض البطولات السابقة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="رغم إنه ممكن، بس القانون حدد إن البداية تكون بالرجل والنهاية بالمرأة في السباقات المختلطة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">امرأة، ثم رجل، ثم امرأة، ثم رجل.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">رغم إنه ممكن، بس القانون حدد إن البداية تكون بالرجل والنهاية بالمرأة في السباقات المختلطة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="الترتيب التبادلي (رجل-امرأة) هو اللي اعتمده الاتحاد الدولي للمنافسات المختلطة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">رجلين في الأول وبعدين امرأتين في الآخر.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الترتيب التبادلي (رجل-امرأة) هو اللي اعتمده الاتحاد الدولي للمنافسات المختلطة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">سؤال 8</span>
+            <span class="q-of">/ 12</span>
+          </div>
+          <div class="q-text">إيه اللي بيحصل لو المتسابق في &quot;القفز بالزانة&quot; حب يغير مكان القوائم (Uprights) بعد ما وقته بدأ يعد؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في النقطة اللي القاضي بيسأل فيها اللاعب عن رغبته قبل ما يفتح الساعة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="ده كان مسموح بيه في السابق، لكن القاعدة اتغيرت لمنع إضاعة الوقت وضمان جدية المحاولة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">مسموح يغيرها عادي بس الوقت بيتحسب عليه.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ده كان مسموح بيه في السابق، لكن القاعدة اتغيرت لمنع إضاعة الوقت وضمان جدية المحاولة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="القانون الجديد بيمنع تغيير مكان القوائم بمجرد بدء ساعة المتسابق، ولذلك القاضي لازم يسأله ويأكد معاه المكان قبل ما يبدأ الوقت.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">ممنوع يغير القوائم طالما الزمن بدأ في السريان.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القانون الجديد بيمنع تغيير مكان القوائم بمجرد بدء ساعة المتسابق، ولذلك القاضي لازم يسأله ويأكد معاه المكان قبل ما يبدأ الوقت.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="حالات كسر الزانة ليها قوانين تانية، لكن تغيير مكان القوائم نفسه محكوم ببدء وقت المحاولة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">مسموح يغيرها لو الزانة اتكسرت بس.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">حالات كسر الزانة ليها قوانين تانية، لكن تغيير مكان القوائم نفسه محكوم ببدء وقت المحاولة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="القانون ما بقاش يسمح بالتغيير ده نهائياً بعد بدء العد التنازلي للمحاولة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">مسموح يغيرها مرة واحدة بس في كل محاولة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القانون ما بقاش يسمح بالتغيير ده نهائياً بعد بدء العد التنازلي للمحاولة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">سؤال 9</span>
+            <span class="q-of">/ 12</span>
+          </div>
+          <div class="q-text">في سباقات الـ <span class="math">800</span> متر داخل القاعة (Short Track)، المتسابقين بيلتزموا بحاراتهم لمسافة قد إيه؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في عدد اللفات أو المنحنيات اللي بيحتاجها اللاعب قبل ما يسيب حارته.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="سباق الـ $800$ متر لازم يحصل فيه تداخل في النهاية، الحارات بس لمسافة البداية.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">السباق كله بيتم في حارات منفصلة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">سباق الـ <span class="math">800</span> متر لازم يحصل فيه تداخل في النهاية، الحارات بس لمسافة البداية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="التعديل الجديد خلى المتسابقين يفضلوا في حاراتهم لمنحنيين بدل منحنى واحد لتقليل التصادم والازدحام في البداية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">لمدة منحنيين (Two bends) كاملين.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التعديل الجديد خلى المتسابقين يفضلوا في حاراتهم لمنحنيين بدل منحنى واحد لتقليل التصادم والازدحام في البداية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="المسافة دي قصيرة جداً، القانون حددها بإنهاء المنحنى الثاني لضمان انسيابية السباق.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">بيجروا في حاراتهم لحد أول <span class="math">50</span> متر بس.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المسافة دي قصيرة جداً، القانون حددها بإنهاء المنحنى الثاني لضمان انسيابية السباق.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="ده كان النظام القديم، وتم تغييره عشان يوفر مساحة أكبر وحماية للمتسابقين قبل التجمع.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">لمدة منحنى واحد بس وبعدين يدخلوا لجوه.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ده كان النظام القديم، وتم تغييره عشان يوفر مساحة أكبر وحماية للمتسابقين قبل التجمع.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">سؤال 10</span>
+            <span class="q-of">/ 12</span>
+          </div>
+          <div class="q-text">إيه هي مدة &quot;الحجز&quot; (Pit Lane) الإلزامية لمتسابق في سباق مشي <span class="math">10</span> كيلو لو أخد بطاقات حمراء كافية؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">القاعدة بتقول إن كل <span class="math">10</span> كيلو ليهم وحدة زمنية معينة من الدقائق.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="القانون بيحدد دقيقة واحدة لكل $10$ كيلومترات، فبالتالي سباق الـ $10$ كم وقته دقيقة واحدة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">دقيقة واحدة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القانون بيحدد دقيقة واحدة لكل <span class="math">10</span> كيلومترات، فبالتالي سباق الـ <span class="math">10</span> كم وقته دقيقة واحدة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="الدقيقتين مخصصين لمسافات أطول زي نصف الماراطون ($21$ كم تقريباً).">
+            <span class="opt-label">B</span>
+            <span class="opt-text">دقيقتين.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الدقيقتين مخصصين لمسافات أطول زي نصف الماراطون (<span class="math">21</span> كم تقريباً).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="الخمس دقائق دي عقوبة المسافات الطويلة جداً زي الـ $50$ كيلو متر مشي.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">خمس دقائق.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الخمس دقائق دي عقوبة المسافات الطويلة جداً زي الـ <span class="math">50</span> كيلو متر مشي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="الـ $30$ ثانية دي مخصصة لسباقات الـ $5000$ متر أو الـ $5$ كيلو متر مش الـ $10$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">30</span> ثانية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الـ <span class="math">30</span> ثانية دي مخصصة لسباقات الـ <span class="math">5000</span> متر أو الـ <span class="math">5</span> كيلو متر مش الـ <span class="math">10</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="10">
+          <div class="q-header">
+            <span class="q-number">سؤال 11</span>
+            <span class="q-of">/ 12</span>
+          </div>
+          <div class="q-text">في السباقات المتوسطة (أكتر من <span class="math">800</span> متر)، إيه هي الطريقة الوحيدة للتاهل للأدوار الجاية حسب القواعد الجديدة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في السبب اللي بيخلي اللعيبة في المجموعات الأخيرة يجروا ببطء لو عرفوا أوقات اللي قبلهم.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="تم إلغاء التأهل بالزمن (أسرع وقت) في المسافات الطويلة لمنع التلاعب في وتيرة السباق ولضمان منافسة أقوى.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">عن طريق الترتيب (المركز) فقط.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تم إلغاء التأهل بالزمن (أسرع وقت) في المسافات الطويلة لمنع التلاعب في وتيرة السباق ولضمان منافسة أقوى.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="ده كان النظام القديم (Q و q)، لكن دلوقتي التعديل الجديد اعتمد المراكز بس (Q).">
+            <span class="opt-label">B</span>
+            <span class="opt-text">مزيج بين المراكز الأولى وأحسن أزمنة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ده كان النظام القديم (Q و q)، لكن دلوقتي التعديل الجديد اعتمد المراكز بس (Q).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="الاعتماد على التوقيت لوحده في المسافات الطويلة مابقاش مقبول عشان بيخلي اللعيبة تحسب حسبات تضعف قوة السباق.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">عن طريق أسرع توقيت في كل التصفيات.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الاعتماد على التوقيت لوحده في المسافات الطويلة مابقاش مقبول عشان بيخلي اللعيبة تحسب حسبات تضعف قوة السباق.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="القرعة مش وسيلة رياضية عادلة للتاهل في سباقات الجري، الاستحقاق بيكون بالمجهود.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">القرعة بين المتسابقين اللي خلصوا السباق.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القرعة مش وسيلة رياضية عادلة للتاهل في سباقات الجري، الاستحقاق بيكون بالمجهود.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="11">
+          <div class="q-header">
+            <span class="q-number">سؤال 12</span>
+            <span class="q-of">/ 12</span>
+          </div>
+          <div class="q-text">إيه هو الكارت اللي بيستخدمه حكم البداية عشان يسمح للاعب إنه يجري &quot;تحت التحفظ&quot; لو فيه شك في البداية الخاطئة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في الكارت اللي لونه بيجمع بين الاستبعاد (أحمر) والاحتمالية أو البراءة (أبيض).</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="الكارت الأخضر معناه إن مفيش خطأ أصلاً والبداية سليمة للكل.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">كارت أخضر كامل.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الكارت الأخضر معناه إن مفيش خطأ أصلاً والبداية سليمة للكل.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="ده بيستخدمه الآذن في المسابقات المركبة للإنذار بخطأ أول للمجموعة.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">كارت أصفر وأسود.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ده بيستخدمه الآذن في المسابقات المركبة للإنذار بخطأ أول للمجموعة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="ده الكارت الجديد المخصص لحالة &quot;تحت التحفظ&quot; عشان الجمهور والتلفزيون يعرفوا إن نتيجة اللاعب لسه مش نهائية.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">كارت مقسوم قطرياً باللونين الأحمر والأبيض.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ده الكارت الجديد المخصص لحالة &quot;تحت التحفظ&quot; عشان الجمهور والتلفزيون يعرفوا إن نتيجة اللاعب لسه مش نهائية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="الأحمر الكامل معناه استبعاد فوري ونهائي من غير كلام.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">كارت أحمر كامل.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الأحمر الكامل معناه استبعاد فوري ونهائي من غير كلام.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>اكتمل الاختبار!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">حاول مرة أخرى</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"بناءً على التعديلات الجديدة، إيه هو وضع تعيين \"لجنة الاحتكام\" في المنافسات الدولية الكبرى؟","hint":"فكر في التغيير اللي حصل بخصوص إلزامية وجود اللجنة دي في البطولات الكبيرة.","options":[{"label":"A","text":"بقى تعيينها اختياري وموكول لهيئة تسيير المنافسة.","isCorrect":true,"rationale":"القانون الجديد خلى تعيين لجنة الاحتكام في البطولات الكبرى أمر اختياري بعد ما كان إلزامي، وده لتبسيط الإجراءات."},{"label":"B","text":"بقت مقتصرة بس على الألعاب الأولمبية.","isCorrect":false,"rationale":"القانون مش بيحصرها في الأولمبياد بس، هو خلاها اختيارية في كل المنافسات الدولية الكبرى بشكل عام."},{"label":"C","text":"تم إلغاؤها تماماً واستبدالها بحكم الفيديو.","isCorrect":false,"rationale":"لجنة الاحتكام لسه موجودة ككيان، وحكم الفيديو له دور تقني مختلف ومحدد في حالات الاختلاف."},{"label":"D","text":"لازم تتعين في كل المنافسات الدولية والوطنية بدون استثناء.","isCorrect":false,"rationale":"ده كان النظام القديم، لكن القانون الجديد منح مرونة أكبر في اختيار تعيينها أو الاستغناء عنها."}]},{"question":"لو حصل اختلاف في القرار بين حكم المنافسة وحكم الفيديو (VAR)، مين اللي كلمته بتمشي في الآخر؟","hint":"فكر في الشخص اللي متاح قدامه شاشات وإعادة بطيئة للقطات.","options":[{"label":"A","text":"بيتم الرجوع فوراً للجنة الاحتكام لفك الاشتباك.","isCorrect":false,"rationale":"اللجنة مش بتدخل في اللحظة دي، القرار التقني السريع لازم يتاخد من خلال حكم الفيديو لتسيير المنافسة."},{"label":"B","text":"حكم المنافسة لأنه هو اللي موجود في الملعب.","isCorrect":false,"rationale":"رغم وجوده في الملعب، إلا أن القانون الجديد أعطى الأولوية للي عنده أدوات تقنية أدق."},{"label":"C","text":"بيتم إلغاء المحاولة أو السباق وإعادته.","isCorrect":false,"rationale":"إلغاء المحاولة مش حل قانوني للاختلاف في الرأي بين الحكام، القانون حدد جهة واحدة للحسم."},{"label":"D","text":"حكم الفيديو لأن عنده الصور والإعادة البطيئة.","isCorrect":true,"rationale":"القانون أعطى كلمة الحسم لحكم الفيديو في حال الاختلاف لأنه بيعتمد على معدات تقنية وزوايا رؤية متعددة."}]},{"question":"ليه قانون ملابس المتسابقين في \"سباقات المشي\" بيمنع لبس أي حاجة تغطي منطقة الركبة؟","hint":"فكر في الأخطاء الشائعة اللي بيدور عليها حكام المشي في رجل المتسابق.","options":[{"label":"A","text":"عشان الحكام يقدروا يتأكدوا إن مفيش ثني في الركبة.","isCorrect":true,"rationale":"في سباقات المشي، ثني الركبة بيعتبر خطأ فني، ولازم تكون الركبة مكشوفة للقضاة عشان يقدروا يقيموا الخطوة صح."},{"label":"B","text":"عشان تبريد جسم اللاعب خلال السباقات الطويلة.","isCorrect":false,"rationale":"التبريد مهم، بس السبب الأساسي هنا هو وضوح الرؤية للحكام بخصوص قوانين حركة الرجل."},{"label":"C","text":"عشان دي قوانين الموضة الجديدة في ألعاب القوى.","isCorrect":false,"rationale":"القوانين مش بتعتمد على الموضة، لكنها بتعتمد على تمكين الحكام من أداء وظيفتهم التقنية."},{"label":"D","text":"عشان القماش الواسع بيقلل من سرعة المتسابق.","isCorrect":false,"rationale":"تأثير القماش على السرعة دي مسألة فنية للمتسابق، لكن القانون هنا هدفه الرقابة التحكيمية."}]},{"question":"في سباق التتابع، لو المتسابق (أ) عنده إنذار أصفر من سباق فردي سابق، وأخد إنذار أصفر تاني وهو بيلعب في التتابع، إيه النتيجة؟","hint":"افتكر إن البطاقات الصفراء بتفضل مكملة مع اللاعب طول فترة البطولة.","options":[{"label":"A","text":"المتسابق يستبعد لوحده والفريق يكمل ببديل.","isCorrect":false,"rationale":"قوانين التتابع بتعتبر الفريق وحدة واحدة في حال ارتكاب أحد أفراده خطأ يستوجب الاستبعاد أثناء السباق."},{"label":"B","text":"الإنذارين ملهومش علاقة ببعض لأن ده تتابع وده فردي.","isCorrect":false,"rationale":"البطاقات الصفراء بتسجل على المتسابق في البطولة كلها، وبتتراكم بغض النظر عن نوع المسابقة."},{"label":"C","text":"الفريق ياخد إنذار بس والنتائج تفضل زي ما هي.","isCorrect":false,"rationale":"حصول لاعب على إنذار ثانٍ يعني كارت أحمر آلياً، وده ليه عواقب مباشرة على نتيجة الفريق."},{"label":"D","text":"المتسابق ياخد كارت أحمر ويستبعد هو وفريقه من السباق.","isCorrect":true,"rationale":"تراكم البطاقات الصفراء على نفس الشخص (حتى لو في مسابقات مختلفة بنفس البطولة) بيؤدي للاستبعاد الشخصي وإقصاء فريق التتابع."}]},{"question":"إيه هو التغيير اللي طرأ على قاعدة \"مكعبات البداية\" بخصوص خط البداية؟","hint":"ركز على الأجزاء المعدنية اللي بتشيل المكعبات نفسها.","options":[{"label":"A","text":"مسموح للإطار الحديدي بس إنه يلمس الخط.","isCorrect":false,"rationale":"الإطار الحديدي جزء من المعدات وممنوع تماماً إنه يتخطى أو يلمس خط البداية."},{"label":"B","text":"ممنوع أي جزء من المكعب بما فيه الإطار الحديدي يلمس خط البداية.","isCorrect":true,"rationale":"التدقيق الجديد في القانون شمل الإطار الحديدي الحامل للمكعبات، مش بس المكعبات نفسها، لضمان عدالة البداية."},{"label":"C","text":"مكعبات البداية بقت اختيارية في سباقات الـ $100$ متر.","isCorrect":false,"rationale":"المكعبات إلزامية في سباقات السرعة لضمان انطلاقة قوية وعادلة لجميع المتسابقين."},{"label":"D","text":"ممكن المتسابق يلمس الخط بإيده لو المكعب سليم.","isCorrect":false,"rationale":"لمس الخط باليد ممنوع تماماً في كل الأحوال عند أمر \"خذ مكانك\" أو \"استعد\"."}]},{"question":"لو المتسابق وقعت منه \"عصا التتابع\"، إيه الإجراء الصحيح اللي لازم يعمله حسب التعديل الجديد؟","hint":"فكر في أسرع طريقة المتسابق يكمل بيها سباقه من غير ما يعطل غيره.","options":[{"label":"A","text":"لازم يرجع للنقطة اللي وقعت فيها العصا بالضبط قبل ما يكمل.","isCorrect":false,"rationale":"دي كانت القاعدة القديمة اللي كانت بتسبب ارتباك وعرقلة، وتم تحديثها لتسهيل استكمال السباق."},{"label":"B","text":"ياخد العصا ويكمل السباق من أي مكان بدون ما يعيق حد.","isCorrect":true,"rationale":"القانون الجديد خفف القيود، المتسابق بياخد العصا ويكمل سباقه فوراً بشرط عدم عرقلة المنافسين، وما بقاش ملزم يرجع لنقطة السقوط."},{"label":"C","text":"لازم يستنى حكم الحارة يديله العصا في إيده.","isCorrect":false,"rationale":"المتسابق هو المسؤول عن استعادة عصاه بنفسه، وتدخل الحكام في ده ممنوع."},{"label":"D","text":"الفريق بيستبعد فوراً لو العصا لمست الأرض.","isCorrect":false,"rationale":"سقوط العصا مش معناه استبعاد، طالما المتسابق استرجعها بنفسه وبطريقة قانونية."}]},{"question":"في سباقات التتابع المختلط ($4 \\times 100$) و ($4 \\times 400$)، إيه هو ترتيب الجري الإلزامي؟","hint":"افتكر إن السباق بيبدأ بجنس وبينتهي بجنس مختلف بشكل تبادلي.","options":[{"label":"A","text":"الفريق يختار الترتيب اللي يعجبه حسب الخطة.","isCorrect":false,"rationale":"الاختيار كان متاح زمان، لكن دلوقتي القانون وضع ترتيب محدد لازم الكل يلتزم بيه."},{"label":"B","text":"رجل، ثم امرأة، ثم رجل، ثم امرأة.","isCorrect":true,"rationale":"القانون حدد الترتيب ده رسمياً عشان يوحد المنافسة بعد ما كانت بتتم بأي ترتيب في بعض البطولات السابقة."},{"label":"C","text":"امرأة، ثم رجل، ثم امرأة، ثم رجل.","isCorrect":false,"rationale":"رغم إنه ممكن، بس القانون حدد إن البداية تكون بالرجل والنهاية بالمرأة في السباقات المختلطة."},{"label":"D","text":"رجلين في الأول وبعدين امرأتين في الآخر.","isCorrect":false,"rationale":"الترتيب التبادلي (رجل-امرأة) هو اللي اعتمده الاتحاد الدولي للمنافسات المختلطة."}]},{"question":"إيه اللي بيحصل لو المتسابق في \"القفز بالزانة\" حب يغير مكان القوائم (Uprights) بعد ما وقته بدأ يعد؟","hint":"فكر في النقطة اللي القاضي بيسأل فيها اللاعب عن رغبته قبل ما يفتح الساعة.","options":[{"label":"A","text":"مسموح يغيرها عادي بس الوقت بيتحسب عليه.","isCorrect":false,"rationale":"ده كان مسموح بيه في السابق، لكن القاعدة اتغيرت لمنع إضاعة الوقت وضمان جدية المحاولة."},{"label":"B","text":"ممنوع يغير القوائم طالما الزمن بدأ في السريان.","isCorrect":true,"rationale":"القانون الجديد بيمنع تغيير مكان القوائم بمجرد بدء ساعة المتسابق، ولذلك القاضي لازم يسأله ويأكد معاه المكان قبل ما يبدأ الوقت."},{"label":"C","text":"مسموح يغيرها لو الزانة اتكسرت بس.","isCorrect":false,"rationale":"حالات كسر الزانة ليها قوانين تانية، لكن تغيير مكان القوائم نفسه محكوم ببدء وقت المحاولة."},{"label":"D","text":"مسموح يغيرها مرة واحدة بس في كل محاولة.","isCorrect":false,"rationale":"القانون ما بقاش يسمح بالتغيير ده نهائياً بعد بدء العد التنازلي للمحاولة."}]},{"question":"في سباقات الـ $800$ متر داخل القاعة (Short Track)، المتسابقين بيلتزموا بحاراتهم لمسافة قد إيه؟","hint":"فكر في عدد اللفات أو المنحنيات اللي بيحتاجها اللاعب قبل ما يسيب حارته.","options":[{"label":"A","text":"السباق كله بيتم في حارات منفصلة.","isCorrect":false,"rationale":"سباق الـ $800$ متر لازم يحصل فيه تداخل في النهاية، الحارات بس لمسافة البداية."},{"label":"B","text":"لمدة منحنيين (Two bends) كاملين.","isCorrect":true,"rationale":"التعديل الجديد خلى المتسابقين يفضلوا في حاراتهم لمنحنيين بدل منحنى واحد لتقليل التصادم والازدحام في البداية."},{"label":"C","text":"بيجروا في حاراتهم لحد أول $50$ متر بس.","isCorrect":false,"rationale":"المسافة دي قصيرة جداً، القانون حددها بإنهاء المنحنى الثاني لضمان انسيابية السباق."},{"label":"D","text":"لمدة منحنى واحد بس وبعدين يدخلوا لجوه.","isCorrect":false,"rationale":"ده كان النظام القديم، وتم تغييره عشان يوفر مساحة أكبر وحماية للمتسابقين قبل التجمع."}]},{"question":"إيه هي مدة \"الحجز\" (Pit Lane) الإلزامية لمتسابق في سباق مشي $10$ كيلو لو أخد بطاقات حمراء كافية؟","hint":"القاعدة بتقول إن كل $10$ كيلو ليهم وحدة زمنية معينة من الدقائق.","options":[{"label":"A","text":"دقيقة واحدة.","isCorrect":true,"rationale":"القانون بيحدد دقيقة واحدة لكل $10$ كيلومترات، فبالتالي سباق الـ $10$ كم وقته دقيقة واحدة."},{"label":"B","text":"دقيقتين.","isCorrect":false,"rationale":"الدقيقتين مخصصين لمسافات أطول زي نصف الماراطون ($21$ كم تقريباً)."},{"label":"C","text":"خمس دقائق.","isCorrect":false,"rationale":"الخمس دقائق دي عقوبة المسافات الطويلة جداً زي الـ $50$ كيلو متر مشي."},{"label":"D","text":"$30$ ثانية.","isCorrect":false,"rationale":"الـ $30$ ثانية دي مخصصة لسباقات الـ $5000$ متر أو الـ $5$ كيلو متر مش الـ $10$."}]},{"question":"في السباقات المتوسطة (أكتر من $800$ متر)، إيه هي الطريقة الوحيدة للتاهل للأدوار الجاية حسب القواعد الجديدة؟","hint":"فكر في السبب اللي بيخلي اللعيبة في المجموعات الأخيرة يجروا ببطء لو عرفوا أوقات اللي قبلهم.","options":[{"label":"A","text":"عن طريق الترتيب (المركز) فقط.","isCorrect":true,"rationale":"تم إلغاء التأهل بالزمن (أسرع وقت) في المسافات الطويلة لمنع التلاعب في وتيرة السباق ولضمان منافسة أقوى."},{"label":"B","text":"مزيج بين المراكز الأولى وأحسن أزمنة.","isCorrect":false,"rationale":"ده كان النظام القديم (Q و q)، لكن دلوقتي التعديل الجديد اعتمد المراكز بس (Q)."},{"label":"C","text":"عن طريق أسرع توقيت في كل التصفيات.","isCorrect":false,"rationale":"الاعتماد على التوقيت لوحده في المسافات الطويلة مابقاش مقبول عشان بيخلي اللعيبة تحسب حسبات تضعف قوة السباق."},{"label":"D","text":"القرعة بين المتسابقين اللي خلصوا السباق.","isCorrect":false,"rationale":"القرعة مش وسيلة رياضية عادلة للتاهل في سباقات الجري، الاستحقاق بيكون بالمجهود."}]},{"question":"إيه هو الكارت اللي بيستخدمه حكم البداية عشان يسمح للاعب إنه يجري \"تحت التحفظ\" لو فيه شك في البداية الخاطئة؟","hint":"فكر في الكارت اللي لونه بيجمع بين الاستبعاد (أحمر) والاحتمالية أو البراءة (أبيض).","options":[{"label":"A","text":"كارت أخضر كامل.","isCorrect":false,"rationale":"الكارت الأخضر معناه إن مفيش خطأ أصلاً والبداية سليمة للكل."},{"label":"B","text":"كارت أصفر وأسود.","isCorrect":false,"rationale":"ده بيستخدمه الآذن في المسابقات المركبة للإنذار بخطأ أول للمجموعة."},{"label":"C","text":"كارت مقسوم قطرياً باللونين الأحمر والأبيض.","isCorrect":true,"rationale":"ده الكارت الجديد المخصص لحالة \"تحت التحفظ\" عشان الجمهور والتلفزيون يعرفوا إن نتيجة اللاعب لسه مش نهائية."},{"label":"D","text":"كارت أحمر كامل.","isCorrect":false,"rationale":"الأحمر الكامل معناه استبعاد فوري ونهائي من غير كلام."}]}];
+const tr = {"correct":"صحيح!","incorrect":"خطأ","next":"السؤال التالي ←","seeResults":"عرض النتائج","complete":"اكتمل الاختبار!","scoreText":"أجبت {correct} من {total} بشكل صحيح","tryAgain":"حاول مرة أخرى","rightAnswer":"إجابة صحيحة","notQuite":"ليس تماماً"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
