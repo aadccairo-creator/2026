@@ -1,0 +1,249 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ندوة حول مهام الحكام فى مسابقات الضاحية — كشف المشاركين</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #064e3b;
+      --navy-soft: #064e3b14;
+      --accent: #10b981;
+      --accent-soft: #ecfdf5;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --row-alt: #fbfcfe;
+      --row-hover: #f1f5f9;
+      --pad-y: 12px;
+      --pad-x: 16px;
+      --font-size: 14.5px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: 'IBM Plex Sans Arabic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.7;
+      padding: 28px 14px 48px;
+      direction: rtl;
+      overflow-y: auto;
+    }
+
+    .sheet {
+      max-width: 940px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.35);
+      padding: 30px 26px 26px;
+    }
+
+    /* ---------- Document header (centred, navy, display font) ---------- */
+    .doc-head { text-align: center; padding-bottom: 20px; border-bottom: 2px solid var(--border); }
+
+    .meta-badges {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #f1f5f9; color: #334155;
+      font-weight: 700; font-size: 12.5px; padding: 5px 14px; border-radius: 999px;
+    }
+    .badge.accent { background: var(--accent-soft); color: var(--accent); }
+    .badge.navy { background: var(--navy-soft); color: var(--navy); }
+
+    h1 {
+      font-family: 'Cairo', 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+      font-size: clamp(24px, 3.6vw, 36px);
+      font-weight: 800;
+      line-height: 1.45;
+      color: var(--navy);
+      text-align: center;
+      margin: 0 auto 10px;
+      max-width: 92%;
+      letter-spacing: 0;
+    }
+
+    .title-rule {
+      width: 96px; height: 4px; border-radius: 999px; margin: 0 auto 14px;
+      background: linear-gradient(90deg, var(--accent), var(--navy));
+    }
+
+    .description {
+      font-size: 14px; color: var(--muted);
+      max-width: 760px; margin: 0 auto; text-align: center; line-height: 1.9;
+    }
+
+    .stats {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px;
+    }
+    .stat {
+      display: flex; align-items: baseline; gap: 7px;
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 6px 16px; background: #fff;
+    }
+    .stat b { font-size: 16px; color: var(--navy); }
+    .stat span { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+    /* ---------- Toolbar ---------- */
+    .toolbar { display: flex; align-items: center; gap: 12px; margin: 22px 0 14px; flex-wrap: wrap; }
+    .search-box { flex: 1; min-width: 220px; }
+    .search-input {
+      width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+      border-radius: 12px; font-family: inherit; font-size: 14px; outline: none;
+      background: #fff; color: var(--ink); transition: border-color .18s, box-shadow .18s;
+    }
+    .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px #10b9811f; }
+    /* ---------- Table ---------- */
+    .table-wrap { overflow: auto; border: 1px solid var(--border); border-radius: 14px; max-height: none; }
+    table { width: 100%; border-collapse: collapse; font-size: var(--font-size); text-align: right; }
+    thead th {
+      position: sticky; top: 0; z-index: 2;
+      background: var(--navy); color: #fff; font-weight: 700; font-size: 13px;
+      padding: 12px var(--pad-x); white-space: nowrap; text-align: right;
+    }
+    thead th.text-center { text-align: center; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr.data-row:nth-child(even), tbody tr:nth-of-type(even) { background: var(--row-alt); }
+    tbody tr:hover { background: var(--row-hover); }
+    td { padding: var(--pad-y) var(--pad-x); vertical-align: middle; }
+    .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+    .text-center { text-align: center; }
+    .name-cell { font-weight: 700; color: var(--ink); }
+    .federation-cell, .country-cell { color: #334155; font-weight: 500; }
+    .serial-cell { color: var(--muted); font-weight: 700; width: 56px; }
+    .c-serial { width: 56px; text-align: center; }
+    .code-cell { color: var(--navy); font-weight: 700; }
+    .email-cell, .phone-cell { color: var(--muted); font-size: 12.5px; }
+    .pill {
+      display: inline-block; background: var(--accent-soft); color: var(--accent);
+      border-radius: 999px; padding: 3px 12px; font-size: 12px; font-weight: 700; white-space: nowrap;
+    }
+    .group-row td {
+      background: #f8fafc; color: var(--navy); font-weight: 800; font-size: 13px;
+      padding: 9px var(--pad-x); border-bottom: 1px solid var(--border);
+    }
+    .group-count { color: var(--muted); font-weight: 600; }
+    .empty-state { text-align: center; padding: 34px 16px; color: var(--muted); font-size: 14px; }
+
+    /* ---------- Country breakdown ---------- */
+    .breakdown { margin-top: 22px; border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+    .breakdown h2 { font-size: 14px; color: var(--navy); margin-bottom: 12px; font-weight: 800; }
+    .breakdown ul { list-style: none; display: grid; gap: 8px; }
+    .breakdown li { display: grid; grid-template-columns: minmax(90px, 160px) 1fr 42px; align-items: center; gap: 10px; }
+    .bd-name { font-size: 12.5px; font-weight: 700; color: #334155; }
+    .bd-bar { display: block; height: 8px; background: #eef2f7; border-radius: 999px; overflow: hidden; }
+    .bd-bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--navy)); border-radius: 999px; }
+    .bd-num { font-size: 12.5px; font-weight: 800; color: var(--navy); text-align: left; }
+
+    .doc-footer {
+      margin-top: 20px; padding-top: 14px; border-top: 1px dashed var(--border);
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between;
+      font-size: 11.5px; color: var(--muted);
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 14px 8px 32px; }
+      .sheet { padding: 20px 12px 18px; border-radius: 14px; }
+      h1 { font-size: 22px; max-width: 100%; }
+      .breakdown li { grid-template-columns: minmax(70px, 110px) 1fr 34px; }
+    }
+
+    @page { size: a4 portrait; margin: 12mm; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .sheet { border: none; box-shadow: none; padding: 0; max-width: 100%; border-radius: 0; }
+      .no-print { display: none !important; }
+      thead th { position: static; }
+      tbody tr { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <header class="doc-head">
+      <div class="meta-badges">
+        <span class="badge navy">التاريخ: <b class="num">15 يونيو 2026</b></span>
+        <span class="badge accent" id="countBadge"><b class="num">74</b> مشارك</span>
+        <span class="badge"><b class="num">7</b> دولة</span>
+      </div>
+
+      <h1>ندوة حول مهام الحكام فى مسابقات الضاحية</h1>
+      <div class="title-rule"></div>
+      
+
+      <div class="stats">
+        <div class="stat"><b class="num">74</b><span>مشارك</span></div>
+        <div class="stat"><b class="num">7</b><span>دولة</span></div>
+        <div class="stat"><b class="num">7</b><span>اتحاد</span></div>
+        
+      </div>
+    </header>
+
+    
+
+    <div class="table-wrap">
+      <table id="participantsTable">
+        <thead><tr><th class="c-serial text-center">م</th><th class="c-name">اسم المشارك</th><th class="c-fed">الاتحاد</th><th class="c-country">الدولة</th></tr></thead>
+        <tbody id="tableBody"><tr data-country="الأردن"><td class="num text-center serial-cell">1</td><td class="name-cell">حاتم الصفدي</td><td class="federation-cell">الأردن</td><td class="country-cell"><span class="pill">الأردن</span></td></tr><tr data-country="الأردن"><td class="num text-center serial-cell">2</td><td class="name-cell">محمد ابراهيم الاعمر</td><td class="federation-cell">الأردن</td><td class="country-cell"><span class="pill">الأردن</span></td></tr><tr data-country="الأردن"><td class="num text-center serial-cell">3</td><td class="name-cell">خالد عبود علي جوده</td><td class="federation-cell">الأردن</td><td class="country-cell"><span class="pill">الأردن</span></td></tr><tr data-country="اليمن"><td class="num text-center serial-cell">4</td><td class="name-cell">رضوان يحيى شاني</td><td class="federation-cell">اليمن</td><td class="country-cell"><span class="pill">اليمن</span></td></tr><tr data-country="اليمن"><td class="num text-center serial-cell">5</td><td class="name-cell">خالد عبد الرحمن اليهري</td><td class="federation-cell">اليمن</td><td class="country-cell"><span class="pill">اليمن</span></td></tr><tr data-country="اليمن"><td class="num text-center serial-cell">6</td><td class="name-cell">محمد أحمد نهشل</td><td class="federation-cell">اليمن</td><td class="country-cell"><span class="pill">اليمن</span></td></tr><tr data-country="لبنان"><td class="num text-center serial-cell">7</td><td class="name-cell">رفيق خميس</td><td class="federation-cell">لبنان</td><td class="country-cell"><span class="pill">لبنان</span></td></tr><tr data-country="لبنان"><td class="num text-center serial-cell">8</td><td class="name-cell">باسمة الرضا</td><td class="federation-cell">لبنان</td><td class="country-cell"><span class="pill">لبنان</span></td></tr><tr data-country="سوريا"><td class="num text-center serial-cell">9</td><td class="name-cell">نصر كردي</td><td class="federation-cell">سوريا</td><td class="country-cell"><span class="pill">سوريا</span></td></tr><tr data-country="سوريا"><td class="num text-center serial-cell">10</td><td class="name-cell">باسم حسن</td><td class="federation-cell">سوريا</td><td class="country-cell"><span class="pill">سوريا</span></td></tr><tr data-country="سوريا"><td class="num text-center serial-cell">11</td><td class="name-cell">موسى الحريري</td><td class="federation-cell">سوريا</td><td class="country-cell"><span class="pill">سوريا</span></td></tr><tr data-country="سوريا"><td class="num text-center serial-cell">12</td><td class="name-cell">رانيا حيدر العلي</td><td class="federation-cell">سوريا</td><td class="country-cell"><span class="pill">سوريا</span></td></tr><tr data-country="سوريا"><td class="num text-center serial-cell">13</td><td class="name-cell">يوسف علبي</td><td class="federation-cell">سوريا</td><td class="country-cell"><span class="pill">سوريا</span></td></tr><tr data-country="سوريا"><td class="num text-center serial-cell">14</td><td class="name-cell">ريم الخريط</td><td class="federation-cell">سوريا</td><td class="country-cell"><span class="pill">سوريا</span></td></tr><tr data-country="سوريا"><td class="num text-center serial-cell">15</td><td class="name-cell">نوال زيود</td><td class="federation-cell">سوريا</td><td class="country-cell"><span class="pill">سوريا</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">16</td><td class="name-cell">سلوى الدبو</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">17</td><td class="name-cell">زياد مسعود</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">18</td><td class="name-cell">أحمد الجوادي</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">19</td><td class="name-cell">لطفي عفلي</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">20</td><td class="name-cell">وفاء غربال</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">21</td><td class="name-cell">محمد الشيحاوي</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">22</td><td class="name-cell">عايدة جلولي</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">23</td><td class="name-cell">هالة زغدودي</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">24</td><td class="name-cell">شيراز بو عبدلله</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">25</td><td class="name-cell">عفيف محفوظي</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">26</td><td class="name-cell">رضا خالدي</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">27</td><td class="name-cell">إيمان المكي</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">28</td><td class="name-cell">وسيم المسعودي</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">29</td><td class="name-cell">بدور مسعودي</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">30</td><td class="name-cell">مفيدة البوغراري</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="تونس"><td class="num text-center serial-cell">31</td><td class="name-cell">أسماء خميري</td><td class="federation-cell">تونس</td><td class="country-cell"><span class="pill">تونس</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">32</td><td class="name-cell">عبد الله حسن علي الزويد</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">33</td><td class="name-cell">لطيفه حمد الدوسري</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">34</td><td class="name-cell">سلطان ناصر السلطان</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">35</td><td class="name-cell">ريما محمد المرزوق</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">36</td><td class="name-cell">عبد العزيز احمد ال جمعان</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">37</td><td class="name-cell">احمد عبد الله آل اعبيدي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">38</td><td class="name-cell">حميده على ادغام</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">39</td><td class="name-cell">نوره زايد الدوسري</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">40</td><td class="name-cell">محمد ابراهيم بالعشرين</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">41</td><td class="name-cell">منى جزاء العتيبي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">42</td><td class="name-cell">علي أحمد آل دعبل</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">43</td><td class="name-cell">هاشم احمد ال فائع</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">44</td><td class="name-cell">جعفر حسين الحاجي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">45</td><td class="name-cell">مشعل الغامدي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">46</td><td class="name-cell">حامد عبد الله الوادعي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">47</td><td class="name-cell">ناهد حمد الدوسري</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">48</td><td class="name-cell">روان احمد الاحمدي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">49</td><td class="name-cell">ياسمين علي المقبل</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">50</td><td class="name-cell">احمد دغسان الزهراني</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">51</td><td class="name-cell">لطيفة يوسف الدوسري</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">52</td><td class="name-cell">محمد عبد الله الزوري</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">53</td><td class="name-cell">احمد حسين حكمي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">54</td><td class="name-cell">سميرة البقمي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">55</td><td class="name-cell">عباس معتوق السلمان</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">56</td><td class="name-cell">حبيب أحمد السروج</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">57</td><td class="name-cell">عبد الرحمن مبارك البيشي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">58</td><td class="name-cell">عدنان ناصر القرافي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">59</td><td class="name-cell">سامي نواف الحربي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">60</td><td class="name-cell">عمر سالم المحمدي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">61</td><td class="name-cell">فهد عوض الحجيلي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">62</td><td class="name-cell">عبد الله ناصر القرافي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">63</td><td class="name-cell">سعود سليمان الزقدي</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">64</td><td class="name-cell">لجين ناجي الشمري</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">65</td><td class="name-cell">أروى خالد الشمري</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="السعودية"><td class="num text-center serial-cell">66</td><td class="name-cell">أحمد عبد الله الشمري</td><td class="federation-cell">السعودية</td><td class="country-cell"><span class="pill">السعودية</span></td></tr><tr data-country="العراق"><td class="num text-center serial-cell">67</td><td class="name-cell">احمد اديب مهدي</td><td class="federation-cell">العراق</td><td class="country-cell"><span class="pill">العراق</span></td></tr><tr data-country="العراق"><td class="num text-center serial-cell">68</td><td class="name-cell">وسام سالم عيسى</td><td class="federation-cell">العراق</td><td class="country-cell"><span class="pill">العراق</span></td></tr><tr data-country="العراق"><td class="num text-center serial-cell">69</td><td class="name-cell">عميد حسين محمد</td><td class="federation-cell">العراق</td><td class="country-cell"><span class="pill">العراق</span></td></tr><tr data-country="العراق"><td class="num text-center serial-cell">70</td><td class="name-cell">حسين محمد احمد الحديدي</td><td class="federation-cell">العراق</td><td class="country-cell"><span class="pill">العراق</span></td></tr><tr data-country="العراق"><td class="num text-center serial-cell">71</td><td class="name-cell">هلال ناظم سليم</td><td class="federation-cell">العراق</td><td class="country-cell"><span class="pill">العراق</span></td></tr><tr data-country="العراق"><td class="num text-center serial-cell">72</td><td class="name-cell">حبيب ظاهر محسن</td><td class="federation-cell">العراق</td><td class="country-cell"><span class="pill">العراق</span></td></tr><tr data-country="العراق"><td class="num text-center serial-cell">73</td><td class="name-cell">مرتضى عادل محمد</td><td class="federation-cell">العراق</td><td class="country-cell"><span class="pill">العراق</span></td></tr><tr data-country="العراق"><td class="num text-center serial-cell">74</td><td class="name-cell">منير كامل ناصر</td><td class="federation-cell">العراق</td><td class="country-cell"><span class="pill">العراق</span></td></tr></tbody>
+      </table>
+    </div>
+
+    
+
+    <footer class="doc-footer"><span>مركز التنمية لألعاب القوى بالقاهرة</span><span>تم إنشاء الملف في ٢٦‏/٩‏/٢٠٢٦</span></footer>
+  </div>
+
+  <script>
+    (function () {
+      var CFG = {"renumber":false,"total":74,"totalLabel":"مشارك","matchingLabel":"مشارك مطابق"};
+      var input = document.getElementById('searchInput');
+      var badge = document.getElementById('countBadge');
+      if (!input) return;
+
+      function apply() {
+        var q = (input.value || '').trim().toLowerCase();
+        var rows = Array.prototype.slice.call(document.querySelectorAll('#tableBody tr'));
+        var visible = 0;
+
+        rows.forEach(function (row) {
+          if (row.classList.contains('group-row') || row.classList.contains('empty-row')) return;
+          var text = (row.textContent || '').toLowerCase();
+          var country = (row.getAttribute('data-country') || '').toLowerCase();
+          var hit = !q || text.indexOf(q) !== -1 || country.indexOf(q) !== -1;
+          row.style.display = hit ? '' : 'none';
+          if (hit) {
+            visible++;
+            if (CFG.renumber) {
+              var cell = row.querySelector('.serial-cell');
+              if (cell) cell.textContent = visible;
+            }
+          }
+        });
+
+        if (badge) {
+          badge.innerHTML = q
+            ? '<b class="num">' + visible + '</b> ' + CFG.matchingLabel
+            : '<b class="num">' + CFG.total + '</b> ' + CFG.totalLabel;
+        }
+      }
+
+      input.addEventListener('input', apply);
+    })();
+  </script>
+</body>
+</html>

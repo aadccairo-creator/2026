@@ -1,0 +1,249 @@
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The duties of referees in Cross-Country Events webinar — Participant roster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #064e3b;
+      --navy-soft: #064e3b14;
+      --accent: #10b981;
+      --accent-soft: #ecfdf5;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --row-alt: #fbfcfe;
+      --row-hover: #f1f5f9;
+      --pad-y: 12px;
+      --pad-x: 16px;
+      --font-size: 14.5px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: 'IBM Plex Sans Arabic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.7;
+      padding: 28px 14px 48px;
+      direction: ltr;
+      overflow-y: auto;
+    }
+
+    .sheet {
+      max-width: 940px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.35);
+      padding: 30px 26px 26px;
+    }
+
+    /* ---------- Document header (centred, navy, display font) ---------- */
+    .doc-head { text-align: center; padding-bottom: 20px; border-bottom: 2px solid var(--border); }
+
+    .meta-badges {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #f1f5f9; color: #334155;
+      font-weight: 700; font-size: 12.5px; padding: 5px 14px; border-radius: 999px;
+    }
+    .badge.accent { background: var(--accent-soft); color: var(--accent); }
+    .badge.navy { background: var(--navy-soft); color: var(--navy); }
+
+    h1 {
+      font-family: 'Cairo', 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+      font-size: clamp(24px, 3.6vw, 36px);
+      font-weight: 800;
+      line-height: 1.45;
+      color: var(--navy);
+      text-align: center;
+      margin: 0 auto 10px;
+      max-width: 92%;
+      letter-spacing: 0;
+    }
+
+    .title-rule {
+      width: 96px; height: 4px; border-radius: 999px; margin: 0 auto 14px;
+      background: linear-gradient(90deg, var(--accent), var(--navy));
+    }
+
+    .description {
+      font-size: 14px; color: var(--muted);
+      max-width: 760px; margin: 0 auto; text-align: center; line-height: 1.9;
+    }
+
+    .stats {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px;
+    }
+    .stat {
+      display: flex; align-items: baseline; gap: 7px;
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 6px 16px; background: #fff;
+    }
+    .stat b { font-size: 16px; color: var(--navy); }
+    .stat span { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+    /* ---------- Toolbar ---------- */
+    .toolbar { display: flex; align-items: center; gap: 12px; margin: 22px 0 14px; flex-wrap: wrap; }
+    .search-box { flex: 1; min-width: 220px; }
+    .search-input {
+      width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+      border-radius: 12px; font-family: inherit; font-size: 14px; outline: none;
+      background: #fff; color: var(--ink); transition: border-color .18s, box-shadow .18s;
+    }
+    .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px #10b9811f; }
+    /* ---------- Table ---------- */
+    .table-wrap { overflow: auto; border: 1px solid var(--border); border-radius: 14px; max-height: none; }
+    table { width: 100%; border-collapse: collapse; font-size: var(--font-size); text-align: left; }
+    thead th {
+      position: sticky; top: 0; z-index: 2;
+      background: var(--navy); color: #fff; font-weight: 700; font-size: 13px;
+      padding: 12px var(--pad-x); white-space: nowrap; text-align: left;
+    }
+    thead th.text-center { text-align: center; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr.data-row:nth-child(even), tbody tr:nth-of-type(even) { background: var(--row-alt); }
+    tbody tr:hover { background: var(--row-hover); }
+    td { padding: var(--pad-y) var(--pad-x); vertical-align: middle; }
+    .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+    .text-center { text-align: center; }
+    .name-cell { font-weight: 700; color: var(--ink); }
+    .federation-cell, .country-cell { color: #334155; font-weight: 500; }
+    .serial-cell { color: var(--muted); font-weight: 700; width: 56px; }
+    .c-serial { width: 56px; text-align: center; }
+    .code-cell { color: var(--navy); font-weight: 700; }
+    .email-cell, .phone-cell { color: var(--muted); font-size: 12.5px; }
+    .pill {
+      display: inline-block; background: var(--accent-soft); color: var(--accent);
+      border-radius: 999px; padding: 3px 12px; font-size: 12px; font-weight: 700; white-space: nowrap;
+    }
+    .group-row td {
+      background: #f8fafc; color: var(--navy); font-weight: 800; font-size: 13px;
+      padding: 9px var(--pad-x); border-bottom: 1px solid var(--border);
+    }
+    .group-count { color: var(--muted); font-weight: 600; }
+    .empty-state { text-align: center; padding: 34px 16px; color: var(--muted); font-size: 14px; }
+
+    /* ---------- Country breakdown ---------- */
+    .breakdown { margin-top: 22px; border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+    .breakdown h2 { font-size: 14px; color: var(--navy); margin-bottom: 12px; font-weight: 800; }
+    .breakdown ul { list-style: none; display: grid; gap: 8px; }
+    .breakdown li { display: grid; grid-template-columns: minmax(90px, 160px) 1fr 42px; align-items: center; gap: 10px; }
+    .bd-name { font-size: 12.5px; font-weight: 700; color: #334155; }
+    .bd-bar { display: block; height: 8px; background: #eef2f7; border-radius: 999px; overflow: hidden; }
+    .bd-bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--navy)); border-radius: 999px; }
+    .bd-num { font-size: 12.5px; font-weight: 800; color: var(--navy); text-align: right; }
+
+    .doc-footer {
+      margin-top: 20px; padding-top: 14px; border-top: 1px dashed var(--border);
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between;
+      font-size: 11.5px; color: var(--muted);
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 14px 8px 32px; }
+      .sheet { padding: 20px 12px 18px; border-radius: 14px; }
+      h1 { font-size: 22px; max-width: 100%; }
+      .breakdown li { grid-template-columns: minmax(70px, 110px) 1fr 34px; }
+    }
+
+    @page { size: a4 portrait; margin: 12mm; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .sheet { border: none; box-shadow: none; padding: 0; max-width: 100%; border-radius: 0; }
+      .no-print { display: none !important; }
+      thead th { position: static; }
+      tbody tr { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <header class="doc-head">
+      <div class="meta-badges">
+        <span class="badge navy">Date: <b class="num">15 Jun 2026</b></span>
+        <span class="badge accent" id="countBadge"><b class="num">74</b> participants</span>
+        <span class="badge"><b class="num">7</b> countries</span>
+      </div>
+
+      <h1>The duties of referees in Cross-Country Events webinar</h1>
+      <div class="title-rule"></div>
+      
+
+      <div class="stats">
+        <div class="stat"><b class="num">74</b><span>participants</span></div>
+        <div class="stat"><b class="num">7</b><span>countries</span></div>
+        <div class="stat"><b class="num">7</b><span>federations</span></div>
+        
+      </div>
+    </header>
+
+    
+
+    <div class="table-wrap">
+      <table id="participantsTable">
+        <thead><tr><th class="c-serial text-center">#</th><th class="c-name">Name</th><th class="c-fed">Federation</th><th class="c-country">Country</th></tr></thead>
+        <tbody id="tableBody"><tr data-country="JOR"><td class="num text-center serial-cell">1</td><td class="name-cell">Hatim Alsafadi</td><td class="federation-cell">JOR</td><td class="country-cell"><span class="pill">JOR</span></td></tr><tr data-country="JOR"><td class="num text-center serial-cell">2</td><td class="name-cell">Mohammad E Alamar</td><td class="federation-cell">JOR</td><td class="country-cell"><span class="pill">JOR</span></td></tr><tr data-country="JOR"><td class="num text-center serial-cell">3</td><td class="name-cell">Khaled Joudeh</td><td class="federation-cell">JOR</td><td class="country-cell"><span class="pill">JOR</span></td></tr><tr data-country="YEM"><td class="num text-center serial-cell">4</td><td class="name-cell">Redhwan Yahya Shani</td><td class="federation-cell">YEM</td><td class="country-cell"><span class="pill">YEM</span></td></tr><tr data-country="YEM"><td class="num text-center serial-cell">5</td><td class="name-cell">Khaled Abdulrahman Alyahri</td><td class="federation-cell">YEM</td><td class="country-cell"><span class="pill">YEM</span></td></tr><tr data-country="YEM"><td class="num text-center serial-cell">6</td><td class="name-cell">Mohamed Ahmed Nahshal</td><td class="federation-cell">YEM</td><td class="country-cell"><span class="pill">YEM</span></td></tr><tr data-country="LBN"><td class="num text-center serial-cell">7</td><td class="name-cell">Rafik Khamis</td><td class="federation-cell">LBN</td><td class="country-cell"><span class="pill">LBN</span></td></tr><tr data-country="LBN"><td class="num text-center serial-cell">8</td><td class="name-cell">Bassima Al Rida</td><td class="federation-cell">LBN</td><td class="country-cell"><span class="pill">LBN</span></td></tr><tr data-country="SYR"><td class="num text-center serial-cell">9</td><td class="name-cell">Naser Kurde</td><td class="federation-cell">SYR</td><td class="country-cell"><span class="pill">SYR</span></td></tr><tr data-country="SYR"><td class="num text-center serial-cell">10</td><td class="name-cell">Ali Nassourbasem Hasan</td><td class="federation-cell">SYR</td><td class="country-cell"><span class="pill">SYR</span></td></tr><tr data-country="SYR"><td class="num text-center serial-cell">11</td><td class="name-cell">Mosa Alhariri</td><td class="federation-cell">SYR</td><td class="country-cell"><span class="pill">SYR</span></td></tr><tr data-country="SYR"><td class="num text-center serial-cell">12</td><td class="name-cell">Rania Al Ali</td><td class="federation-cell">SYR</td><td class="country-cell"><span class="pill">SYR</span></td></tr><tr data-country="SYR"><td class="num text-center serial-cell">13</td><td class="name-cell">Yousef Ola I</td><td class="federation-cell">SYR</td><td class="country-cell"><span class="pill">SYR</span></td></tr><tr data-country="SYR"><td class="num text-center serial-cell">14</td><td class="name-cell">Rim Alkhrit</td><td class="federation-cell">SYR</td><td class="country-cell"><span class="pill">SYR</span></td></tr><tr data-country="SYR"><td class="num text-center serial-cell">15</td><td class="name-cell">Awal Zayoud</td><td class="federation-cell">SYR</td><td class="country-cell"><span class="pill">SYR</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">16</td><td class="name-cell">Salwa Dabou</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">17</td><td class="name-cell">Zied Messaoud</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">18</td><td class="name-cell">Ahmed Jaouadi</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">19</td><td class="name-cell">Lotfi Afli</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">20</td><td class="name-cell">Wafa Ghorbel</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">21</td><td class="name-cell">Mouhamed Chihaoui</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">22</td><td class="name-cell">Aida Jallouli</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">23</td><td class="name-cell">Hela Zaghdoudi</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">24</td><td class="name-cell">Chiraz Bouabdellah</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">25</td><td class="name-cell">Afif Mahfoudhi</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">26</td><td class="name-cell">Ridha KHALDI</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">27</td><td class="name-cell">Imen Makki</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">28</td><td class="name-cell">Wassim Messaoudi</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">29</td><td class="name-cell">Boudour Messaoudi</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">30</td><td class="name-cell">Moufida Boughrari</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="TUN"><td class="num text-center serial-cell">31</td><td class="name-cell">Asma Khemiri</td><td class="federation-cell">TUN</td><td class="country-cell"><span class="pill">TUN</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">32</td><td class="name-cell">Abdullah Hasan Ali Alzowayed</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">33</td><td class="name-cell">Latifh Hamad Ali Aldossary</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">34</td><td class="name-cell">Sultan Alsultan</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">35</td><td class="name-cell">Reema Mohammed Almarzooq</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">36</td><td class="name-cell">Abdulaziz Ahmad Hasan Aljamaan</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">37</td><td class="name-cell">Ahmed Abdullah Ahmed Alobaidi</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">38</td><td class="name-cell">Hamidah Ali Edgham</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">39</td><td class="name-cell">Noarh Zyeid Aldossery</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">40</td><td class="name-cell">Mohammed Ibrahim S Balashreen</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">41</td><td class="name-cell">Mona Jeza Alotibi</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">42</td><td class="name-cell">Ali Ahmed Rashed Al Deabel</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">43</td><td class="name-cell">Hashem Ahmad Al Faya</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">44</td><td class="name-cell">Jafar Husin Abdulh Alhaji</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">45</td><td class="name-cell">Meshal Algamdi</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">46</td><td class="name-cell">Hamed Abdullah H Alwadi</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">47</td><td class="name-cell">Nahed Hamad Aldossary</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">48</td><td class="name-cell">Rawan Ahmed Alahmadi</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">49</td><td class="name-cell">Yasmeen Ali Al.Muqbel</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">50</td><td class="name-cell">‏Ahmed Daghsan Mohammed Al-Zahrani</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">51</td><td class="name-cell">Latifah Youssef Ibrahim Aldossri</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">52</td><td class="name-cell">Mohammed Abdullah Abdullah Alzouri</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">53</td><td class="name-cell">Ahmed Hussain Aly Hakmey</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">54</td><td class="name-cell">Samirah Albaqami</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">55</td><td class="name-cell">Abass Matuq Alsalman</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">56</td><td class="name-cell">Habeeb Ahmad Alsurooj</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">57</td><td class="name-cell">Abdulrhman Albishi</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">58</td><td class="name-cell">Adnan Nassar Alqrafi</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">59</td><td class="name-cell">Sami Nawaf Alharbi</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">60</td><td class="name-cell">Omar Salem Almuhmmdi</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">61</td><td class="name-cell">Fahad Awadh Alhejaili</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">62</td><td class="name-cell">Abdullah Nasser Alqarafi</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">63</td><td class="name-cell">Saud Alziqadi</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">64</td><td class="name-cell">Lujain Alshammari</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">65</td><td class="name-cell">Arwa Alshammari</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="KSA"><td class="num text-center serial-cell">66</td><td class="name-cell">Ahmed Alshammari</td><td class="federation-cell">KSA</td><td class="country-cell"><span class="pill">KSA</span></td></tr><tr data-country="IRQ"><td class="num text-center serial-cell">67</td><td class="name-cell">Ahmed Adeeb Mahdi</td><td class="federation-cell">IRQ</td><td class="country-cell"><span class="pill">IRQ</span></td></tr><tr data-country="IRQ"><td class="num text-center serial-cell">68</td><td class="name-cell">Wissam Salem Issa</td><td class="federation-cell">IRQ</td><td class="country-cell"><span class="pill">IRQ</span></td></tr><tr data-country="IRQ"><td class="num text-center serial-cell">69</td><td class="name-cell">Ameed Hussain Mohammed</td><td class="federation-cell">IRQ</td><td class="country-cell"><span class="pill">IRQ</span></td></tr><tr data-country="IRQ"><td class="num text-center serial-cell">70</td><td class="name-cell">Hussen Mohammed Ahmed</td><td class="federation-cell">IRQ</td><td class="country-cell"><span class="pill">IRQ</span></td></tr><tr data-country="IRQ"><td class="num text-center serial-cell">71</td><td class="name-cell">Hilal Nadhim Saleem</td><td class="federation-cell">IRQ</td><td class="country-cell"><span class="pill">IRQ</span></td></tr><tr data-country="IRQ"><td class="num text-center serial-cell">72</td><td class="name-cell">Habeeb Dhahir Mohsin</td><td class="federation-cell">IRQ</td><td class="country-cell"><span class="pill">IRQ</span></td></tr><tr data-country="IRQ"><td class="num text-center serial-cell">73</td><td class="name-cell">Mortadha Adil Mohammed</td><td class="federation-cell">IRQ</td><td class="country-cell"><span class="pill">IRQ</span></td></tr><tr data-country="IRQ"><td class="num text-center serial-cell">74</td><td class="name-cell">Munir Kamel Nasser</td><td class="federation-cell">IRQ</td><td class="country-cell"><span class="pill">IRQ</span></td></tr></tbody>
+      </table>
+    </div>
+
+    
+
+    <footer class="doc-footer"><span>AADCCAIRO</span><span>Generated on 26/09/2026</span></footer>
+  </div>
+
+  <script>
+    (function () {
+      var CFG = {"renumber":false,"total":74,"totalLabel":"participants","matchingLabel":"matching participants"};
+      var input = document.getElementById('searchInput');
+      var badge = document.getElementById('countBadge');
+      if (!input) return;
+
+      function apply() {
+        var q = (input.value || '').trim().toLowerCase();
+        var rows = Array.prototype.slice.call(document.querySelectorAll('#tableBody tr'));
+        var visible = 0;
+
+        rows.forEach(function (row) {
+          if (row.classList.contains('group-row') || row.classList.contains('empty-row')) return;
+          var text = (row.textContent || '').toLowerCase();
+          var country = (row.getAttribute('data-country') || '').toLowerCase();
+          var hit = !q || text.indexOf(q) !== -1 || country.indexOf(q) !== -1;
+          row.style.display = hit ? '' : 'none';
+          if (hit) {
+            visible++;
+            if (CFG.renumber) {
+              var cell = row.querySelector('.serial-cell');
+              if (cell) cell.textContent = visible;
+            }
+          }
+        });
+
+        if (badge) {
+          badge.innerHTML = q
+            ? '<b class="num">' + visible + '</b> ' + CFG.matchingLabel
+            : '<b class="num">' + CFG.total + '</b> ' + CFG.totalLabel;
+        }
+      }
+
+      input.addEventListener('input', apply);
+    })();
+  </script>
+</body>
+</html>

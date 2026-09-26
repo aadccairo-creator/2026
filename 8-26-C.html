@@ -1,0 +1,253 @@
+<!-- Interactive Cross Country 75 Flashcards with Assessment & Scoring System -->
+<div id="quiz-app-container" style="max-width: 720px; margin: 20px auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; direction: rtl; background: #ffffff; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); padding: 25px; border: 1px solid #e0e0e0;">
+
+  <!-- Header & Scoreboard -->
+  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 20px;">
+    <div>
+      <h3 style="margin: 0; color: #1b5e20; font-size: 20px;">اختبار وتعديل فهم: اختراق الضاحية</h3>
+      <span id="quiz-progress-text" style="font-size: 14px; color: #666;">البطاقة: 1 / 75</span>
+    </div>
+    <div style="display: flex; gap: 12px; font-size: 14px; font-weight: bold;">
+      <span style="background: #e8f5e9; color: #2e7d32; padding: 6px 12px; border-radius: 20px;">🟢 صح: <span id="score-correct">0</span></span>
+      <span style="background: #ffebee; color: #c62828; padding: 6px 12px; border-radius: 20px;">🔴 خطأ: <span id="score-incorrect">0</span></span>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div style="width: 100%; background: #eee; height: 8px; border-radius: 4px; margin-bottom: 20px; overflow: hidden;">
+    <div id="quiz-progress-bar" style="width: 1.33%; background: #2e7d32; height: 100%; transition: width 0.3s;"></div>
+  </div>
+
+  <!-- Flashcard Display Area -->
+  <div id="card-box" style="background: #fafafa; border: 2px solid #2e7d32; border-radius: 12px; padding: 30px 20px; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s;" onclick="toggleAnswer()">
+    <div id="card-tag" style="font-size: 13px; font-weight: bold; color: #2e7d32; margin-bottom: 10px; background: #e8f5e9; padding: 4px 10px; border-radius: 12px;">السؤال 1</div>
+    <div id="card-content" style="font-size: 18px; line-height: 1.6; color: #222; font-weight: 500;">جاري تحميل السؤال...</div>
+    <div id="click-hint" style="font-size: 12px; color: #888; margin-top: 15px;">💡 اضغط على البطاقة لإظهار الإجابة</div>
+  </div>
+
+  <!-- Self-Assessment Buttons (Show after flipping answer) -->
+  <div id="assessment-panel" style="display: none; margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px dashed #ccc;">
+    <p style="margin: 0 0 10px 0; font-size: 14px; color: #444; font-weight: bold;">كيف كانت إجابتك؟ تقييم الفهم:</p>
+    <div style="display: flex; justify-content: center; gap: 15px;">
+      <button onclick="markCard(true)" style="background: #2e7d32; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; flex: 1; max-width: 200px; box-shadow: 0 3px 8px rgba(46,125,50,0.3);">🟢 عرفتها (صح)</button>
+      <button onclick="markCard(false)" style="background: #c62828; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; flex: 1; max-width: 200px; box-shadow: 0 3px 8px rgba(198,40,40,0.3);">🔴 لم أعرفها (خطأ)</button>
+    </div>
+  </div>
+
+  <!-- Navigation Controls -->
+  <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <button onclick="navigateCard(-1)" style="background: #eceff1; color: #37474f; border: none; padding: 9px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold;">السابق</button>
+    <button onclick="showFinalResults()" style="background: #1565c0; color: #fff; border: none; padding: 9px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold;">إنهاء وعرض التقييم النهائي 📊</button>
+    <button onclick="navigateCard(1)" style="background: #eceff1; color: #37474f; border: none; padding: 9px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold;">التالي</button>
+  </div>
+
+  <!-- Final Results Modal / View -->
+  <div id="results-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 9999;">
+    <div style="background: #ffffff; width: 90%; max-width: 500px; padding: 30px; border-radius: 16px; text-align: center; direction: rtl; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+      <h2 style="color: #1b5e20; margin-top: 0;">نتيجة تقييم فهم الدرس</h2>
+      <div id="result-pie" style="font-size: 42px; font-weight: bold; color: #2e7d32; margin: 15px 0;">0%</div>
+      <p id="result-summary" style="font-size: 16px; color: #333; line-height: 1.6;"></p>
+      <div style="background: #f5f5f5; padding: 15px; border-radius: 10px; margin: 15px 0; text-align: right; font-size: 14px;">
+        <p style="margin: 5px 0;">إجمالي الأسئلة المقيّمة: <strong id="res-total">0</strong> من 75</p>
+        <p style="margin: 5px 0; color: #2e7d32;">الإجابات الصحيحة: <strong id="res-correct">0</strong></p>
+        <p style="margin: 5px 0; color: #c62828;">الإجابات الخاطئة: <strong id="res-incorrect">0</strong></p>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+        <button onclick="resetQuiz()" style="background: #2e7d32; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">إعادة التقييم من جديد 🔄</button>
+        <button onclick="closeResults()" style="background: #78909c; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">متابعة المراجعة 👁️</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const quizCards = [
+  {q: "ما المصطلح المستخدم في دول المشرق العربي للإشارة إلى سباق العدو الريفي؟", a: "اختراق الضاحية"},
+  {q: "لماذا يسمى سباق اختراق الضاحية في الدول المغاربية بـ 'العدو الريفي'؟", a: "لإقامته في الأرياف ووسط الطبيعة بدلاً من المدن"},
+  {q: "بماذا تختلف مسافات سباقات اختراق الضاحية عن سباقات الطريق من حيث الدقة؟", a: "مسافات الضاحية تقريبية ولا تتطلب شهادات قياس رسمية دقيقة كسباقات الطريق"},
+  {q: "كم تبلغ المسافة التقريبية لسباقات اختراق الضاحية لفئتي الرجال والسيدات (الكبار)؟", a: "10 كيلومترات"},
+  {q: "ما هي المسافة المقررة لفئة الرجال أقل من 20 سنة في سباق الضاحية؟", a: "8 كيلومترات"},
+  {q: "كم تبلغ مسافة سباق اختراق الضاحية للسيدات أقل من 20 سنة؟", a: "6 كيلومترات"},
+  {q: "ما هي المسافة المحددة لفئة الفتيان (الرجال أقل من 18 سنة) في سباق الضاحية؟", a: "6 كيلومترات"},
+  {q: "كم تبلغ المسافة التقريبية لسباق الفتيات (السيدات أقل من 18 سنة) في الضاحية؟", a: "4 كيلومترات"},
+  {q: "من الجهة المسؤولة عن تحديد مسافات سباقات الفئات الصغرى (البراعم) في الضاحية؟", a: "اللجان والاتحادات المحلية المنظمة للسباق"},
+  {q: "ما هي طبيعة المشاركين في سباق التتابع الجديد في مسابقات الضاحية؟", a: "فريق مختلط يتكون من عناصر نسائية ورجالية بالتناول"},
+  {q: "ما هي أنواع الأرضيات المفضلة لتصميم مطاف سباق اختراق الضاحية؟", a: "أرض ريفية معشوشبة بها صعود وانحدارات وحواجز وموانع طبيعية"},
+  {q: "ما هو الشرط الأساسي للصعوبات (انحدار، صعود، حواجز) في مسار سباق الضاحية؟", a: "أن تكون سهلة التجاوز وآمنة ولا تعرض العدائين للخطر"},
+  {q: "كم يبلغ طول اللفة الواحدة كحد أدنى في مدار سباق اختراق الضاحية؟", a: "بين 1.5 كم إلى 2 كم تقريباً"},
+  {q: "ما هو الغرض من منطقة 'الغرفة المختلطة' عند خط نهاية سباق الضاحية؟", a: "التقاء العدائين بوسائل الإعلام والصحافة بعد نهاية السباق مباشرة"},
+  {q: "لماذا يعتمد المنظمون في التصميم الحديث على نظام 'اللفات' (لفة كبيرة ولفة صغيرة)؟", a: "لتوحيد خطي البداية والنهاية لجميع الفئات والتغلب على اختلاف المسافات"},
+  {q: "ما هو الإجراء المتبع عند الحاجة لزيادة مسافة السباق في مكان ضيق؟", a: "تصميم منحنيات داخلية وخارجية (الدخول والخروج عدة مرات في المساحة المتاحة)"},
+  {q: "لماذا يجب البدء باللفة الصغيرة أولاً في سباقات الضاحية التي تحتوي على لفات مختلفة الطول؟", a: "حتى لا تختلط المجموعات الأولى بالمتسابقين المتأخرين عند تقاطع المسارات"},
+  {q: "ما العمل إذا كان مسار سباق الضاحية يقطع طريقاً معبداً (أسفلت)؟", a: "يغطى الجزء المعبد ببساط أو تراب أو عشب لحماية أحذية العدائين ذات المسامير"},
+  {q: "لماذا يجب تجنب الخطوط المستقيمة الطويلة في مسار سباق الضاحية؟", a: "لأنها ملمة للمتسابقين والجمهور، بينما تكمن متعة الضاحية في التنوع والمنعرجات"},
+  {q: "ما هي المسافة المستقيمة الدنيا المطلوبة بعد خط البداية قبل الدخول في المنعرجات؟", a: "300 متر على الأقل"},
+  {q: "لماذا يشترط القانون وجود مسافة مستقيمة طويلة وعريضة في بداية سباق الضاحية؟", a: "لاتساع الأعداد الكبيرة وتفادي الاصطدامات والتدافع قبل الضيق في المنعرجات"},
+  {q: "ما هو العرض المقترح للمسار المخصص للمنظمين والصحفيين بجانب مسار السباق؟", a: "من 1 إلى 2 متر"},
+  {q: "كيف يتم تنظيم مرور الجمهور عبر مسار السباق المحدد بحواجز؟", a: "بتحديد أبواب خاصة في الحواجز تفتح بين المنافسات وتغلق تماماً أثناء السباق"},
+  {q: "ما هو الحد الأدنى لعرض مسالك مطاف سباق اختراق الضاحية؟", a: "5 أمتار"},
+  {q: "كم يبلغ طول منطقة التسلم والتسليم في سباق التتابع للضاحية؟", a: "20 متراً"},
+  {q: "ما هو عرض خطوط البداية والنهاية ومنطقة التتابع في سباقات الضاحية والطريق؟", a: "30 سم (بخلاف المضمار الذي يبلغ 5 سم)"},
+  {q: "بماذا يشار إلى بداية منطقة التتابع في سباق الضاحية؟", a: "بعلم أخضر بعلو مترين"},
+  {q: "بماذا يشار إلى نهاية منطقة التتابع في سباق الضاحية؟", a: "بعلم أحمر بعلو مترين"},
+  {q: "ما هو الشرط التقني لصحة عملية التسليم في سباق التتابع؟", a: "أن يتم تسليم العصا أو التلامس كاملاً داخل منطقة الـ 20 متراً المحددة"},
+  {q: "ما هي الأدوات المسموح استخدامها لإعطاء إشارة البدء في سباقات الضاحية؟", a: "المسدس التقليدي، البوق، المدفع، أو أي آلة صوتية مشابهة"},
+  {q: "ما هي الأوامر الصوتية التي ينطق بها الآذن بالبدء في سباق الضاحية؟", a: "ينطق بالأمر 'مكانك' (On your marks) فقط ثم تُطلق الإشارة"},
+  {q: "متى يتم إعطاء التنبيهات الصوتية (الطلقات التحذيرية) قبل بدء السباق الكبير؟", a: "قبل 5 دقائق، ثم 3 دقائق، ثم دقيقة واحدة من موعد الانطلاق"},
+  {q: "ما هي وظيفة 'صناديق البداية' الموضوعة على خط انطلاق سباقات الضاحية الدولية؟", a: "تخصيص مكان محدد لكل فريق على خط الانطلاق لتنظيم البداية ومنع التدافع"},
+  {q: "أين يجب أن يتمركز أعضاء الفريق الواحد داخل صندوق البداية؟", a: "يقفون خلف بعضهم البعض في خط متتابع داخل الصندوق المخصص"},
+  {q: "متى يجب توفير محطات الشرب والتبلل في مطاف السباق؟", a: "عند خط البداية، وخط النهاية، وفي منتصف المسار خاصة في الأجواء الحارة"},
+  {q: "أين يفضل وضع نقاط المياه في المطاف لتجنب عرقلة المتسابقين؟", a: "في خط مستقيم أو عكس اتجاه المنعطف"},
+  {q: "ما هو الإجراء المتبع عند ثبوت تقليص متسابق لمسافة المطاف؟", a: "الإقصاء (Disqualification) بقرار من حكم السباق بناءً على تقارير المراقبين"},
+  {q: "كم عدد أرقام الصدر التي يجب أن يحملها المتسابق في الضاحية؟", a: "رقمين (رقم على الصدر ورقم على الظهر)"},
+  {q: "كيف يشير مراقب السباق إلى وقوع خطأ أو مخالفة في المسار؟", a: "برفع علم أصفر أو استخدام أجهزة الاتصال اللاسلكي للتواصل مع الحكم"},
+  {q: "ما التقنية الحديثة المستخدمة لتسجيل أرقام المتسابقين في كل لفة آلياً؟", a: "الشرائح الإلكترونية (Timing Chips) المثبتة بالحذاء أو بالأرقام"},
+  {q: "ما هي الطريقة التقليدية (اليدوية) لتسجيل أرقام المتسابقين في كل لفة؟", a: "تعيين مراقبين؛ أحدهما يملي الأرقام شفهياً والآخر يسجلها، أو التصوير بالفيديو"},
+  {q: "كيف يتم ترتيب الفرق في سباق اختراق الضاحية؟", a: "بجمع نقاط المراتب التي يحصل عليها عداءو الفريق المحسوبون (صاحب أقل مجموع نقاط يفوز)"},
+  {q: "ما هي القاعدة العامة لحساب نقاط الفريق في الضاحية؟", a: "يحصل العداء على نقاط تماثل ترتيب وصوله (الأول يحصل على نقطة، الثاني نقطتان.. وهكذا)"},
+  {q: "من يحدد عدد المتسابقين الذين تحتسب نقاطهم لترتيب الفريق؟", a: "اللائحة التنفيذية الخاصة بالبطولة (مثلاً أول 4 عداءين يصلون)"},
+  {q: "ماذا يحدث للفريق الذي يشارك بعدد أقل من العدد المطلوب للترتيب (مثلاً 3 عداءين والمطلوب 4)؟", a: "يلغى ترتيب الفريق في المنافسة الجماعية لعدم اكتمال النصاب"},
+  {q: "كيف يتم حل حالة التعادل (العقدة) بين فريقين في مجموع النقاط؟", a: "يُرجح الفريق الذي ينهي آخر عداء محسوب لديه السباق بمرتبة أفضل"},
+  {q: "ما هي وظيفة 'السفود' (Spindle) في عملية الترتيب اليدوي عند خط النهاية؟", a: "إدخل الأجزاء النزاعة من أرقام الصدر بترتيب وصول العدائين لضبط النتائج"},
+  {q: "لماذا تستخدم 'الحبال والممرات المرقمة' عند خط النهاية في السباقات المزدحمة؟", a: "لتوجيه المتسابقين الواصلين في ممرات ضيقة وحفظ ترتيب وصولهم الدقيق"},
+  {q: "ما هو دور 'مدير المنافسة' في سباق اختراق الضاحية؟", a: "الإشراف العام والتنسيق مع الجهات الخارجية والإعلام والأمن والإقامة"},
+  {q: "من المسؤول عن تعيين وتأطير الحكام والقضاة في سباق الضاحية؟", a: "مدير اللقاء (Meeting Director)"},
+  {q: "ما هي المهام الأساسية للمسؤول الفني (المدير الفني) في الضاحية؟", a: "رسم ورصد المطاف وتجهيز الأدوات والموانع وتهيئة كافة الخدمات اللوجستية"},
+  {q: "ما هي سلطة 'حكم المضمار' في سباقات الضاحية؟", a: "اتخاذ القرارات الحاسمة والنهائية في الاعتراضات وحالات الإقصاء ومخالفات السباق"},
+  {q: "لماذا تعتبر وظيفة 'مراقبي السباق' حيوية في اختراق الضاحية أكثر من المضمار؟", a: "لاتساع مساحة المطاف وجودة الرؤية التي تتطلب انتشار المراقبين على طول المسار"},
+  {q: "ما هو دور 'مركز الإعلام الفني' (TIC) في المسابقات؟", a: "تلقي الاستفسارات والاحتجاجات الرسمية وتوزيع أوراق النتائج الرسمية على الفرق"},
+  {q: "من المسؤول عن تقديم المتسابقين ومراسم توزيع الميداليات؟", a: "المذيع الداخلي وبروتوكول التتويج"},
+  {q: "ما هي وظيفة 'المذيع' في سباق اختراق الضاحية؟", a: "التعليق على مجريات السباق وإعلام الجماهير بالترتيب والنتائج والمستجدات"},
+  {q: "متى يتم اللجوء إلى تسجيلات الفيديو أو كاميرات الهواتف في التحكيم؟", a: "عند وجود احتجاح أو شكوك حول ترتيب الوصول أو وقوع مخالفات مسار"},
+  {q: "لماذا لا تعتبر الأرقام القياسية الزمنية ذات أهمية كبرى في اختراق الضاحية؟", a: "لاختلاف طبيعة الأرضيات والتضاريس والظروف الجوية وعدم دقة قياس الأمتار"},
+  {q: "من هم الأشخاص الذين يمكن الاستعانة بهم في نقاط الشرب والتبلل؟", a: "أفراد هيئة التنظيم أو ممثلو الفرق المعينون رسمياً"},
+  {q: "ما هي الجهة التي تفصل في الاحتجاجات الرسمية المقدمة من المشاركين؟", a: "لجنة الاحتكام (Jury of Appeal)"},
+  {q: "ما الذي يجب فعله لتسوية الأرض في بداية مسار الضاحية؟", a: "دك الحفر وإزالة الأحجار والعوائق الخطرة لسلامة العدائين عند الانطلاق"},
+  {q: "كيف يتم حماية منطقة الإحماء وغرفة النداء من دخول غير المصرح لهم؟", a: "بتسييجها وتوفير حراسة لمنع دخول الجمهور والإداريين غير المخولين"},
+  {q: "ما هي المسافة الافتراضية للفة الكبيرة في رسم مطاف نموذجي؟", a: "حوالي 2000 متر (2 كم)"},
+  {q: "لماذا يوصى بوجود منعرجات كثيرة في سباق الضاحية؟", a: "لكسر الرتابة وإعطاء إثارة للسباق واختبار مهارات العدائين في التغيير الإيقاعي"},
+  {q: "في سباق التتابع، هل يسمح ببدء الجري خارج منطقة التسليم؟", a: "نعم، ولكن يجب أن يتم تسليم العصا أو التلامس كاملاً داخل المنطقة المحددة (20م)"},
+  {q: "ما هو الإجراء الإلزامي قبل تطبيق أي طريقة لفك التعادل بين الفرق؟", a: "مراجعة اللائحة التنفيذية الخاصة بالبطولة والتأكد من اعتماد الشروط"},
+  {q: "ما هي القاعدة القانونية المطبقة على أخطاء العرقلة والدفع في الضاحية؟", a: "القواعد العامة لسباقات المضمار للمسافات الطويلة (تطبيق عقوبة الإقصاء عند التعمد)"},
+  {q: "كيف يتم التعامل مع المنشطات في مسابقات الضاحية؟", a: "الخضوع لفحوصات المنشطات العشوائية والموجهة وفق قوانين الوكالة الدولية لمكافحة المنشطات"},
+  {q: "ما هو العدد التقريبي للقضاة المطلوبين عند خطي البداية والنهاية؟", a: "طاقم متكامل يشمل الآذن بالبدء، الميقاتيين، القضاة عند الوصول، ومسجلي السجلات"},
+  {q: "ماذا يفعل مصمم المطاف قبل البدء في إنجاز المسار على أرض الواقع؟", a: "معاينة الميدان واستغلال الطبيعة والتضاريس ورسم مخطط أولي يضمن سلامة العدائين"},
+  {q: "لماذا يوصى بوضع نقطة ماء عند خط البداية وخط النهاية؟", a: "لتوفير الترطيب اللازم قبل انطلاق العدائين واستعادتهم للسوائل فور إنهائهم السباق"},
+  {q: "ما هي البدائل الممكنة لعصا التتابع في سباقات الضاحية؟", a: "التلامس باليد أو استخدام الشريط/البند المخصص للتتابع"},
+  {q: "ما هي ميزة استخدام 'اللفات' بالنسبة للمشاهدين؟", a: "تمكين الجمهور من متابعة المتنافسين عدة مرات من مكان واحد ثابت"},
+  {q: "ماذا يسمى الشخص المسؤول عن إعطاء إشارة الانطلاق؟", a: "الآذن بالبدء (Starter)"},
+  {q: "ما هي أهمية 'المنطقة المختلطة' للجهات الإعلامية؟", a: "إجراء المقابلات الصحفية واللقاءات السريعة مع الرياضيين فور خروجهم من مطاف السباق"}
+];
+
+let currentIndex = 0;
+let isAnswerShowing = false;
+let userAnswers = new Array(quizCards.length).fill(null); // true = correct, false = incorrect
+
+function renderCard() {
+  const cardData = quizCards[currentIndex];
+  const cardTag = document.getElementById("card-tag");
+  const cardContent = document.getElementById("card-content");
+  const cardBox = document.getElementById("card-box");
+  const clickHint = document.getElementById("click-hint");
+  const assessmentPanel = document.getElementById("assessment-panel");
+
+  document.getElementById("quiz-progress-text").innerText = `البطاقة: ${currentIndex + 1} / ${quizCards.length}`;
+  document.getElementById("quiz-progress-bar").style.width = `${((currentIndex + 1) / quizCards.length) * 100}%`;
+
+  if (isAnswerShowing) {
+    cardTag.innerText = `الإجابة على السؤال ${currentIndex + 1}`;
+    cardTag.style.background = "#e8f5e9";
+    cardTag.style.color = "#1b5e20";
+    cardContent.innerHTML = `<span style="color:#2e7d32; font-weight:bold;">الجواب:</span><br>${cardData.a}`;
+    cardBox.style.borderColor = "#2e7d32";
+    cardBox.style.background = "#f1f8e9";
+    clickHint.innerText = "💡 اضغط للعودة للسؤال";
+    assessmentPanel.style.display = "block";
+  } else {
+    cardTag.innerText = `السؤال ${currentIndex + 1}`;
+    cardTag.style.background = "#e3f2fd";
+    cardTag.style.color = "#1565c0";
+    cardContent.innerHTML = `<span style="color:#0d47a1; font-weight:bold;">السؤال:</span><br>${cardData.q}`;
+    cardBox.style.borderColor = "#1565c0";
+    cardBox.style.background = "#fafafa";
+    clickHint.innerText = "💡 اضغط على البطاقة لإظهار الإجابة";
+    assessmentPanel.style.display = "none";
+  }
+}
+
+function toggleAnswer() {
+  isAnswerShowing = !isAnswerShowing;
+  renderCard();
+}
+
+function markCard(isCorrect) {
+  userAnswers[currentIndex] = isCorrect;
+  updateScores();
+  isAnswerShowing = false;
+  if (currentIndex < quizCards.length - 1) {
+    currentIndex++;
+  } else {
+    showFinalResults();
+  }
+  renderCard();
+}
+
+function updateScores() {
+  const correctCount = userAnswers.filter(a => a === true).length;
+  const incorrectCount = userAnswers.filter(a => a === false).length;
+  document.getElementById("score-correct").innerText = correctCount;
+  document.getElementById("score-incorrect").innerText = incorrectCount;
+}
+
+function navigateCard(direction) {
+  currentIndex = (currentIndex + direction + quizCards.length) % quizCards.length;
+  isAnswerShowing = false;
+  renderCard();
+}
+
+function showFinalResults() {
+  const totalEvaluated = userAnswers.filter(a => a !== null).length;
+  const correctCount = userAnswers.filter(a => a === true).length;
+  const incorrectCount = userAnswers.filter(a => a === false).length;
+  
+  if (totalEvaluated === 0) {
+    alert("يرجى تقييم إجابتك على بطاقة واحدة على الأقل قبل عرض التقرير النهائي!");
+    return;
+  }
+
+  const percentage = Math.round((correctCount / totalEvaluated) * 100);
+  document.getElementById("res-total").innerText = totalEvaluated;
+  document.getElementById("res-correct").innerText = correctCount;
+  document.getElementById("res-incorrect").innerText = incorrectCount;
+  document.getElementById("result-pie").innerText = `${percentage}%`;
+
+  let summaryText = "";
+  if (percentage >= 85) {
+    summaryText = "🏆 <strong>ممتاز جداً!</strong> أظهرت استيعاباً كاملاً لقوانين وإدارة مسابقات اختراق الضاحية ومهام الحكام والإداريين.";
+  } else if (percentage >= 70) {
+    summaryText = "👏 <strong>جيد جداً!</strong> فهمك مستقر للدرس، ويُوصى بمراجعة البطاقات التي أخطأت فيها فقط لترسيخ الفهم.";
+  } else {
+    summaryText = "📖 <strong>يحتاج إلى مراجعة إضافية!</strong> يفضل إعادة قراءة دليل المسابقات ومراجعة البطاقات مرة أخرى لتحسين المستوى.";
+  }
+
+  document.getElementById("result-summary").innerHTML = summaryText;
+  document.getElementById("results-screen").style.display = "flex";
+}
+
+function closeResults() {
+  document.getElementById("results-screen").style.display = "none";
+}
+
+function resetQuiz() {
+  userAnswers = new Array(quizCards.length).fill(null);
+  currentIndex = 0;
+  isAnswerShowing = false;
+  updateScores();
+  closeResults();
+  renderCard();
+}
+
+// Initial Call
+renderCard();
+</script>
