@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختراق الضاحية </title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>اختراق الضاحية كويز</h1>
+    <div class="meta">10 أسئلة</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">سؤال 1</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">إيه الفرق الرئيسي بين تحديد مسافات سباقات اختراق الضاحية وسباقات الطريق حسب ما ورد في الندوة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في مدى توفر شهادات القياس الرسمية واختلاف طبيعة الأرض في الأرياف عن الطريق الأسفلتي.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="سباقات الطريق تتطلب قياسات دقيقة للغاية وشهادات معتمدة، ولا تترك لتقدير المنظمين العشوائي.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">مسافات سباقات الطريق بتكون تقريبية وبتعتمد على تقدير المنظمين فقط.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">سباقات الطريق تتطلب قياسات دقيقة للغاية وشهادات معتمدة، ولا تترك لتقدير المنظمين العشوائي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="اشتراط الدقة والشهادات الرسمية ينطبق على سباقات الطريق وليس مسابقات اختراق الضاحية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">مسافات الضاحية لازم تكون دقيقة جداً ولها شهادة قياس رسمية من الاتحاد الدولي.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">اشتراط الدقة والشهادات الرسمية ينطبق على سباقات الطريق وليس مسابقات اختراق الضاحية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="طبيعة الجري في الأرياف والأراضي الطبيعية تجعل قياس المسافة تقريبياً، بينما سباقات الطريق تشترط قياساً دقيقاً وشهادة رسمية.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">مسافات الضاحية تقريبية ولا تتطلب شهادات قياس رسمية عكس سباقات الطريق.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">طبيعة الجري في الأرياف والأراضي الطبيعية تجعل قياس المسافة تقريبياً، بينما سباقات الطريق تشترط قياساً دقيقاً وشهادة رسمية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="القانون يفرق بين النوعين؛ فالطريق يتطلب دقة صارمة بينما تعتمد الضاحية على مسافات تقريبية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">مسافات الضاحية وسباقات الطريق الاتنين بيتطلبوا نفس دقة القياس والشهادات.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القانون يفرق بين النوعين؛ فالطريق يتطلب دقة صارمة بينما تعتمد الضاحية على مسافات تقريبية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">سؤال 2</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">المسافة التقريبية المحددة في القانون لفئة الرجال أقل من 20 سنة في سباقات الضاحية هي كام كيلو؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">هذه المسافة تقع بين مسافة فئة الكبار (10 كم) ومسافة الناشئين أقل من 18 سنة (6 كم).</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="مسافة 10 كم مخصصة لفئتي الكبار (الرجال والسيدات) وليس لفئة أقل من 20 سنة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">10 كم</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">مسافة 10 كم مخصصة لفئتي الكبار (الرجال والسيدات) وليس لفئة أقل من 20 سنة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="مسافة 4 كم تقريبية مخصصة للفتيات أقل من 18 سنة.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">4 كم</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">مسافة 4 كم تقريبية مخصصة للفتيات أقل من 18 سنة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="مسافة 6 كم مخصصة للسيدات أقل من 20 سنة وللفتيان أقل من 18 سنة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">6 كم</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">مسافة 6 كم مخصصة للسيدات أقل من 20 سنة وللفتيان أقل من 18 سنة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="حدد القانون مسافة 8 كم لفئة الشباب أقل من 20 سنة رجال، بينما تبلغ مسافة السيدات لنفس الفئة 6 كم.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">8 كم</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">حدد القانون مسافة 8 كم لفئة الشباب أقل من 20 سنة رجال، بينما تبلغ مسافة السيدات لنفس الفئة 6 كم.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">سؤال 3</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ليه بيشترط القانون إن الجزء الأول من مسار السباق بعد خط بداية الضاحية يكون مستقيم وبطول لا يقل عن 300 متر؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">افتقر إن عدد المشاركين في بعض البطولات قد يصل إلى 800 أو 900 عداء ينطلقون في نفس اللحظة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="محطات الشرب توضع في اماكن لا تعيق العدائين وليس الشرط الأساسي لتصميم بداية المسار.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">إلزام الحكام بوضع محطات الشرب والتبلل في أول السباق.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">محطات الشرب توضع في اماكن لا تعيق العدائين وليس الشرط الأساسي لتصميم بداية المسار.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="هذا المستقيم يكون عند انطلاقة السباق وليس عند خط النهاية لتشغيل السبرنت.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">عشان يتيح للمشاهدين رؤية انطلاقة السبرنت النهائي بشكل أوضح.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا المستقيم يكون عند انطلاقة السباق وليس عند خط النهاية لتشغيل السبرنت.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="وجود مستقيم طويل بعرض كافٍ يمنح الأعداد الكبيرة من العدائين فرصة للانتشار قبل الدخول في المنعرجات، مما يمنع التزاحم والسقوط.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">لتفادي الاصطدام وسقوط المتسابقين بسبب الازدحام والأعداد الكبيرة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">وجود مستقيم طويل بعرض كافٍ يمنح الأعداد الكبيرة من العدائين فرصة للانتشار قبل الدخول في المنعرجات، مما يمنع التزاحم والسقوط.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="القانون يوصي بتفادي الحواجز والعراقيل في أول 300 متر لتسهيل حركة الانطلاق.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">لإعطاء فرصة لمصمم المطاف لوضع حواجز وموانع اصطناعية مبكرة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القانون يوصي بتفادي الحواجز والعراقيل في أول 300 متر لتسهيل حركة الانطلاق.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">سؤال 4</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">لو كان مطاف سباق الضاحية بيقطع طريقاً معبداً (أسفلت)، إيه التصرف الواجب اتباعه لحماية المتسابقين؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">معظم العدائين يستخدمون أحذية خاصة بها مسامير قد تتلف أو تسبب انزلاقاً عند ملامسة الأسفلت.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="رش الماء يزيد من خطر انزلاق أحذية المسامير ولا يحل مشكلة العبور.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">رش الطريق بالماء فقط لتبريد سطح الأسفلت.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">رش الماء يزيد من خطر انزلاق أحذية المسامير ولا يحل مشكلة العبور.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="ليس من الضروري إلغاء المسار، بل يكفي وضع مادة حماية فوق الجزء المعبد.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">إلغاء هذا الجزء وتغيير مسار السباق بالكامل فوراً.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ليس من الضروري إلغاء المسار، بل يكفي وضع مادة حماية فوق الجزء المعبد.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="معظم المتسابقين يرتدون أحذية بمسامير تتضرر أو تسبب الانزلاق على الأسفلت، لذا يجب تغطية الطريق بمادة مناسبة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">تغطية هذا الجزء بـ بساط أو تراب أو عشب.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">معظم المتسابقين يرتدون أحذية بمسامير تتضرر أو تسبب الانزلاق على الأسفلت، لذا يجب تغطية الطريق بمادة مناسبة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="لا يتم إجبار العدائين على تغيير أو خلع أحذيتهم أثناء خوض السباق.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">إلزام جميع المتسابقين بخلع أحذية المسامير قبل عبور الطريق.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لا يتم إجبار العدائين على تغيير أو خلع أحذيتهم أثناء خوض السباق.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">سؤال 5</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">كام هو الحد الأدنى لعرض مسالك المطاف (مسار السباق) في مسابقات اختراق الضاحية؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">المسار يحتاج لعرض كافٍ لاستيعاب حركة المجموعات وتفادي الاختناقات دون تضييق شديد.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="هذا الرقم يتعلق بالحد الأدنى لطول اللفة الكيلومترية وليس بعرض مسار الجري.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">1.5 متر</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا الرقم يتعلق بالحد الأدنى لطول اللفة الكيلومترية وليس بعرض مسار الجري.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="العرض المطلوب هو 5 أمتار على الأقل، و10 أمتار قد تكون عرض منطقة البداية فقط.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">10 أمتار</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">العرض المطلوب هو 5 أمتار على الأقل، و10 أمتار قد تكون عرض منطقة البداية فقط.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="عرض مترين يخصص للمسار الجانبي الخاص بالمنظمين والصحفيين وليس لمسار الجري الرئيسي.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">2 متر</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">عرض مترين يخصص للمسار الجانبي الخاص بالمنظمين والصحفيين وليس لمسار الجري الرئيسي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="ينص القانون على ألا يقل عرض مسار السباق عن 5 أمتار لاتساع حركة العدائين والمنظمين.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">5 أمتار</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ينص القانون على ألا يقل عرض مسار السباق عن 5 أمتار لاتساع حركة العدائين والمنظمين.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">سؤال 6</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">في سباق التتابع للضاحية، إزاي بيتم تحديد بداية ونهاية منطقة التسليم والتسلم التي يبلغ طولها 20 متراً؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">اللون الدال على السماح بالدخول يوضع في البداية، واللون الدال على الخروج والتوقف يوضع في النهاية.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="تُميز بداية منطقة التسليم بعلم أخضر ونهايتها بعلم أحمر بمقاييس محددة لضمان رؤيتها بوضوح.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">علم أخضر في بداية المنطقة وعلم أحمر في نهايتها على علو مترين.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تُميز بداية منطقة التسليم بعلم أخضر ونهايتها بعلم أحمر بمقاييس محددة لضمان رؤيتها بوضوح.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="الأعلام المستخدمة قانوناً هي الخضراء للبداية والحمراء للنهاية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">علم أبيض في بداية المنطقة وعلم أسود في نهايتها.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الأعلام المستخدمة قانوناً هي الخضراء للبداية والحمراء للنهاية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="الخطوط على الأرض تكون بعرض 30 سم ويتم تعزيزها بالأعلام الملفتة للنظر.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">خطوط صفراء بعرض 5 سم على الأرض فقط.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الخطوط على الأرض تكون بعرض 30 سم ويتم تعزيزها بالأعلام الملفتة للنظر.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="العلم الأخضر يعبر عن بداية المنطقة وليس نهايتها.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">علم أحمر في بداية المنطقة وعلم أخضر في نهايتها.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">العلم الأخضر يعبر عن بداية المنطقة وليس نهايتها.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">سؤال 7</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">لما يكون المطاف بيتكون من لفة صغيرة ولفة كبيرة، ليه بتلعب اللفة الصغيرة في بداية السباق مش في آخره؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">الفكرة الفنية هي منع تلاحق العدائين الأوائل مع المتأخرين مما قد يربك قضاه التسجيل والترتيب.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="حركة الجمهور تنظم بممرات وأبواب خاصة ولا تؤثر في ترتيب اللفات.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">لإعطاء فرصة للمشاهدين للوصول إلى المنصة الرئيسية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">حركة الجمهور تنظم بممرات وأبواب خاصة ولا تؤثر في ترتيب اللفات.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="يمكن تنظيم اللفات بطرق متعددة، والشرط هو البدء بالصغيرة إذا وُجد التشكيلان لمنع التداخل.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">لأن القانون يمنع الجري في اللفات الكبيرة في بداية السباق.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يمكن تنظيم اللفات بطرق متعددة، والشرط هو البدء بالصغيرة إذا وُجد التشكيلان لمنع التداخل.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="الهدف ليس تكتيكياً يتعلق بالمجهود البدني، بل ينصب على تنظيم وتسهيل عملية التحكيم والترتيب.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">لأن اللفة الصغيرة بتحتاج مجهوداً أسرع ومناسباً للبداية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الهدف ليس تكتيكياً يتعلق بالمجهود البدني، بل ينصب على تنظيم وتسهيل عملية التحكيم والترتيب.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="بدء السباق باللفة الصغيرة يمنع وصول العدائين الأوائل إلى المتأخرين وتداخل ترتيبهم عند خط النهاية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">لتفادي تداخل واختلاط المجموعات الأولى بأواخر المتسابقين في نهاية السباق.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">بدء السباق باللفة الصغيرة يمنع وصول العدائين الأوائل إلى المتأخرين وتداخل ترتيبهم عند خط النهاية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">سؤال 8</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">في السباقات الدولية التي تضم أعداداً كبيرة، إيه هي الإشارات التنبيهية التي تُعطى للمشاركين قبل إشارة البداية؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تتدرج التنبيهات الصوتية ثلاث مرات متتالية تبدأ قبل خمس دقائق من الموعد المحدد.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="يتم تنبيه العدائين بتتابع يضمن تجميعهم عند خط البداية ومنع تخلف أي مشارك في غرف الملابس أو الحمام.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">طلقة أو إشارة قبل 5 دقائق، ثم 3 دقائق، ثم دقيقة واحدة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يتم تنبيه العدائين بتتابع يضمن تجميعهم عند خط البداية ومنع تخلف أي مشارك في غرف الملابس أو الحمام.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="التوقيت المحدد في التوجيهات يبدأ من 5 دقائق وليس 10 دقائق.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">طلقة قبل 10 دقائق، ثم 5 دقائق، ثم دقيقة واحدة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التوقيت المحدد في التوجيهات يبدأ من 5 دقائق وليس 10 دقائق.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="التنظيم الدولي يحدد نظام التنبيه بخمس دقائق، ثلاث دقائق، ودقيقة واحدة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">إشارة قبل 15 دقيقة وإشارة أخرى قبل دقيقتين.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التنظيم الدولي يحدد نظام التنبيه بخمس دقائق، ثلاث دقائق، ودقيقة واحدة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="إشارة الدقيقة الواحدة غير كافية لتجميع أعداد كبيرة من المشاركين المنتشرين في منطقة الأحماء.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">إشارة واحدة فقط قبل دقيقة واحدة من الانطلاق.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">إشارة الدقيقة الواحدة غير كافية لتجميع أعداد كبيرة من المشاركين المنتشرين في منطقة الأحماء.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">سؤال 9</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">إزاي بيبلاغ مراقبو السباق المنتشرون في المطاف الحكم الرئيسي عن الأخطاء أو المخالفات المرتكبة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تُستخدم إشارة لونية خاصة لتنبيه الحكم دون التسبب في تعطيل أو إيقاف باقي المتنافسين.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="يرفع المراقب العلم الأصفر لجذب انتباه الحكم أو يستعمل جهاز الاتصال لإبلاغه بالمخالفة لاتخاذ القرار.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">برفع علم أصفر لمناداة الحكم أو الاتصال به عبر الأجهزة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يرفع المراقب العلم الأصفر لجذب انتباه الحكم أو يستعمل جهاز الاتصال لإبلاغه بالمخالفة لاتخاذ القرار.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="يتواجد المراقبون في نقاط ثابتة بالمسار ويتواصلون مع الحكم بالأجهزة أو الأعلام.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">بالجري خلف العداء المخالف لتسجيل رقمه يدويًا.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يتواجد المراقبون في نقاط ثابتة بالمسار ويتواصلون مع الحكم بالأجهزة أو الأعلام.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="المراقب لا يوقف السباق بنفسه، وإنما يرفع علماً أصفر لإبلاغ حكم المضمار.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">برفع علم أحمر وإيقاف السباق والعدائين فوراً.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المراقب لا يوقف السباق بنفسه، وإنما يرفع علماً أصفر لإبلاغ حكم المضمار.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="قرار الإقصاء أو البطاقات هو من اختصاص الحكم الرئيسي وليس من مهام المراقب المباشرة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">بإطلاق صافرة وإشهار بطاقة حمراء للعداء المخالف.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">قرار الإقصاء أو البطاقات هو من اختصاص الحكم الرئيسي وليس من مهام المراقب المباشرة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">سؤال 10</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">في حال تعادل فريقين في مجموع النقاط في ترتيب الفرق، إزاي بيتحدد الفريق الفائز حسب القواعد التقليدية؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">يتم النظر إلى ترتيب المتسابق الذي أكمل النصاب المعتمد لنقاط الفريق بين الفريقين المتعادلين.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="تُحسم النتيجة بناءً على نتائج ومتسابقي الميدان وليس بالقرعة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">إجراء قرعة علنية بين مدربي الفريقين المتعادلين.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تُحسم النتيجة بناءً على نتائج ومتسابقي الميدان وليس بالقرعة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="الترتيب يعتمد على مجموع نقاط الفريق، وعند التعادل يُنظر لترتيب المتسابق الأخير المكمل للفريق.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">اعتماد زمن المتسابق الأول في كل فريق فقط والتغاضي عن الباقين.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الترتيب يعتمد على مجموع نقاط الفريق، وعند التعادل يُنظر لترتيب المتسابق الأخير المكمل للفريق.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="تعتمد القاعدة التقليدية عند التعادل على تفوق ترتيب العداء الأخير المحتسب ضمن نقاط الفريق (مثل العداء الرابع أو السادس).">
+            <span class="opt-label">C</span>
+            <span class="opt-text">يكون الامتياز للفريق الذي كان ترتيب آخر متسابق فيه أفضل.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تعتمد القاعدة التقليدية عند التعادل على تفوق ترتيب العداء الأخير المحتسب ضمن نقاط الفريق (مثل العداء الرابع أو السادس).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="لا يتم إعادة سباقات الضاحية للتعادل نظراً للمجهود البدني الكبير وطول المسافة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">إعادة السباق بين أفراد الفريقين المتعادلين فقط.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لا يتم إعادة سباقات الضاحية للتعادل نظراً للمجهود البدني الكبير وطول المسافة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>اكتمل الاختبار!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">حاول مرة أخرى</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"إيه الفرق الرئيسي بين تحديد مسافات سباقات اختراق الضاحية وسباقات الطريق حسب ما ورد في الندوة؟","hint":"فكر في مدى توفر شهادات القياس الرسمية واختلاف طبيعة الأرض في الأرياف عن الطريق الأسفلتي.","options":[{"label":"A","text":"مسافات سباقات الطريق بتكون تقريبية وبتعتمد على تقدير المنظمين فقط.","isCorrect":false,"rationale":"سباقات الطريق تتطلب قياسات دقيقة للغاية وشهادات معتمدة، ولا تترك لتقدير المنظمين العشوائي."},{"label":"B","text":"مسافات الضاحية لازم تكون دقيقة جداً ولها شهادة قياس رسمية من الاتحاد الدولي.","isCorrect":false,"rationale":"اشتراط الدقة والشهادات الرسمية ينطبق على سباقات الطريق وليس مسابقات اختراق الضاحية."},{"label":"C","text":"مسافات الضاحية تقريبية ولا تتطلب شهادات قياس رسمية عكس سباقات الطريق.","isCorrect":true,"rationale":"طبيعة الجري في الأرياف والأراضي الطبيعية تجعل قياس المسافة تقريبياً، بينما سباقات الطريق تشترط قياساً دقيقاً وشهادة رسمية."},{"label":"D","text":"مسافات الضاحية وسباقات الطريق الاتنين بيتطلبوا نفس دقة القياس والشهادات.","isCorrect":false,"rationale":"القانون يفرق بين النوعين؛ فالطريق يتطلب دقة صارمة بينما تعتمد الضاحية على مسافات تقريبية."}]},{"question":"المسافة التقريبية المحددة في القانون لفئة الرجال أقل من 20 سنة في سباقات الضاحية هي كام كيلو؟","hint":"هذه المسافة تقع بين مسافة فئة الكبار (10 كم) ومسافة الناشئين أقل من 18 سنة (6 كم).","options":[{"label":"A","text":"10 كم","isCorrect":false,"rationale":"مسافة 10 كم مخصصة لفئتي الكبار (الرجال والسيدات) وليس لفئة أقل من 20 سنة."},{"label":"B","text":"4 كم","isCorrect":false,"rationale":"مسافة 4 كم تقريبية مخصصة للفتيات أقل من 18 سنة."},{"label":"C","text":"6 كم","isCorrect":false,"rationale":"مسافة 6 كم مخصصة للسيدات أقل من 20 سنة وللفتيان أقل من 18 سنة."},{"label":"D","text":"8 كم","isCorrect":true,"rationale":"حدد القانون مسافة 8 كم لفئة الشباب أقل من 20 سنة رجال، بينما تبلغ مسافة السيدات لنفس الفئة 6 كم."}]},{"question":"ليه بيشترط القانون إن الجزء الأول من مسار السباق بعد خط بداية الضاحية يكون مستقيم وبطول لا يقل عن 300 متر؟","hint":"افتقر إن عدد المشاركين في بعض البطولات قد يصل إلى 800 أو 900 عداء ينطلقون في نفس اللحظة.","options":[{"label":"A","text":"إلزام الحكام بوضع محطات الشرب والتبلل في أول السباق.","isCorrect":false,"rationale":"محطات الشرب توضع في اماكن لا تعيق العدائين وليس الشرط الأساسي لتصميم بداية المسار."},{"label":"B","text":"عشان يتيح للمشاهدين رؤية انطلاقة السبرنت النهائي بشكل أوضح.","isCorrect":false,"rationale":"هذا المستقيم يكون عند انطلاقة السباق وليس عند خط النهاية لتشغيل السبرنت."},{"label":"C","text":"لتفادي الاصطدام وسقوط المتسابقين بسبب الازدحام والأعداد الكبيرة.","isCorrect":true,"rationale":"وجود مستقيم طويل بعرض كافٍ يمنح الأعداد الكبيرة من العدائين فرصة للانتشار قبل الدخول في المنعرجات، مما يمنع التزاحم والسقوط."},{"label":"D","text":"لإعطاء فرصة لمصمم المطاف لوضع حواجز وموانع اصطناعية مبكرة.","isCorrect":false,"rationale":"القانون يوصي بتفادي الحواجز والعراقيل في أول 300 متر لتسهيل حركة الانطلاق."}]},{"question":"لو كان مطاف سباق الضاحية بيقطع طريقاً معبداً (أسفلت)، إيه التصرف الواجب اتباعه لحماية المتسابقين؟","hint":"معظم العدائين يستخدمون أحذية خاصة بها مسامير قد تتلف أو تسبب انزلاقاً عند ملامسة الأسفلت.","options":[{"label":"A","text":"رش الطريق بالماء فقط لتبريد سطح الأسفلت.","isCorrect":false,"rationale":"رش الماء يزيد من خطر انزلاق أحذية المسامير ولا يحل مشكلة العبور."},{"label":"B","text":"إلغاء هذا الجزء وتغيير مسار السباق بالكامل فوراً.","isCorrect":false,"rationale":"ليس من الضروري إلغاء المسار، بل يكفي وضع مادة حماية فوق الجزء المعبد."},{"label":"C","text":"تغطية هذا الجزء بـ بساط أو تراب أو عشب.","isCorrect":true,"rationale":"معظم المتسابقين يرتدون أحذية بمسامير تتضرر أو تسبب الانزلاق على الأسفلت، لذا يجب تغطية الطريق بمادة مناسبة."},{"label":"D","text":"إلزام جميع المتسابقين بخلع أحذية المسامير قبل عبور الطريق.","isCorrect":false,"rationale":"لا يتم إجبار العدائين على تغيير أو خلع أحذيتهم أثناء خوض السباق."}]},{"question":"كام هو الحد الأدنى لعرض مسالك المطاف (مسار السباق) في مسابقات اختراق الضاحية؟","hint":"المسار يحتاج لعرض كافٍ لاستيعاب حركة المجموعات وتفادي الاختناقات دون تضييق شديد.","options":[{"label":"A","text":"1.5 متر","isCorrect":false,"rationale":"هذا الرقم يتعلق بالحد الأدنى لطول اللفة الكيلومترية وليس بعرض مسار الجري."},{"label":"B","text":"10 أمتار","isCorrect":false,"rationale":"العرض المطلوب هو 5 أمتار على الأقل، و10 أمتار قد تكون عرض منطقة البداية فقط."},{"label":"C","text":"2 متر","isCorrect":false,"rationale":"عرض مترين يخصص للمسار الجانبي الخاص بالمنظمين والصحفيين وليس لمسار الجري الرئيسي."},{"label":"D","text":"5 أمتار","isCorrect":true,"rationale":"ينص القانون على ألا يقل عرض مسار السباق عن 5 أمتار لاتساع حركة العدائين والمنظمين."}]},{"question":"في سباق التتابع للضاحية، إزاي بيتم تحديد بداية ونهاية منطقة التسليم والتسلم التي يبلغ طولها 20 متراً؟","hint":"اللون الدال على السماح بالدخول يوضع في البداية، واللون الدال على الخروج والتوقف يوضع في النهاية.","options":[{"label":"A","text":"علم أخضر في بداية المنطقة وعلم أحمر في نهايتها على علو مترين.","isCorrect":true,"rationale":"تُميز بداية منطقة التسليم بعلم أخضر ونهايتها بعلم أحمر بمقاييس محددة لضمان رؤيتها بوضوح."},{"label":"B","text":"علم أبيض في بداية المنطقة وعلم أسود في نهايتها.","isCorrect":false,"rationale":"الأعلام المستخدمة قانوناً هي الخضراء للبداية والحمراء للنهاية."},{"label":"C","text":"خطوط صفراء بعرض 5 سم على الأرض فقط.","isCorrect":false,"rationale":"الخطوط على الأرض تكون بعرض 30 سم ويتم تعزيزها بالأعلام الملفتة للنظر."},{"label":"D","text":"علم أحمر في بداية المنطقة وعلم أخضر في نهايتها.","isCorrect":false,"rationale":"العلم الأخضر يعبر عن بداية المنطقة وليس نهايتها."}]},{"question":"لما يكون المطاف بيتكون من لفة صغيرة ولفة كبيرة، ليه بتلعب اللفة الصغيرة في بداية السباق مش في آخره؟","hint":"الفكرة الفنية هي منع تلاحق العدائين الأوائل مع المتأخرين مما قد يربك قضاه التسجيل والترتيب.","options":[{"label":"A","text":"لإعطاء فرصة للمشاهدين للوصول إلى المنصة الرئيسية.","isCorrect":false,"rationale":"حركة الجمهور تنظم بممرات وأبواب خاصة ولا تؤثر في ترتيب اللفات."},{"label":"B","text":"لأن القانون يمنع الجري في اللفات الكبيرة في بداية السباق.","isCorrect":false,"rationale":"يمكن تنظيم اللفات بطرق متعددة، والشرط هو البدء بالصغيرة إذا وُجد التشكيلان لمنع التداخل."},{"label":"C","text":"لأن اللفة الصغيرة بتحتاج مجهوداً أسرع ومناسباً للبداية.","isCorrect":false,"rationale":"الهدف ليس تكتيكياً يتعلق بالمجهود البدني، بل ينصب على تنظيم وتسهيل عملية التحكيم والترتيب."},{"label":"D","text":"لتفادي تداخل واختلاط المجموعات الأولى بأواخر المتسابقين في نهاية السباق.","isCorrect":true,"rationale":"بدء السباق باللفة الصغيرة يمنع وصول العدائين الأوائل إلى المتأخرين وتداخل ترتيبهم عند خط النهاية."}]},{"question":"في السباقات الدولية التي تضم أعداداً كبيرة، إيه هي الإشارات التنبيهية التي تُعطى للمشاركين قبل إشارة البداية؟","hint":"تتدرج التنبيهات الصوتية ثلاث مرات متتالية تبدأ قبل خمس دقائق من الموعد المحدد.","options":[{"label":"A","text":"طلقة أو إشارة قبل 5 دقائق، ثم 3 دقائق، ثم دقيقة واحدة.","isCorrect":true,"rationale":"يتم تنبيه العدائين بتتابع يضمن تجميعهم عند خط البداية ومنع تخلف أي مشارك في غرف الملابس أو الحمام."},{"label":"B","text":"طلقة قبل 10 دقائق، ثم 5 دقائق، ثم دقيقة واحدة.","isCorrect":false,"rationale":"التوقيت المحدد في التوجيهات يبدأ من 5 دقائق وليس 10 دقائق."},{"label":"C","text":"إشارة قبل 15 دقيقة وإشارة أخرى قبل دقيقتين.","isCorrect":false,"rationale":"التنظيم الدولي يحدد نظام التنبيه بخمس دقائق، ثلاث دقائق، ودقيقة واحدة."},{"label":"D","text":"إشارة واحدة فقط قبل دقيقة واحدة من الانطلاق.","isCorrect":false,"rationale":"إشارة الدقيقة الواحدة غير كافية لتجميع أعداد كبيرة من المشاركين المنتشرين في منطقة الأحماء."}]},{"question":"إزاي بيبلاغ مراقبو السباق المنتشرون في المطاف الحكم الرئيسي عن الأخطاء أو المخالفات المرتكبة؟","hint":"تُستخدم إشارة لونية خاصة لتنبيه الحكم دون التسبب في تعطيل أو إيقاف باقي المتنافسين.","options":[{"label":"A","text":"برفع علم أصفر لمناداة الحكم أو الاتصال به عبر الأجهزة.","isCorrect":true,"rationale":"يرفع المراقب العلم الأصفر لجذب انتباه الحكم أو يستعمل جهاز الاتصال لإبلاغه بالمخالفة لاتخاذ القرار."},{"label":"B","text":"بالجري خلف العداء المخالف لتسجيل رقمه يدويًا.","isCorrect":false,"rationale":"يتواجد المراقبون في نقاط ثابتة بالمسار ويتواصلون مع الحكم بالأجهزة أو الأعلام."},{"label":"C","text":"برفع علم أحمر وإيقاف السباق والعدائين فوراً.","isCorrect":false,"rationale":"المراقب لا يوقف السباق بنفسه، وإنما يرفع علماً أصفر لإبلاغ حكم المضمار."},{"label":"D","text":"بإطلاق صافرة وإشهار بطاقة حمراء للعداء المخالف.","isCorrect":false,"rationale":"قرار الإقصاء أو البطاقات هو من اختصاص الحكم الرئيسي وليس من مهام المراقب المباشرة."}]},{"question":"في حال تعادل فريقين في مجموع النقاط في ترتيب الفرق، إزاي بيتحدد الفريق الفائز حسب القواعد التقليدية؟","hint":"يتم النظر إلى ترتيب المتسابق الذي أكمل النصاب المعتمد لنقاط الفريق بين الفريقين المتعادلين.","options":[{"label":"A","text":"إجراء قرعة علنية بين مدربي الفريقين المتعادلين.","isCorrect":false,"rationale":"تُحسم النتيجة بناءً على نتائج ومتسابقي الميدان وليس بالقرعة."},{"label":"B","text":"اعتماد زمن المتسابق الأول في كل فريق فقط والتغاضي عن الباقين.","isCorrect":false,"rationale":"الترتيب يعتمد على مجموع نقاط الفريق، وعند التعادل يُنظر لترتيب المتسابق الأخير المكمل للفريق."},{"label":"C","text":"يكون الامتياز للفريق الذي كان ترتيب آخر متسابق فيه أفضل.","isCorrect":true,"rationale":"تعتمد القاعدة التقليدية عند التعادل على تفوق ترتيب العداء الأخير المحتسب ضمن نقاط الفريق (مثل العداء الرابع أو السادس)."},{"label":"D","text":"إعادة السباق بين أفراد الفريقين المتعادلين فقط.","isCorrect":false,"rationale":"لا يتم إعادة سباقات الضاحية للتعادل نظراً للمجهود البدني الكبير وطول المسافة."}]}];
+const tr = {"correct":"صحيح!","incorrect":"خطأ","next":"السؤال التالي ←","seeResults":"عرض النتائج","complete":"اكتمل الاختبار!","scoreText":"أجبت {correct} من {total} بشكل صحيح","tryAgain":"حاول مرة أخرى","rightAnswer":"إجابة صحيحة","notQuite":"ليس تماماً"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
