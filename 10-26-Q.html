@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبر فهمك</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>اختبر فهمك</h1>
+    <div class="meta">10 أسئلة</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">سؤال 1</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما هو المفهوم الذي ركزت عليه المحاضرة كعامل أساسي في نجاح التدريب وتفادي المشاكل التي واجهها المدربون على مدار 40 عاماً؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في العلاقة بين ما يُقرأ في الكتب وما يحدث فعلياً في الميدان.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="المعلومات متوفرة وموجودة، لكن التحدي يكمن في كيفية فهمها وتطبيقها على أرض الواقع.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">حفظ المعلومات النظرية بدقة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المعلومات متوفرة وموجودة، لكن التحدي يكمن في كيفية فهمها وتطبيقها على أرض الواقع.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="زيادة الوقت دون فهم المفهوم الصحيح لا تضمن تحسن الأداء وقد تؤدي للإرهاق.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">زيادة عدد ساعات التدريب اليومية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">زيادة الوقت دون فهم المفهوم الصحيح لا تضمن تحسن الأداء وقد تؤدي للإرهاق.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="المحاضرة شددت على أن المشكلة تكمن في الفهم والتطبيق العملي وليس في نقص المعلومات النظرية نفسها.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">تطبيق المفهوم وتحويل المعلومات النظرية إلى عملي.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المحاضرة شددت على أن المشكلة تكمن في الفهم والتطبيق العملي وليس في نقص المعلومات النظرية نفسها.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="السرعة جزء من المنظومة، ولكن الفهم العام لكيفية تطبيق التغذية الراجعة هو الأساس.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">التركيز فقط على سرعة اللاعب.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">السرعة جزء من المنظومة، ولكن الفهم العام لكيفية تطبيق التغذية الراجعة هو الأساس.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">سؤال 2</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما المقصود بمصطلح &quot;الهندسة العكسية&quot; (Reverse Engineering) في سياق التخطيط للتدريب؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">يتعلق الأمر بالبدء من النهاية لتنظيم البداية.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="الهندسة العكسية تتطلب معرفة الغاية (الهدف) ومن ثم العودة لتنظيم الأحجام والتكرارات بناءً عليها.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">تحديد الهدف النهائي أولاً ثم تنظيم التدريبات للوصول إليه.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الهندسة العكسية تتطلب معرفة الغاية (الهدف) ومن ثم العودة لتنظيم الأحجام والتكرارات بناءً عليها.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="هذا تحليل فني للمنافسة وليس طريقة لتنظيم خطة التدريب الشخصية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">تحليل أخطاء المنافسين لتجنبها.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا تحليل فني للمنافسة وليس طريقة لتنظيم خطة التدريب الشخصية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="هذا هو التدرج الطبيعي، بينما الهندسة العكسية تعني البدء من النتيجة النهائية المرجوة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">البدء من مستوى اللاعب الحالي وتطويره تدريجياً.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا هو التدرج الطبيعي، بينما الهندسة العكسية تعني البدء من النتيجة النهائية المرجوة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="التقليد ليس هندسة عكسية، بل هو اتباع لمنهج خارجي قد لا يناسب ظروف اللاعب.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">تقليد أساليب تدريب الأبطال العالميين.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التقليد ليس هندسة عكسية، بل هو اتباع لمنهج خارجي قد لا يناسب ظروف اللاعب.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">سؤال 3</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">عند زيادة حمل التدريب بنسبة <span class="math">20%</span>، ما هو الإجراء الضروري الذي يجب اتباعه وفقاً للمحاضرة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في التوازن المطلوب لمنع اللاعب من الوصول لمرحلة التعب المفرط.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="زيادة التكرارات تزيد الحمل، لكن السؤال يبحث عن ما يجب موازنته لضمان التكيف.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">زيادة عدد التكرارات بنفس النسبة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">زيادة التكرارات تزيد الحمل، لكن السؤال يبحث عن ما يجب موازنته لضمان التكيف.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="المبدأ الأساسي هو أن زيادة الحمل تتطلب زيادة موازية في الاستشفاء لضمان حدوث التكيف (Adaptation).">
+            <span class="opt-label">B</span>
+            <span class="opt-text">زيادة فترات الاستشفاء بنفس النسبة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المبدأ الأساسي هو أن زيادة الحمل تتطلب زيادة موازية في الاستشفاء لضمان حدوث التكيف (Adaptation).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="الشدة القصوى لها توقيت معين ولا ترتبط طردياً بمجرد زيادة الحمل الإجمالي.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">زيادة الشدة لتصل إلى <span class="math">100%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الشدة القصوى لها توقيت معين ولا ترتبط طردياً بمجرد زيادة الحمل الإجمالي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="تقليل الراحة مع زيادة الحمل قد يؤدي إلى الإجهاد المفرط والإصابة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">تقليل زمن الراحة بين المجموعات.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تقليل الراحة مع زيادة الحمل قد يؤدي إلى الإجهاد المفرط والإصابة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">سؤال 4</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما هي النسبة المئوية التي تعتبر &quot;شدة قصوى&quot; أو عالية جداً في تدريبات العدو والوثب؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">هذه النسبة هي التي تضمن محاكاة ظروف المنافسة الفعلية.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="هذه النسبة تقع تحت القصوى مباشرة وتستخدم غالباً في تدريبات التحمل اللاهوائي.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">بين <span class="math">85%</span> و <span class="math">94%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذه النسبة تقع تحت القصوى مباشرة وتستخدم غالباً في تدريبات التحمل اللاهوائي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="هذه النسبة تعتبر شدة عالية ولكنها ليست القصوى المطلوبة لتحقيق نتائج تنافسية في الوثب.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">بين <span class="math">75%</span> و <span class="math">84%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذه النسبة تعتبر شدة عالية ولكنها ليست القصوى المطلوبة لتحقيق نتائج تنافسية في الوثب.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="المحاضر ذكر أن الشدة بين $95\%$ و $100\%$ هي التي تضمن الأداء الفعال وتحدد جودة التدريب.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">بين <span class="math">95%</span> و <span class="math">100%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المحاضر ذكر أن الشدة بين <span class="math">95%</span> و <span class="math">100%</span> هي التي تضمن الأداء الفعال وتحدد جودة التدريب.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="هذه النسبة تعتبر منخفضة جداً وتستخدم عادة للاستشفاء النشط.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">أقل من <span class="math">50%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذه النسبة تعتبر منخفضة جداً وتستخدم عادة للاستشفاء النشط.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">سؤال 5</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">وفقاً لنظام الطاقة، كم تستغرق طاقة الـ <span class="math">ATP-CP</span> تقريباً قبل أن يحتاج الجسم لنظام طاقة آخر؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">ابحث عن أقصر زمن ممكن مرتبط بالحركات الانفجارية والسرعة القصوى.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="هذا المدى الزمني يخص النشاط الهوائي المستمر وليس الأنشطة الانفجارية كالوثب.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">ساعة واحدة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا المدى الزمني يخص النشاط الهوائي المستمر وليس الأنشطة الانفجارية كالوثب.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="في هذا الزمن يكون الجسم قد بدأ بالفعل في الاعتماد على نظام حامض اللاكتيك.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">30</span> ثانية.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">في هذا الزمن يكون الجسم قد بدأ بالفعل في الاعتماد على نظام حامض اللاكتيك.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="هذا الزمن يرتبط بالأنظمة الهوائية أو اللاهوائية التي تعتمد على الجليكوليز.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">حوالي دقيقتين.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا الزمن يرتبط بالأنظمة الهوائية أو اللاهوائية التي تعتمد على الجليكوليز.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="نظام الفوسفات (ATP-CP) هو نظام طاقة انفجاري وسريع جداً ينفد خلال الـ $10$ ثوانٍ الأولى من الجهد الأقصى.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">حوالي <span class="math">10</span> ثوانٍ كحد أقصى.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">نظام الفوسفات (ATP-CP) هو نظام طاقة انفجاري وسريع جداً ينفد خلال الـ <span class="math">10</span> ثوانٍ الأولى من الجهد الأقصى.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">سؤال 6</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">في مثال اللاعب &quot;دوبلانتس&quot;، ما هو العامل الرئيسي الذي تغير وسمح له بتحسين أرقامه العالمية بينما ظل تكنيكه ثابتاً تقريباً منذ صغره؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في كيفية تأثير تطور القدرات البدنية على الأدوات المستخدمة في الوثب.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="تطور القوة يتطلب استخدام زانات أكثر صلابة (Stiffer) وليس أكثر مرونة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">استخدام عصا (زانة) أكثر مرونة وليونة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تطور القوة يتطلب استخدام زانات أكثر صلابة (Stiffer) وليس أكثر مرونة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="زيادة السرعة والقوة مكنته من التعامل مع زانات قوية تعطي دفعاً أعلى، مع الحفاظ على نفس جودة التكنيك.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">تحسن القوة والسرعة مما سمح باستخدام زانات أكثر صلابة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">زيادة السرعة والقوة مكنته من التعامل مع زانات قوية تعطي دفعاً أعلى، مع الحفاظ على نفس جودة التكنيك.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="المصدر أشار إلى أن التكنيك ظل متشابهاً جداً مع ما كان عليه في سن الـ 14.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">تغيير شامل في زوايا الارتقاء.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المصدر أشار إلى أن التكنيك ظل متشابهاً جداً مع ما كان عليه في سن الـ 14.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="التحمل الهوائي يساعد في الاستشفاء لكنه ليس السبب المباشر في قفز ارتفاعات عالمية بالزانة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">التركيز على تدريبات التحمل الهوائي.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التحمل الهوائي يساعد في الاستشفاء لكنه ليس السبب المباشر في قفز ارتفاعات عالمية بالزانة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">سؤال 7</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">لماذا يحذر المحاضر من الإفراط في تدريبات الوثب والقوة العالية للناشئين تحت سن الـ <span class="math">20</span>؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في تأثير الضغط الميكانيكي العالي على جسم لا يزال في طور النمو.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="تدريبات الوثب تزيد السرعة عادة، لكن المشكلة تكمن في السلامة الجسدية.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">لأنها تقلل من سرعة اللاعب في المسافات القصيرة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تدريبات الوثب تزيد السرعة عادة، لكن المشكلة تكمن في السلامة الجسدية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="الضغط العالي والمتكرر على عظام ومفاصل الناشئين غير المكتملة قد يؤدي لإصابات يظن البعض أنها &quot;سوء حظ&quot; وهي في الحقيقة خطأ تخطيطي.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">خوفاً من تعرض الجهاز الهيكلي والعظمي للإصابات.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الضغط العالي والمتكرر على عظام ومفاصل الناشئين غير المكتملة قد يؤدي لإصابات يظن البعض أنها &quot;سوء حظ&quot; وهي في الحقيقة خطأ تخطيطي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="التدريب يجب أن يكون مستمراً ولكن بذكاء وتوازن، وليس مجرد توفير للجهد.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">لتوفير الجهد لسن الرشد فقط.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التدريب يجب أن يكون مستمراً ولكن بذكاء وتوازن، وليس مجرد توفير للجهد.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="القوة مطلوبة للناشئين، ولكن بنوعية وكمية تتناسب مع نضجهم البدني.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">لأن الناشئين لا يحتاجون للقوة في هذه المرحلة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القوة مطلوبة للناشئين، ولكن بنوعية وكمية تتناسب مع نضجهم البدني.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">سؤال 8</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">أي مرحلة من مراحل الوثب تعتبر المسؤولة عن تحضير الجسم للارتقاء وتحديد سرعته؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">هي المرحلة الأولى التي يبدأ بها اللاعب حركته باتجاه اللوحة أو العارضة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="الهبوط هو المرحلة النهائية لإنهاء الوثبة بأمان وتقليل خسارة المسافة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">مرحلة الهبوط.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الهبوط هو المرحلة النهائية لإنهاء الوثبة بأمان وتقليل خسارة المسافة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="التوقف ليس مرحلة من مراحل الوثب، بل هو عكس الهدف من الاقتراب السريع.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">مرحلة التوقف.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التوقف ليس مرحلة من مراحل الوثب، بل هو عكس الهدف من الاقتراب السريع.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="مرحلة الاقتراب (Approach) هي التي تبني السرعة وتحدد إيقاع الخطوات اللازم للارتقاء الناجح.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">مرحلة الاقتراب.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">مرحلة الاقتراب (Approach) هي التي تبني السرعة وتحدد إيقاع الخطوات اللازم للارتقاء الناجح.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="الطيران هو نتيجة لما حدث في المراحل السابقة ولا يمكن تغيير مساره بمجرد ترك الأرض.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">مرحلة الطيران.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الطيران هو نتيجة لما حدث في المراحل السابقة ولا يمكن تغيير مساره بمجرد ترك الأرض.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">سؤال 9</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما هو الدور الأساسي للتحمل الهوائي لمتسابقي الوثب الناشئين حسب ما ورد في الندوة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في كيفية تأثير الأكسجين على استعادة الطاقة بعد مجهود شاق وقصير.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="تدريبات القوة الخاصة والانفجارية هي التي تزيد قوة الرجلين، وليس التحمل الهوائي العام.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">زيادة قوة عضلات الرجلين بشكل مباشر.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تدريبات القوة الخاصة والانفجارية هي التي تزيد قوة الرجلين، وليس التحمل الهوائي العام.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="التحمل الهوائي لدى الواثبين يهدف بشكل رئيسي لضمان قدرة الجسم على العودة لحالته الطبيعية بسرعة بعد المجهود اللاهوائي.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">المساعدة في تسريع عملية الاستشفاء بين التدريبات والمحاولات.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التحمل الهوائي لدى الواثبين يهدف بشكل رئيسي لضمان قدرة الجسم على العودة لحالته الطبيعية بسرعة بعد المجهود اللاهوائي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="هذا هدف لمتسابقي المسافات الطويلة وليس لمتسابقي الوثب.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">تحسين زمن الجري لمسافة <span class="math">5000</span> متر.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا هدف لمتسابقي المسافات الطويلة وليس لمتسابقي الوثب.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="لا يمكن للتحمل أن يعوض السرعة؛ فكل منهما نظام طاقة مختلف.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">تعويض النقص في تدريبات السرعة.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لا يمكن للتحمل أن يعوض السرعة؛ فكل منهما نظام طاقة مختلف.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">سؤال 10</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">حسب إحصائيات التطور (Development Rates)، كم تبلغ نسبة التطور المتوقعة في الأداء بعد سن الـ <span class="math">23</span>؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">هذه النسبة تعكس صعوبة كسر الأرقام الشخصية في مرحلة النضج الكامل.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="هذه النسبة مرجحة في الفترة بين سن الـ $20$ والـ $23$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">حوالي <span class="math">5%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذه النسبة مرجحة في الفترة بين سن الـ <span class="math">20</span> والـ <span class="math">23</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="بعد سن الـ $23$، يصبح التطور بطيئاً جداً وصعباً، حيث تبلغ النسبة حوالي $1.5\%$ فقط، مما يؤكد أهمية التأسيس قبل هذا السن.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">حوالي <span class="math">1.5%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">بعد سن الـ <span class="math">23</span>، يصبح التطور بطيئاً جداً وصعباً، حيث تبلغ النسبة حوالي <span class="math">1.5%</span> فقط، مما يؤكد أهمية التأسيس قبل هذا السن.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="هذه نسبة عالية جداً لسن النضج، وتحدث عادة في مراحل الناشئين الباكرة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">حوالي <span class="math">10%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذه نسبة عالية جداً لسن النضج، وتحدث عادة في مراحل الناشئين الباكرة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="التطور ممكن دائماً ولكنه يصبح طفيفاً جداً وبحاجة لدقة عالية في التدريب.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">لا يوجد تطور نهائياً.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التطور ممكن دائماً ولكنه يصبح طفيفاً جداً وبحاجة لدقة عالية في التدريب.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>اكتمل الاختبار!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">حاول مرة أخرى</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"ما هو المفهوم الذي ركزت عليه المحاضرة كعامل أساسي في نجاح التدريب وتفادي المشاكل التي واجهها المدربون على مدار 40 عاماً؟","hint":"فكر في العلاقة بين ما يُقرأ في الكتب وما يحدث فعلياً في الميدان.","options":[{"label":"A","text":"حفظ المعلومات النظرية بدقة.","isCorrect":false,"rationale":"المعلومات متوفرة وموجودة، لكن التحدي يكمن في كيفية فهمها وتطبيقها على أرض الواقع."},{"label":"B","text":"زيادة عدد ساعات التدريب اليومية.","isCorrect":false,"rationale":"زيادة الوقت دون فهم المفهوم الصحيح لا تضمن تحسن الأداء وقد تؤدي للإرهاق."},{"label":"C","text":"تطبيق المفهوم وتحويل المعلومات النظرية إلى عملي.","isCorrect":true,"rationale":"المحاضرة شددت على أن المشكلة تكمن في الفهم والتطبيق العملي وليس في نقص المعلومات النظرية نفسها."},{"label":"D","text":"التركيز فقط على سرعة اللاعب.","isCorrect":false,"rationale":"السرعة جزء من المنظومة، ولكن الفهم العام لكيفية تطبيق التغذية الراجعة هو الأساس."}]},{"question":"ما المقصود بمصطلح \"الهندسة العكسية\" (Reverse Engineering) في سياق التخطيط للتدريب؟","hint":"يتعلق الأمر بالبدء من النهاية لتنظيم البداية.","options":[{"label":"A","text":"تحديد الهدف النهائي أولاً ثم تنظيم التدريبات للوصول إليه.","isCorrect":true,"rationale":"الهندسة العكسية تتطلب معرفة الغاية (الهدف) ومن ثم العودة لتنظيم الأحجام والتكرارات بناءً عليها."},{"label":"B","text":"تحليل أخطاء المنافسين لتجنبها.","isCorrect":false,"rationale":"هذا تحليل فني للمنافسة وليس طريقة لتنظيم خطة التدريب الشخصية."},{"label":"C","text":"البدء من مستوى اللاعب الحالي وتطويره تدريجياً.","isCorrect":false,"rationale":"هذا هو التدرج الطبيعي، بينما الهندسة العكسية تعني البدء من النتيجة النهائية المرجوة."},{"label":"D","text":"تقليد أساليب تدريب الأبطال العالميين.","isCorrect":false,"rationale":"التقليد ليس هندسة عكسية، بل هو اتباع لمنهج خارجي قد لا يناسب ظروف اللاعب."}]},{"question":"عند زيادة حمل التدريب بنسبة $20\\%$، ما هو الإجراء الضروري الذي يجب اتباعه وفقاً للمحاضرة؟","hint":"فكر في التوازن المطلوب لمنع اللاعب من الوصول لمرحلة التعب المفرط.","options":[{"label":"A","text":"زيادة عدد التكرارات بنفس النسبة.","isCorrect":false,"rationale":"زيادة التكرارات تزيد الحمل، لكن السؤال يبحث عن ما يجب موازنته لضمان التكيف."},{"label":"B","text":"زيادة فترات الاستشفاء بنفس النسبة.","isCorrect":true,"rationale":"المبدأ الأساسي هو أن زيادة الحمل تتطلب زيادة موازية في الاستشفاء لضمان حدوث التكيف (Adaptation)."},{"label":"C","text":"زيادة الشدة لتصل إلى $100\\%$.","isCorrect":false,"rationale":"الشدة القصوى لها توقيت معين ولا ترتبط طردياً بمجرد زيادة الحمل الإجمالي."},{"label":"D","text":"تقليل زمن الراحة بين المجموعات.","isCorrect":false,"rationale":"تقليل الراحة مع زيادة الحمل قد يؤدي إلى الإجهاد المفرط والإصابة."}]},{"question":"ما هي النسبة المئوية التي تعتبر \"شدة قصوى\" أو عالية جداً في تدريبات العدو والوثب؟","hint":"هذه النسبة هي التي تضمن محاكاة ظروف المنافسة الفعلية.","options":[{"label":"A","text":"بين $85\\%$ و $94\\%$.","isCorrect":false,"rationale":"هذه النسبة تقع تحت القصوى مباشرة وتستخدم غالباً في تدريبات التحمل اللاهوائي."},{"label":"B","text":"بين $75\\%$ و $84\\%$.","isCorrect":false,"rationale":"هذه النسبة تعتبر شدة عالية ولكنها ليست القصوى المطلوبة لتحقيق نتائج تنافسية في الوثب."},{"label":"C","text":"بين $95\\%$ و $100\\%$.","isCorrect":true,"rationale":"المحاضر ذكر أن الشدة بين $95\\%$ و $100\\%$ هي التي تضمن الأداء الفعال وتحدد جودة التدريب."},{"label":"D","text":"أقل من $50\\%$.","isCorrect":false,"rationale":"هذه النسبة تعتبر منخفضة جداً وتستخدم عادة للاستشفاء النشط."}]},{"question":"وفقاً لنظام الطاقة، كم تستغرق طاقة الـ $ATP-CP$ تقريباً قبل أن يحتاج الجسم لنظام طاقة آخر؟","hint":"ابحث عن أقصر زمن ممكن مرتبط بالحركات الانفجارية والسرعة القصوى.","options":[{"label":"A","text":"ساعة واحدة.","isCorrect":false,"rationale":"هذا المدى الزمني يخص النشاط الهوائي المستمر وليس الأنشطة الانفجارية كالوثب."},{"label":"B","text":"$30$ ثانية.","isCorrect":false,"rationale":"في هذا الزمن يكون الجسم قد بدأ بالفعل في الاعتماد على نظام حامض اللاكتيك."},{"label":"C","text":"حوالي دقيقتين.","isCorrect":false,"rationale":"هذا الزمن يرتبط بالأنظمة الهوائية أو اللاهوائية التي تعتمد على الجليكوليز."},{"label":"D","text":"حوالي $10$ ثوانٍ كحد أقصى.","isCorrect":true,"rationale":"نظام الفوسفات (ATP-CP) هو نظام طاقة انفجاري وسريع جداً ينفد خلال الـ $10$ ثوانٍ الأولى من الجهد الأقصى."}]},{"question":"في مثال اللاعب \"دوبلانتس\"، ما هو العامل الرئيسي الذي تغير وسمح له بتحسين أرقامه العالمية بينما ظل تكنيكه ثابتاً تقريباً منذ صغره؟","hint":"فكر في كيفية تأثير تطور القدرات البدنية على الأدوات المستخدمة في الوثب.","options":[{"label":"A","text":"استخدام عصا (زانة) أكثر مرونة وليونة.","isCorrect":false,"rationale":"تطور القوة يتطلب استخدام زانات أكثر صلابة (Stiffer) وليس أكثر مرونة."},{"label":"B","text":"تحسن القوة والسرعة مما سمح باستخدام زانات أكثر صلابة.","isCorrect":true,"rationale":"زيادة السرعة والقوة مكنته من التعامل مع زانات قوية تعطي دفعاً أعلى، مع الحفاظ على نفس جودة التكنيك."},{"label":"C","text":"تغيير شامل في زوايا الارتقاء.","isCorrect":false,"rationale":"المصدر أشار إلى أن التكنيك ظل متشابهاً جداً مع ما كان عليه في سن الـ 14."},{"label":"D","text":"التركيز على تدريبات التحمل الهوائي.","isCorrect":false,"rationale":"التحمل الهوائي يساعد في الاستشفاء لكنه ليس السبب المباشر في قفز ارتفاعات عالمية بالزانة."}]},{"question":"لماذا يحذر المحاضر من الإفراط في تدريبات الوثب والقوة العالية للناشئين تحت سن الـ $20$؟","hint":"فكر في تأثير الضغط الميكانيكي العالي على جسم لا يزال في طور النمو.","options":[{"label":"A","text":"لأنها تقلل من سرعة اللاعب في المسافات القصيرة.","isCorrect":false,"rationale":"تدريبات الوثب تزيد السرعة عادة، لكن المشكلة تكمن في السلامة الجسدية."},{"label":"B","text":"خوفاً من تعرض الجهاز الهيكلي والعظمي للإصابات.","isCorrect":true,"rationale":"الضغط العالي والمتكرر على عظام ومفاصل الناشئين غير المكتملة قد يؤدي لإصابات يظن البعض أنها \"سوء حظ\" وهي في الحقيقة خطأ تخطيطي."},{"label":"C","text":"لتوفير الجهد لسن الرشد فقط.","isCorrect":false,"rationale":"التدريب يجب أن يكون مستمراً ولكن بذكاء وتوازن، وليس مجرد توفير للجهد."},{"label":"D","text":"لأن الناشئين لا يحتاجون للقوة في هذه المرحلة.","isCorrect":false,"rationale":"القوة مطلوبة للناشئين، ولكن بنوعية وكمية تتناسب مع نضجهم البدني."}]},{"question":"أي مرحلة من مراحل الوثب تعتبر المسؤولة عن تحضير الجسم للارتقاء وتحديد سرعته؟","hint":"هي المرحلة الأولى التي يبدأ بها اللاعب حركته باتجاه اللوحة أو العارضة.","options":[{"label":"A","text":"مرحلة الهبوط.","isCorrect":false,"rationale":"الهبوط هو المرحلة النهائية لإنهاء الوثبة بأمان وتقليل خسارة المسافة."},{"label":"B","text":"مرحلة التوقف.","isCorrect":false,"rationale":"التوقف ليس مرحلة من مراحل الوثب، بل هو عكس الهدف من الاقتراب السريع."},{"label":"C","text":"مرحلة الاقتراب.","isCorrect":true,"rationale":"مرحلة الاقتراب (Approach) هي التي تبني السرعة وتحدد إيقاع الخطوات اللازم للارتقاء الناجح."},{"label":"D","text":"مرحلة الطيران.","isCorrect":false,"rationale":"الطيران هو نتيجة لما حدث في المراحل السابقة ولا يمكن تغيير مساره بمجرد ترك الأرض."}]},{"question":"ما هو الدور الأساسي للتحمل الهوائي لمتسابقي الوثب الناشئين حسب ما ورد في الندوة؟","hint":"فكر في كيفية تأثير الأكسجين على استعادة الطاقة بعد مجهود شاق وقصير.","options":[{"label":"A","text":"زيادة قوة عضلات الرجلين بشكل مباشر.","isCorrect":false,"rationale":"تدريبات القوة الخاصة والانفجارية هي التي تزيد قوة الرجلين، وليس التحمل الهوائي العام."},{"label":"B","text":"المساعدة في تسريع عملية الاستشفاء بين التدريبات والمحاولات.","isCorrect":true,"rationale":"التحمل الهوائي لدى الواثبين يهدف بشكل رئيسي لضمان قدرة الجسم على العودة لحالته الطبيعية بسرعة بعد المجهود اللاهوائي."},{"label":"C","text":"تحسين زمن الجري لمسافة $5000$ متر.","isCorrect":false,"rationale":"هذا هدف لمتسابقي المسافات الطويلة وليس لمتسابقي الوثب."},{"label":"D","text":"تعويض النقص في تدريبات السرعة.","isCorrect":false,"rationale":"لا يمكن للتحمل أن يعوض السرعة؛ فكل منهما نظام طاقة مختلف."}]},{"question":"حسب إحصائيات التطور (Development Rates)، كم تبلغ نسبة التطور المتوقعة في الأداء بعد سن الـ $23$؟","hint":"هذه النسبة تعكس صعوبة كسر الأرقام الشخصية في مرحلة النضج الكامل.","options":[{"label":"A","text":"حوالي $5\\%$.","isCorrect":false,"rationale":"هذه النسبة مرجحة في الفترة بين سن الـ $20$ والـ $23$."},{"label":"B","text":"حوالي $1.5\\%$.","isCorrect":true,"rationale":"بعد سن الـ $23$، يصبح التطور بطيئاً جداً وصعباً، حيث تبلغ النسبة حوالي $1.5\\%$ فقط، مما يؤكد أهمية التأسيس قبل هذا السن."},{"label":"C","text":"حوالي $10\\%$.","isCorrect":false,"rationale":"هذه نسبة عالية جداً لسن النضج، وتحدث عادة في مراحل الناشئين الباكرة."},{"label":"D","text":"لا يوجد تطور نهائياً.","isCorrect":false,"rationale":"التطور ممكن دائماً ولكنه يصبح طفيفاً جداً وبحاجة لدقة عالية في التدريب."}]}];
+const tr = {"correct":"صحيح!","incorrect":"خطأ","next":"السؤال التالي ←","seeResults":"عرض النتائج","complete":"اكتمل الاختبار!","scoreText":"أجبت {correct} من {total} بشكل صحيح","tryAgain":"حاول مرة أخرى","rightAnswer":"إجابة صحيحة","notQuite":"ليس تماماً"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>

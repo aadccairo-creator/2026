@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بطاقات تدريب ناشئي الوثب - التقييم الذاتي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --green: #16a34a;
+            --green-bg: #f0fdf4;
+            --red: #dc2626;
+            --red-bg: #fef2f2;
+            --border: #e2e8f0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        header {
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Scoreboard Panel */
+        .scoreboard {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .score-box {
+            padding: 8px;
+            border-radius: 8px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+        }
+
+        .score-box.correct { background: var(--green-bg); border-color: #bbf7d0; }
+        .score-box.incorrect { background: var(--red-bg); border-color: #fecaca; }
+
+        .score-val {
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        .score-val.green { color: var(--green); }
+        .score-val.red { color: var(--red); }
+        .score-val.blue { color: var(--primary); }
+
+        .score-lbl {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Top Controls */
+        .controls-top {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-select {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            outline: none;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            flex: 1;
+        }
+
+        .counter {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.95rem;
+            background: var(--card-bg);
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        /* Flashcard Scene */
+        .card-scene {
+            width: 100%;
+            height: 320px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+        }
+
+        .card-front {
+            border-top: 5px solid var(--primary);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            border-top: 5px solid var(--green);
+            background: var(--green-bg);
+        }
+
+        .tag {
+            font-size: 0.8rem;
+            background: #eff6ff;
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .card-back .tag {
+            background: #dcfce7;
+            color: var(--green);
+        }
+
+        .card-body {
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.6;
+            color: var(--text-main);
+            margin: auto 0;
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 5px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        /* Self Assessment Buttons (Shown on Back) */
+        .assessment-zone {
+            width: 100%;
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn-assess {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: transform 0.1s ease;
+        }
+
+        .btn-assess:active { transform: scale(0.97); }
+
+        .btn-correct { background: #22c55e; color: white; }
+        .btn-incorrect { background: #ef4444; color: white; }
+
+        /* Navigation Buttons */
+        .controls-bottom {
+            width: 100%;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow);
+        }
+
+        .btn:hover { background: #f1f5f9; }
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        /* Modal Summary */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            align-items: center; justify-content: center;
+            padding: 20px; z-index: 100;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 28px;
+            border-radius: 16px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border: 1px solid var(--border);
+        }
+
+        .modal h2 { font-size: 1.5rem; margin-bottom: 8px; color: var(--text-main); }
+        .modal p { color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem; }
+
+        @media (max-width: 600px) {
+            .card-scene { height: 300px; }
+            .card-body { font-size: 1.05rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>بطاقات تدريب الناشئين - تقييم ذاتي</h1>
+        <p>اختبر معلوماتك وقيّم مدى إتقانك لكل مفهوم تدريبي</p>
+    </header>
+
+    <!-- Scoreboard -->
+    <div class="scoreboard">
+        <div class="score-box correct">
+            <div class="score-val green" id="scoreCorrect">0</div>
+            <div class="score-lbl">إجابات صحيحة ✅</div>
+        </div>
+        <div class="score-box incorrect">
+            <div class="score-val red" id="scoreIncorrect">0</div>
+            <div class="score-lbl">إجابات خاطئة ❌</div>
+        </div>
+        <div class="score-box">
+            <div class="score-val blue" id="scoreAccuracy">0%</div>
+            <div class="score-lbl">نسبة الإتقان 🎯</div>
+        </div>
+    </div>
+
+    <!-- Controls Top -->
+    <div class="controls-top">
+        <select id="categoryFilter" class="category-select" onchange="filterCategory()">
+            <option value="all">جميع المحاور (50)</option>
+            <option value="المفهوم والتخطيط">المفهوم والتخطيط (8)</option>
+            <option value="القدرات الحيوية وأنظمة الطاقة">القدرات الحيوية والطاقة (9)</option>
+            <option value="مبادئ الحمل والشدة">مبادئ الحمل والشدة (9)</option>
+            <option value="تدريب الناشئين وتفادي الإصابات">تدريب الناشئين والإصابات (8)</option>
+            <option value="المراحل الفنية ودوبلانتيس">المراحل الفنية ودوبلانتيس (8)</option>
+            <option value="الهيكلية وقمع الأداء">الهيكلية وقمع الأداء (8)</option>
+        </select>
+        <div class="counter" id="cardCounter">1 / 50</div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Card Scene -->
+    <div class="card-scene" onclick="handleCardClick(event)">
+        <div class="card" id="flashcard">
+            <!-- Front -->
+            <div class="card-face card-front">
+                <span class="tag" id="cardCategoryFront">المفهوم والتخطيط</span>
+                <div class="card-body" id="cardQuestion">جاري التحميل...</div>
+                <div class="hint">اضغط على البطاقة لإظهار الإجابة والتقييم</div>
+            </div>
+            <!-- Back -->
+            <div class="card-face card-back">
+                <span class="tag" id="cardCategoryBack">الإجابة والتقييم الذاتي</span>
+                <div class="card-body" id="cardAnswer">جاري التحميل...</div>
+                
+                <!-- Self Assessment Action Buttons -->
+                <div class="assessment-zone">
+                    <button class="btn-assess btn-correct" onclick="assessCard(true, event)">عرفتها ✅</button>
+                    <button class="btn-assess btn-incorrect" onclick="assessCard(false, event)">لم أعرفها ❌</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls Bottom -->
+    <div class="controls-bottom">
+        <button class="btn" onclick="prevCard()">السابق</button>
+        <button class="btn btn-primary" onclick="flipCard()">قلب البطاقة</button>
+        <button class="btn" onclick="nextCard()">التالي</button>
+        <button class="btn" onclick="resetQuiz()">إعادة التقييم 🔄</button>
+    </div>
+</div>
+
+<!-- Final Summary Modal -->
+<div class="modal" id="summaryModal">
+    <div class="modal-content">
+        <h2 id="modalTitle">نتيجة التقييم الذاتي 🏆</h2>
+        <p id="modalDesc">لقد أتممت مراجعة البطاقات بنجاح!</p>
+        <div class="scoreboard" style="margin-bottom: 20px;">
+            <div class="score-box correct">
+                <div class="score-val green" id="modalCorrect">0</div>
+                <div class="score-lbl">صحيحة</div>
+            </div>
+            <div class="score-box incorrect">
+                <div class="score-val red" id="modalIncorrect">0</div>
+                <div class="score-lbl">خاطئة</div>
+            </div>
+            <div class="score-box">
+                <div class="score-val blue" id="modalAccuracy">0%</div>
+                <div class="score-lbl">الإتقان</div>
+            </div>
+        </div>
+        <button class="btn btn-primary" style="width: 100%; padding: 12px;" onclick="closeModal()">إعادة الاختبار والتمارين</button>
+    </div>
+</div>
+
+<script>
+    const flashcardsData = [
+        { id: 1, cat: "المفهوم والتخطيط", q: "ما هو مفهوم 'التخطيط العكسي' (Reverse Engineering) في التدريب؟", a: "تحديد الهدف النهائي أولاً (مثل الرقم المخطط تسجيله)، ثم تنظيم الحجم والتكرارات وهيكلية التدريب بشكل عكسي للوصول إليه." },
+        { id: 2, cat: "المفهوم والتخطيط", q: "ما الفرق بين المعلومة والمفهوم في فلسفة التدريب الحديثة؟", a: "المعلومات النظرية لم تتغير منذ عقود، لكن 'المفهوم' يتضمن الفهم العملي لكيفية ربط وتطبيق التمرينات لتحقيق الهدف." },
+        { id: 3, cat: "المفهوم والتخطيط", q: "كيف تتعامل فلسفة التدريب مع ظروف وإمكانيات التدريب الصعبة؟", a: "النجاح يعتمد على جودة وكفاءة التدريب والتخطيط السليم، وليس على التحجج بضعف الإمكانيات أو الظروف." },
+        { id: 4, cat: "المفهوم والتخطيط", q: "ما هو الهدف الأساسي من وضع هيكلة عامة لبرنامج التدريب؟", a: "ضمان توجيه جميع الحصص والتكرارات نحو خدمة الهدف النهائي المخطط له دون تشتت أو إجهاد عشوائي." },
+        { id: 5, cat: "المفهوم والتخطيط", q: "لماذا تختلف النتائج الميدانية عن التوقعات النظرية للمدرب؟", a: "بسبب غياب المفهوم التطبيقي وزاوية الرؤية الدقيقة لكيفية ربط كل تمرين بالهدف الحركي المنشود." },
+        { id: 6, cat: "المفهوم والتخطيط", q: "كيف يُحدد المدرب مدى نجاح خطته التدريبية؟", a: "بقدرة الرياضي على تحقيق الأداء المخطط له في المنافسة الحقيقية وتحت ضغوطها." },
+        { id: 7, cat: "المفهوم والتخطيط", q: "ما أهمية التقييم المستمر للحمل والتكنيك أثناء الموسم؟", a: "لتعديل المسار التدريبي وتفادي تراكم التعب العصبي أو هبوط الكفاءة التكنيكية." },
+        { id: 8, cat: "المفهوم والتخطيط", q: "ما المقصود بـ 'جودة التدريب' (Quality of Training)؟", a: "تنفيذ كل تمرين بالشدة والكفاءة الميكانيكية الصحيحة التي تخدم الفعالية الرياضية مباشرة." },
+
+        { id: 9, cat: "القدرات الحيوية وأنظمة الطاقة", q: "ما هي القدرات الحيوية الثلاث الأساسية التي يتكون منها تمرين الوثب؟", a: "السرعة (المحرك الأساسي)، القوة (الديناميكية الانفجارية)، والتحمل (القدرة على تكرار الأداء الأقصى)." },
+        { id: 10, cat: "القدرات الحيوية وأنظمة الطاقة", q: "ماذا يعني مفهوم 'التحمل' الخاص بمسابقات الوثب؟", a: "القدرة على تكرار نفس الأداء الأقصى بنفس الجودة والشدة في جميع المحاولات (المحاولة السادسة كالأولى)." },
+        { id: 11, cat: "القدرات الحيوية وأنظمة الطاقة", q: "ما هو نظام الطاقة الرئيسي المستعمل في المحاولات القصوى للوثب (أقل من 10 ثوانٍ)؟", a: "نظام الفوسفاجين اللاهوائي (ATP-CP)، وهو يوفر طاقة انفجارية سريعة تنفد بسرعة." },
+        { id: 12, cat: "القدرات الحيوية وأنظمة الطاقة", q: "ما سبب التعب العصبي المتراكم (Accumulated Fatigue) لدى اللاعب؟", a: "تكرار التدريبات عالية الشدة دون منح الجهاز العصبي المركزي الوقت الكافي للاستشفاء الكامل." },
+        { id: 13, cat: "القدرات الحيوية وأنظمة الطاقة", q: "ما تأثير التعب العصبي على الانقباض العضلي؟", a: "يقلل من جودة الإثارة العصبية وكفاءة الانقباض العضلي، مما يجعل اللاعب يتمرن بشدة أقل من المخطط لها." },
+        { id: 14, cat: "القدرات الحيوية وأنظمة الطاقة", q: "ما أهمية التحمل الهوائي الخفيف لمتسابقي الوثب؟", a: "تنشيط الدورة الدموية وإزالة مخلفات التعب لتسهيل عمليات الاستشفاء النشط دون إرهاق الجهاز العصبي." },
+        { id: 15, cat: "القدرات الحيوية وأنظمة الطاقة", q: "ما الفرق بين القوة الخام والقوة الانفجارية في مسابقات الوثب؟", a: "القوة الخام هي أقصى ثقل يمكن رفعه، بينما القوة الانفجارية هي إخراج أقصى قوة في أقصر زمن ممكن عند الارتقاء." },
+        { id: 16, cat: "القدرات الحيوية وأنظمة الطاقة", q: "كيف يتفاعل عنصر السرعة مع القوة أثناء الاقتراب والارتقاء؟", a: "السرعة تسهم في زيادة زخم الاقتراب، والقوة تحول هذا الزخم الأفقي إلى مسار طيران عمودي أو مائل." },
+        { id: 17, cat: "القدرات الحيوية وأنظمة الطاقة", q: "ما فائدة فترة الراحة البالغة 72 ساعة بعد حصص الشدة القصوى؟", a: "إعادة بناء مخازن الطاقة واستعادة الجهاز العصبي المركزي لكفاءته الوظيفية الكاملة." },
+
+        { id: 18, cat: "مبادئ الحمل والشدة", q: "ما هي قاعدة الـ 20% في زيادة حمل التدريب؟", a: "أي زيادة في حمل التدريب بنسبة 20% يجب أن تقابلها زيادة حتمية في فترات الراحة والاستشفاء بنسبة 20% أيضاً." },
+        { id: 19, cat: "مبادئ الحمل والشدة", q: "أيهما يسبق الآخر في تدريبات الوثب والعدو: الشدة أم الحجم؟", a: "الشدة تأتي أولاً (95-100%) لضمان الكفاءة والتكيف، ثم يأتي الحجم لتكرار هذه الشدة." },
+        { id: 20, cat: "مبادئ الحمل والشدة", q: "ما المقصود بظاهرة التعويض الزائد (Supercompensation)؟", a: "مرحلة التكيف التي يصل إليها الجسم بعد نيل قسط كافٍ من الاستشفاء، حيث يعود لمستوى أداء أعلى من الأصلي." },
+        { id: 21, cat: "مبادئ الحمل والشدة", q: "ما هي النسبة المئوية للشدة القصوى / الجودة في التدريب؟", a: "من 95% إلى 100% من أقصى إمكانية للاعب." },
+        { id: 22, cat: "مبادئ الحمل والشدة", q: "ما هي النسبة المئوية لشدة منطقة الاستشفاء النشط؟", a: "من 30% إلى 49% من الجهد الأقصى." },
+        { id: 23, cat: "مبادئ الحمل والشدة", q: "ماذا يحدث عند زيادة حجم التكرارات مع انخفاض الشدة عن 85% في تدريب الوثب؟", a: "يتغير نوع التكيف المطلوب ويتحول التدريب لتطوير التحمل البدني العام بدلاً من السرعة والقوة الانفجارية." },
+        { id: 24, cat: "مبادئ الحمل والشدة", q: "كيف تؤثر فترات الراحة بين التكرارات على الحفاظ على الشدة؟", a: "تمنح الفوسفاجين وقتاً لإعادة التخزين وتمنع انخفاض الشدة في التكرارات التالية." },
+        { id: 25, cat: "مبادئ الحمل والشدة", q: "ما الفرق بين الحجم المطلق والحجم النوعي في المايكروسايكل؟", a: "الحجم المطلق هو العدد الكلي للتكرارات، بينما الحجم النوعي هو التكرارات المنفذة بشدة قصوى فقط." },
+        { id: 26, cat: "مبادئ الحمل والشدة", q: "كيف يتم تحديد الشدة المناسبة لكل لاعب في التمرين؟", a: "بناءً على أقصى إمكانية رقمية أو زمنية حقيقية سجلها اللاعب مؤخراً." },
+
+        { id: 27, cat: "تدريب الناشئين وتفادي الإصابات", q: "ما هي النافذة العمرية الأهم للتطور التقني والتكنيك لدى الرياضي؟", a: "الفترة الممتدة قبل سن 23 سنة (وخاصة فئة تحت 20 سنة)." },
+        { id: 28, cat: "تدريب الناشئين وتفادي الإصابات", q: "ما السبب الرئيسي لإصابات الجهاز الهيكلي لدى الناشئين؟", a: "أخطاء التخطيط وزيادة أحمال الوثب والقوة بشكل لا يناسب الجهاز العظمي النامي، وليس سوء الحظ." },
+        { id: 29, cat: "تدريب الناشئين وتفادي الإصابات", q: "ما نسبة الناشئين المتفوقين عالمياً الذين يحافظون على نفس المستوى عند الكبار؟", a: "أقل من 5%، وذلك بسبب سوء التخطيط وحرق المراحل البدنية مبكراً." },
+        { id: 30, cat: "تدريب الناشئين وتفادي الإصابات", q: "ما الأسلوب الصحيح لتطوير الناشئين تحت 20 سنة؟", a: "التركيز على إتقان التكنيك والجودة النوعية والشدة المناسبة بدلاً من إرهاقهم بأحمال بدنية ضخمة." },
+        { id: 31, cat: "تدريب الناشئين وتفادي الإصابات", q: "ما خطورة حرق المراحل البدنية للناشئين تحت 16 سنة؟", a: "إغلاق صفائح النمو المبكر وزيادة احتمالية الإصابات المزمنة والتوقف عن التطور مستقبلاً." },
+        { id: 32, cat: "تدريب الناشئين وتفادي الإصابات", q: "كيف يُساهم التكنيك السليم في الوقاية من الإصابات؟", a: "بتوزيع الضغط الميكانيكي بشكل متوازن على المفاصل والعضلات وتقليل الصدمات الضارة." },
+        { id: 33, cat: "تدريب الناشئين وتفادي الإصابات", q: "لماذا يُحظر تطبيق أحمال القوة العظمى للناشئين دون تمهيد؟", a: "لأن أربطتهم وعظامهم النامية لا تتحمل الضغوط العالية التي تتحملها عضلات الكبار." },
+        { id: 34, cat: "تدريب الناشئين وتفادي الإصابات", q: "ما دور التنوع في التمرينات البدنية لفئة الناشئين؟", a: "بناء قاعدة توافقية واسعة وتجنب الإجهاد المتكرر لنفس الأنسجة العضلية." },
+
+        { id: 35, cat: "المراحل الفنية ودوبلانتيس", q: "ما العامل الذي سمح للبطل 'دوبلانتيس' باستعمال زانات أكثر صلابة مع ثبات تكنيكه؟", a: "زيادة سرعته وقوته الانفجارية بشكل متوازن يخدم التكنيك الأصلي المستقر منذ صغره." },
+        { id: 36, cat: "المراحل الفنية ودوبلانتيس", q: "ما المراحل الفنية الأربع الأساسية للوثب؟", a: "الاقتراب، الارتقاء، الطيران، الهبوط." },
+        { id: 37, cat: "المراحل الفنية ودوبلانتيس", q: "ما الهدف الأساسي من مرحلة الاقتراب في الوثب؟", a: "الوصول لأقصى سرعة ممكنة مع الحفاظ على إيقاع الخطوات والتهيئة للارتقاء." },
+        { id: 38, cat: "المراحل الفنية ودوبلانتيس", q: "ما وظيفة مرحلة الارتقاء؟", a: "تحويل السرعة الأفقية المكتسبة من الاقتراب إلى سرعة عمودية في زمن قصير جداً." },
+        { id: 39, cat: "المراحل الفنية ودوبلانتيس", q: "ما الهدف من مرحلة الطيران؟", a: "التحكم في وضعية الجسم وتأجيل الهبوط للحفاظ على مسار الطيران الأقصى." },
+        { id: 40, cat: "المراحل الفنية ودوبلانتيس", q: "ما دور سرعة الاقتراب في القفز بالزانة؟", a: "تسمح لللاعب باختيار وثني زانات أكثر صلابة (Stiffness) تعطيه ارتفاعاً أكبر." },
+        { id: 41, cat: "المراحل الفنية ودوبلانتيس", q: "ما العلاقة بين زمن التلامس في الارتقاء ومسافة الوثب؟", a: "كلما قل زمن التلامس وزادت القوة الانفجارية، زادت كفاءة تحويل السرعة لأعلى وللأمام." },
+        { id: 42, cat: "المراحل الفنية ودوبلانتيس", q: "ما هو الدور الرئيسي للذراعين والرجل الحرة أثناء الارتقاء؟", a: "زيادة القوة العمودية المؤثرة على الأرض عن طريق الرفس والمرجحة السريعة لأعلى." },
+
+        { id: 43, cat: "الهيكلية وقمع الأداء", q: "ما هو النموذج الهيكلي (Model A) لتوزيع الأحمال في المايكروسايكل؟", a: "نموذج التدرج التصاعدي المزدوج (صعود 3 أسابيع، انخفاض في الرابع، ثم صعود للقمة في السادس)." },
+        { id: 44, cat: "الهيكلية وقمع الأداء", q: "متى يُفضل استخدام النموذج الهيكلي (A) للأحمال؟", a: "في فترة الإعداد العام لبناء تحمل التعب المخطط وتطوير القاعدة البدنية." },
+        { id: 45, cat: "الهيكلية وقمع الأداء", q: "ما هو النموذج الهيكلي (Model E) للأحمال؟", a: "نموذج التموج المبرمج المتبوع بالتخفيف (Tapering) لتقليل الحمل حاداً في الأسبوع الأخير." },
+        { id: 46, cat: "الهيكلية وقمع الأداء", q: "متى يُستخدم النموذج الهيكلي (E) للأحمال؟", a: "قبل المنافسات والبطولات مباشرة لضمان وصول الجهاز العصبي لأعلى كفاءة واستشفاء." },
+        { id: 47, cat: "الهيكلية وقمع الأداء", q: "ما معنى 'قمع الأداء' (Performance Funnel) في ألعاب القوى؟", a: "أداة إحصائية للتنبؤ بالمستوى المستقبلي للاعب بناءً على مؤشرات ومحطات رقمية مرتبطة بالعمر." },
+        { id: 48, cat: "الهيكلية وقمع الأداء", q: "ما المؤشر الرقمي المخطط في الوثب الطويل لسن 17 سنة للوصول لـ 8.20m عند البلوغ؟", a: "تحقيق 7.30 متر على الأقل عند سن 17 سنة." },
+        { id: 49, cat: "الهيكلية وقمع الأداء", q: "ما الهدف من المايكروسايكل المتموج؟", a: "كسر الرتابة وتجنب ثبات مستوى التكيف والحد من التعب المتراكم المستمر." },
+        { id: 50, cat: "الهيكلية وقمع الأداء", q: "ما هي الخلاصة الذهبية لتدريب ناشئي الوثب بناءً على المحاضرة؟", a: "الفهم التكاملي بين الشدة العالية، والتكنيك السليم، والاستشفاء الكافي بقاعدة 20%، للوصول للعالمية." }
+    ];
+
+    let currentCards = [...flashcardsData];
+    let currentIndex = 0;
+    let isFlipped = false;
+
+    // Self Assessment Tracker (cardId -> true/false)
+    let userAssessments = {};
+
+    function updateCard() {
+        if (currentCards.length === 0) return;
+        const cardData = currentCards[currentIndex];
+        
+        document.getElementById('cardCategoryFront').textContent = cardData.cat;
+        document.getElementById('cardCategoryBack').textContent = cardData.cat;
+        document.getElementById('cardQuestion').textContent = cardData.q;
+        document.getElementById('cardAnswer').textContent = cardData.a;
+        
+        document.getElementById('cardCounter').textContent = `${currentIndex + 1} / ${currentCards.length}`;
+        
+        const progressPercent = ((currentIndex + 1) / currentCards.length) * 100;
+        document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
+        if (isFlipped) {
+            document.getElementById('flashcard').classList.remove('is-flipped');
+            isFlipped = false;
+        }
+
+        updateScoreboard();
+    }
+
+    function handleCardClick(e) {
+        // Prevent flip if clicking on assessment buttons
+        if (e.target.tagName === 'BUTTON') return;
+        flipCard();
+    }
+
+    function flipCard() {
+        const card = document.getElementById('flashcard');
+        card.classList.toggle('is-flipped');
+        isFlipped = !isFlipped;
+    }
+
+    function assessCard(isCorrect, e) {
+        if (e) e.stopPropagation();
+        const currentId = currentCards[currentIndex].id;
+        userAssessments[currentId] = isCorrect;
+        
+        updateScoreboard();
+
+        // Auto move to next card after assessment
+        if (currentIndex < currentCards.length - 1) {
+            nextCard();
+        } else {
+            showFinalSummary();
+        }
+    }
+
+    function updateScoreboard() {
+        let correct = 0;
+        let incorrect = 0;
+
+        Object.values(userAssessments).forEach(val => {
+            if (val === true) correct++;
+            if (val === false) incorrect++;
+        });
+
+        const totalAnswered = correct + incorrect;
+        const accuracy = totalAnswered > 0 ? Math.round((correct / totalAnswered) * 100) : 0;
+
+        document.getElementById('scoreCorrect').textContent = correct;
+        document.getElementById('scoreIncorrect').textContent = incorrect;
+        document.getElementById('scoreAccuracy').textContent = `${accuracy}%`;
+    }
+
+    function nextCard() {
+        if (currentIndex < currentCards.length - 1) {
+            currentIndex++;
+            updateCard();
+        } else {
+            showFinalSummary();
+        }
+    }
+
+    function prevCard() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateCard();
+        }
+    }
+
+    function filterCategory() {
+        const selected = document.getElementById('categoryFilter').value;
+        if (selected === 'all') {
+            currentCards = [...flashcardsData];
+        } else {
+            currentCards = flashcardsData.filter(item => item.cat === selected);
+        }
+        currentIndex = 0;
+        updateCard();
+    }
+
+    function resetQuiz() {
+        userAssessments = {};
+        currentIndex = 0;
+        updateCard();
+    }
+
+    function showFinalSummary() {
+        let correct = 0;
+        let incorrect = 0;
+
+        Object.values(userAssessments).forEach(val => {
+            if (val === true) correct++;
+            if (val === false) incorrect++;
+        });
+
+        const totalAnswered = correct + incorrect;
+        if (totalAnswered === 0) return;
+
+        const accuracy = Math.round((correct / totalAnswered) * 100);
+
+        document.getElementById('modalCorrect').textContent = correct;
+        document.getElementById('modalIncorrect').textContent = incorrect;
+        document.getElementById('modalAccuracy').textContent = `${accuracy}%`;
+
+        let evalTitle = "مستوى إتقان ممتاز! 🌟";
+        if (accuracy < 80) evalTitle = "مستوى جيد جداً 👍";
+        if (accuracy < 60) evalTitle = "يحتاج مراجعة وتكرار 📚";
+
+        document.getElementById('modalTitle').textContent = evalTitle;
+        document.getElementById('summaryModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('summaryModal').style.display = 'none';
+        resetQuiz();
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') nextCard();
+        if (e.key === 'ArrowRight') prevCard();
+        if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+        if (e.key === '1') assessCard(true);
+        if (e.key === '2') assessCard(false);
+    });
+
+    updateCard();
+</script>
+</body>
+</html>
