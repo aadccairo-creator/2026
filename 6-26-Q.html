@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبر فهمك</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>اختبر فهمك</h1>
+    <div class="meta">10 أسئلة</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">سؤال 1</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما هو المصطلح التشريحي الذي يُطلق على الأجزاء أو العظام القريبة من خط منتصف الجسم؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في الكلمة العربية التي تعني القرب والمؤانسة عند الاقتراب من المركز.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="يعبر هذا عن المستوى التشريحي الذي يقسم الجسم إلى جزء أمامي وجزء خلفي.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">التاجي (Coronal)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يعبر هذا عن المستوى التشريحي الذي يقسم الجسم إلى جزء أمامي وجزء خلفي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="يُستخدم مصطلح الإنسي لوصف أي تركيب تشريحي يكون أقرب لخط المنتصف الذي يقسم الجسم لنصفين يمين ويسار.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">الإنسي (Medial)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يُستخدم مصطلح الإنسي لوصف أي تركيب تشريحي يكون أقرب لخط المنتصف الذي يقسم الجسم لنصفين يمين ويسار.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="يشير هذا المصطلح إلى الأجزاء المبتعدة عن خط المنتصف المتجهة نحو الخارج.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">الوحشي (Lateral)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يشير هذا المصطلح إلى الأجزاء المبتعدة عن خط المنتصف المتجهة نحو الخارج.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="هذا مسمى لمستوى تشريحي يقسم الجسم طولياً وليس وصفاً لموقع جزء بالنسبة لخط المنتصف.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">السهمي (Sagittal)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا مسمى لمستوى تشريحي يقسم الجسم طولياً وليس وصفاً لموقع جزء بالنسبة لخط المنتصف.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">سؤال 2</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما الخلل القوامي والميكانيكي الذي أثبتت التحليلات وجوده لدى العداء العالمي أوسين بولت دون أن يمنعه من التفوق؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">يتعلق هذا الخلل باستقامة العمود الفقري وعدم التماثل بين الجانبين الأيمن والأيسر.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="بولت كان يتميز بمرونة وطول وتر أكيلس ولم يذكر المصدر إصابته بقطع صليبي أعاق مسيرته.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">تمزق مزمن في الأربطة الصليبية مع قصر في وتر أكيلس</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">بولت كان يتميز بمرونة وطول وتر أكيلس ولم يذكر المصدر إصابته بقطع صليبي أعاق مسيرته.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="تمتلك عضلات الجذع والكور لدى بولت صلابة عالية جداً لتقليل فقدان السرعة أثناء ملامسة الأرض.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">ضعف حاد في عضلات الجذع الخلفية وعدم قدرة على التوازن</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تمتلك عضلات الجذع والكور لدى بولت صلابة عالية جداً لتقليل فقدان السرعة أثناء ملامسة الأرض.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="كان يعاني بولت من انحناء جانبي (سكيليوزيس) أدى لفرق تقريبي في طول الساقين وقوة الاندفاع بينهما ومع ذلك تجاوز هذا بالتردد والمدى الحركي.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">انحناء جانبي بالعمود الفقري مع تفاوت طفيف في طول الساقين</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">كان يعاني بولت من انحناء جانبي (سكيليوزيس) أدى لفرق تقريبي في طول الساقين وقوة الاندفاع بينهما ومع ذلك تجاوز هذا بالتردد والمدى الحركي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="كان الكاحل ووتر أكيلس لدى بولت يعملان بكفاءة عالية لتخزين الطاقة الارتدادية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">تفلطح كامل في القدمين مع انعدام مرونة مفصل الكاحل</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">كان الكاحل ووتر أكيلس لدى بولت يعملان بكفاءة عالية لتخزين الطاقة الارتدادية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">سؤال 3</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما دور العضلة القصبية الأمامية (Tibialis Anterior) المهم أثناء مرحلة الارتكاز في الجري السريع؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تذكر الحركة التي تمنع سحب الأصابع على الأرض وتجهز القدم لاستغلال الوتر الخلفي.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="فرد الركبة هو الوظيفة الأساسية للعضلة ذات الأربع رؤوس الفخذية وليس القصبية الأمامية.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">فرد مفصل الركبة بالكامل أثناء الانطلاق من مكعب البدء</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">فرد الركبة هو الوظيفة الأساسية للعضلة ذات الأربع رؤوس الفخذية وليس القصبية الأمامية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="تقع العضلة القصبية الأمامية في الساق وتعمل بشكل رئيسي على حركة مفصل الكاحل والقدم.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">تدوير مفصل الفخذ إلى الخارج لمنع السقوط أثناء المنحنيات</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تقع العضلة القصبية الأمامية في الساق وتعمل بشكل رئيسي على حركة مفصل الكاحل والقدم.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="الهدف في العدو السريع هو تقليل زمن التلامس مع الأرض وليس زيادته والهبوط يكون على المقدمة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">دفع الأرض لأسفل بكعب القدم لزيادة زمن التلامس</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الهدف في العدو السريع هو تقليل زمن التلامس مع الأرض وليس زيادته والهبوط يكون على المقدمة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="انقباض القصبية الأمامية يرفع القدم نحو الساق، مما يمهد لهبوط مثالي على المشط ويقلل قوة الفرملة ويزيد مرونة الوتر.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">رفع مشط القدم لأعلى لتقليل قوة الفرملة وتخزين طاقة ارتدادية بوتر أكيلس</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">انقباض القصبية الأمامية يرفع القدم نحو الساق، مما يمهد لهبوط مثالي على المشط ويقلل قوة الفرملة ويزيد مرونة الوتر.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">سؤال 4</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">أي من العضلات التالية تُعد واحدة من عضلات الكتف الدوارة (Rotator Cuff) الغائرة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تنشأ هذه العضلة من السطح الأمامي الناعم لعظمة لوح الكتف المواجه للقفص الصدري.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="تعتبر هذه العضلة من عضلات الصدر السطحية المسؤولة عن التريب والتدوير الداخلي وليست جزءاً من الكاف الغائر.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">العضلة الصدرية العظمى (Pectoralis Major)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تعتبر هذه العضلة من عضلات الصدر السطحية المسؤولة عن التريب والتدوير الداخلي وليست جزءاً من الكاف الغائر.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="تتكون مجموعة الكتف الدوارة من أربع عضلات غائرة: فوق الشوكية، تحت الشوكية، المدورة الصغرى، وتحت اللوح.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">العضلة تحت اللوح (Subscapularis)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تتكون مجموعة الكتف الدوارة من أربع عضلات غائرة: فوق الشوكية، تحت الشوكية، المدورة الصغرى، وتحت اللوح.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="تعتبر من عضلات الظهر السطحية الكبيرة التي تحرك الذراع للخلف والأسفل.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">العضلة العريضة الظهرية (Latissimus Dorsi)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تعتبر من عضلات الظهر السطحية الكبيرة التي تحرك الذراع للخلف والأسفل.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="العضلة الدالية هي عضلة سطحية تغطي مفصل الكتف وليست من العضلات الأربع الغائرة للكتف الدوارة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">العضلة الدالية (Deltoid)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">العضلة الدالية هي عضلة سطحية تغطي مفصل الكتف وليست من العضلات الأربع الغائرة للكتف الدوارة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">سؤال 5</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما نوع الانقباض العضلي الذي يحدث عندما تطول العضلة أثناء عملها للتحكم في هبوط الوزن أو امتصاص الصدمة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في اتجاه حركة العضلة عندما تنزل بالوزن لأسفل ببطء للحفاظ على السلامة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="في الانقباض المركزي يقترب المنشأ من المدغم ويقل طول العضلة أثناء التغلب على المقاومة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">انقباض مركزي (بالتقصير)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">في الانقباض المركزي يقترب المنشأ من المدغم ويقل طول العضلة أثناء التغلب على المقاومة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="يحدث الانقباض اللامركزي عندما تنقبض العضلة لمقاومة حمل خارجي مع زيادة في طولها، كالهبوط التدريجي.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">انقباض لا مركزي (بالتطويل)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يحدث الانقباض اللامركزي عندما تنقبض العضلة لمقاومة حمل خارجي مع زيادة في طولها، كالهبوط التدريجي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="في الانقباض الثابت يتولد توتر داخل العضلة دون حدوث أي تغير في طولها أو حركة بالمفصل.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">انقباض ثابت (ايزومتري)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">في الانقباض الثابت يتولد توتر داخل العضلة دون حدوث أي تغير في طولها أو حركة بالمفصل.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="هذا الانقباض إرادي وتتحكم فيه الإشارات العصبية للسيطرة على الحركة وتجنب الاصابات.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">انقباض سلبي غير إرادي</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا الانقباض إرادي وتتحكم فيه الإشارات العصبية للسيطرة على الحركة وتجنب الاصابات.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">سؤال 6</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">لتفادي الإصابات في العدو السريع، كم يجب ألا تقل نسبة قوة العضلات الخلفية (Hamstrings) مقارنة بالعضلات الأمامية (Quadriceps)؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تبحث هذه النسبة عن حد أدنى يمثل أكثر من نصف قوة العضلة الرباعية الأمامية بقليل.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="عادة ما تكون العضلة الأمامية أقوى من الخلفية، بينما هذه النسبة تخص علاقة عضلات أخرى كالهيب فليكسور بالجلوتس.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">100% إلى 120%</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">عادة ما تكون العضلة الأمامية أقوى من الخلفية، بينما هذه النسبة تخص علاقة عضلات أخرى كالهيب فليكسور بالجلوتس.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="أثبتت الدراسات أن انخفاض قوة العضلات الخلفية عن 60-70% من قوة الأمامية يعرض اللاعب لإصابات التمزق العضلي.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">60% إلى 70%</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">أثبتت الدراسات أن انخفاض قوة العضلات الخلفية عن 60-70% من قوة الأمامية يعرض اللاعب لإصابات التمزق العضلي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="هذه النسبة غير كافية لحماية العضلة الخلفية أثناء سرعات الانقباض العالية في العدو.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">40% إلى 45%</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذه النسبة غير كافية لحماية العضلة الخلفية أثناء سرعات الانقباض العالية في العدو.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="هذه النسبة ضئيلة جداً وتسبب اختلالاً حاداً في التوازن العضلي بين جبهتي الفخذ.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">20% إلى 30%</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذه النسبة ضئيلة جداً وتسبب اختلالاً حاداً في التوازن العضلي بين جبهتي الفخذ.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">سؤال 7</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">كم يصل مقدار الحمل الناتجة عن الحمل والارتطام الواقع على الكاحل والقدم أثناء مرحلة السرعة القصوى (الاسبرينت)؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في القوة المضاعفة عدة مرات والتي تتطلب تقوية عالية للعضلات والمفاصل لامتصاصها.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="هذا القيمة أقل بكثير حتى من وزن الجسم الطبيعي أثناء الثبات.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">نصف وزن الجسم فقط</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا القيمة أقل بكثير حتى من وزن الجسم الطبيعي أثناء الثبات.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="هذا الحمل يحدث تقريباً في حالة المشي العادي وليس أثناء سرعات الانطلاق والعدو.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">مساوي لوزن الجسم تماماً (100%)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا الحمل يحدث تقريباً في حالة المشي العادي وليس أثناء سرعات الانطلاق والعدو.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="يتضاعف الحمل الواقع على المفاصل السفلى عند العدو بأقصى سرعة ليصل إلى 3-4 أضعاف الوزن الصافي للجسم.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">3 إلى 4 أضعاف وزن الجسم</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يتضاعف الحمل الواقع على المفاصل السفلى عند العدو بأقصى سرعة ليصل إلى 3-4 أضعاف الوزن الصافي للجسم.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="هذا رقم مبالغ فيه جداً ويتجاوز قدرة تحمل الأنسجة والمفاصل البشرية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">10 إلى 12 ضعف وزن الجسم</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا رقم مبالغ فيه جداً ويتجاوز قدرة تحمل الأنسجة والمفاصل البشرية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">سؤال 8</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما هي السلسلة العضلية (Kinetic Sling) التي تشمل المستقيمة البطنية والمائة الخارجية والداخلية مع العضلات المقربة بالفخذ؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تتكون هذه السلسلة من العضلات الواجهة للبطن والتي تعمل عند رفع الركبة والجذع للأمام.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="يشمل هذا النظام العضلات الناصبة للعمود الفقري والعضلات الخلفية للفخذ والرباط العجزي.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">النظام الطولي العميق (Deep Longitudinal System)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يشمل هذا النظام العضلات الناصبة للعمود الفقري والعضلات الخلفية للفخذ والرباط العجزي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="تتكون السلسلة الخلفية بشكل رئيسي من العريضة الظهرية والعضلة الأليوية الكبرى واللفافه القطنية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">السلسلة العضلية الخلفية (Posterior Oblique System)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تتكون السلسلة الخلفية بشكل رئيسي من العريضة الظهرية والعضلة الأليوية الكبرى واللفافه القطنية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="يركز النظام الجانبي على العضلات الأليوية المتوسطة والصغرى والمقربات للثبات الجانبي.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">النظام الجانبي (Lateral Line System)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يركز النظام الجانبي على العضلات الأليوية المتوسطة والصغرى والمقربات للثبات الجانبي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="تربط هذه السلسلة بين جدار البطن الأمامي والعضلات الضامة والمقربة بالفخذ لنقل القوة أثناء الجري وثبات الحوض.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">السلسلة العضلية المائلة الأمامية (Anterior Oblique System)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تربط هذه السلسلة بين جدار البطن الأمامي والعضلات الضامة والمقربة بالفخذ لنقل القوة أثناء الجري وثبات الحوض.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">سؤال 9</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما الذي يتميز به العمل العضلي باستخدام أجهزة الايزوكينتيك (Isokinetic) في مجال التدريب والـتأهيل؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">يرتبط اسم هذا الانقباض بالسرعة المتساوية والمحددة آلياً طوال المدى الحركي.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="هذا يصف أجهزة التحفيز الكهربائي (Electro-stimulation) وليس تدريبات التحكم الحركي الأيزوكينتيكي.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">اعتماد الأجهزة على التحفيز الكهربائي الخارجي دون أي جهد إرادي</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا يصف أجهزة التحفيز الكهربائي (Electro-stimulation) وليس تدريبات التحكم الحركي الأيزوكينتيكي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="توفر أجهزة الايزوكينتيك سرعة حركة محددة وثابتة مع تغيير المقاومة لتناسب أقصى قوة يستطيع المفصل إنتاجها في كل زاوية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">ثبات سرعة الحركة وتكيف المقاومة ذاتياً مع القوة المبذولة عند كل زاوية</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">توفر أجهزة الايزوكينتيك سرعة حركة محددة وثابتة مع تغيير المقاومة لتناسب أقصى قوة يستطيع المفصل إنتاجها في كل زاوية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="هذا هو التعريف الدقيق للانقباض الثابت أو الايزومتري.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">انعدام الحركة بالكامل مع زيادة التوتر العضلي الداخلي</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا هو التعريف الدقيق للانقباض الثابت أو الايزومتري.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="هذا الوصف ينطبق على التدريب بالأوزان الحرة التقليدية (الايزوتونيك) وليس الايزوكينتيك.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">تغير السرعة مع ثبات الوزن الخارجي المحمول فقط</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا الوصف ينطبق على التدريب بالأوزان الحرة التقليدية (الايزوتونيك) وليس الايزوكينتيك.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">سؤال 10</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما السبب الرئيسي الذي أرجعت له الأبحاث التحسن في سرعة أوسين بولت والحفاظ عليها حتى نهاية السباق مقارنة ببداياته؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">ترتبط هذه الصفة بمنع الشد الزائد في الجزء العلوي للجسم أثناء الجري باقصى شدة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="الضخامة العضلية المفرطة في الذراعين ليست السبب الرئيسي، بل التناسق وزيادة مساحة الاندغام والاسترخاء.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">زيادة كتلته العضلية في الذراعين بدرجة ضخمة جداً</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الضخامة العضلية المفرطة في الذراعين ليست السبب الرئيسي، بل التناسق وزيادة مساحة الاندغام والاسترخاء.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="سباق 100 متر يعتمد بشكل أساسي ورئيسي على نظام إنتاج الطاقات الالهوائية الفوسفاتية واللاكتيكية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">اعتماده الكامل على نظام إنتاج الطاقة الهوائي طوال السباق</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">سباق 100 متر يعتمد بشكل أساسي ورئيسي على نظام إنتاج الطاقات الالهوائية الفوسفاتية واللاكتيكية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="أظهرت التحليلات أن التخلص من التوتر العضلي الزائد في عضلات شبه المنحرفة (الترابيزيوس) والكتف منحه كفاءة حركية وسرعة مستمرة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">قدرته العالية على الاسترخاء العضلي (Relaxation) في عضلات الرقبة والكتفين</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">أظهرت التحليلات أن التخلص من التوتر العضلي الزائد في عضلات شبه المنحرفة (الترابيزيوس) والكتف منحه كفاءة حركية وسرعة مستمرة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="تقليل زمن التلامس مع الأرض هو العامل الأساسي لزيادة السرعة وليس زيادته.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">زيادة زمن تلامس القدم مع الأرض عند كل خطوة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تقليل زمن التلامس مع الأرض هو العامل الأساسي لزيادة السرعة وليس زيادته.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>اكتمل الاختبار!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">حاول مرة أخرى</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"ما هو المصطلح التشريحي الذي يُطلق على الأجزاء أو العظام القريبة من خط منتصف الجسم؟","hint":"فكر في الكلمة العربية التي تعني القرب والمؤانسة عند الاقتراب من المركز.","options":[{"label":"A","text":"التاجي (Coronal)","isCorrect":false,"rationale":"يعبر هذا عن المستوى التشريحي الذي يقسم الجسم إلى جزء أمامي وجزء خلفي."},{"label":"B","text":"الإنسي (Medial)","isCorrect":true,"rationale":"يُستخدم مصطلح الإنسي لوصف أي تركيب تشريحي يكون أقرب لخط المنتصف الذي يقسم الجسم لنصفين يمين ويسار."},{"label":"C","text":"الوحشي (Lateral)","isCorrect":false,"rationale":"يشير هذا المصطلح إلى الأجزاء المبتعدة عن خط المنتصف المتجهة نحو الخارج."},{"label":"D","text":"السهمي (Sagittal)","isCorrect":false,"rationale":"هذا مسمى لمستوى تشريحي يقسم الجسم طولياً وليس وصفاً لموقع جزء بالنسبة لخط المنتصف."}]},{"question":"ما الخلل القوامي والميكانيكي الذي أثبتت التحليلات وجوده لدى العداء العالمي أوسين بولت دون أن يمنعه من التفوق؟","hint":"يتعلق هذا الخلل باستقامة العمود الفقري وعدم التماثل بين الجانبين الأيمن والأيسر.","options":[{"label":"A","text":"تمزق مزمن في الأربطة الصليبية مع قصر في وتر أكيلس","isCorrect":false,"rationale":"بولت كان يتميز بمرونة وطول وتر أكيلس ولم يذكر المصدر إصابته بقطع صليبي أعاق مسيرته."},{"label":"B","text":"ضعف حاد في عضلات الجذع الخلفية وعدم قدرة على التوازن","isCorrect":false,"rationale":"تمتلك عضلات الجذع والكور لدى بولت صلابة عالية جداً لتقليل فقدان السرعة أثناء ملامسة الأرض."},{"label":"C","text":"انحناء جانبي بالعمود الفقري مع تفاوت طفيف في طول الساقين","isCorrect":true,"rationale":"كان يعاني بولت من انحناء جانبي (سكيليوزيس) أدى لفرق تقريبي في طول الساقين وقوة الاندفاع بينهما ومع ذلك تجاوز هذا بالتردد والمدى الحركي."},{"label":"D","text":"تفلطح كامل في القدمين مع انعدام مرونة مفصل الكاحل","isCorrect":false,"rationale":"كان الكاحل ووتر أكيلس لدى بولت يعملان بكفاءة عالية لتخزين الطاقة الارتدادية."}]},{"question":"ما دور العضلة القصبية الأمامية (Tibialis Anterior) المهم أثناء مرحلة الارتكاز في الجري السريع؟","hint":"تذكر الحركة التي تمنع سحب الأصابع على الأرض وتجهز القدم لاستغلال الوتر الخلفي.","options":[{"label":"A","text":"فرد مفصل الركبة بالكامل أثناء الانطلاق من مكعب البدء","isCorrect":false,"rationale":"فرد الركبة هو الوظيفة الأساسية للعضلة ذات الأربع رؤوس الفخذية وليس القصبية الأمامية."},{"label":"B","text":"تدوير مفصل الفخذ إلى الخارج لمنع السقوط أثناء المنحنيات","isCorrect":false,"rationale":"تقع العضلة القصبية الأمامية في الساق وتعمل بشكل رئيسي على حركة مفصل الكاحل والقدم."},{"label":"C","text":"دفع الأرض لأسفل بكعب القدم لزيادة زمن التلامس","isCorrect":false,"rationale":"الهدف في العدو السريع هو تقليل زمن التلامس مع الأرض وليس زيادته والهبوط يكون على المقدمة."},{"label":"D","text":"رفع مشط القدم لأعلى لتقليل قوة الفرملة وتخزين طاقة ارتدادية بوتر أكيلس","isCorrect":true,"rationale":"انقباض القصبية الأمامية يرفع القدم نحو الساق، مما يمهد لهبوط مثالي على المشط ويقلل قوة الفرملة ويزيد مرونة الوتر."}]},{"question":"أي من العضلات التالية تُعد واحدة من عضلات الكتف الدوارة (Rotator Cuff) الغائرة؟","hint":"تنشأ هذه العضلة من السطح الأمامي الناعم لعظمة لوح الكتف المواجه للقفص الصدري.","options":[{"label":"A","text":"العضلة الصدرية العظمى (Pectoralis Major)","isCorrect":false,"rationale":"تعتبر هذه العضلة من عضلات الصدر السطحية المسؤولة عن التريب والتدوير الداخلي وليست جزءاً من الكاف الغائر."},{"label":"B","text":"العضلة تحت اللوح (Subscapularis)","isCorrect":true,"rationale":"تتكون مجموعة الكتف الدوارة من أربع عضلات غائرة: فوق الشوكية، تحت الشوكية، المدورة الصغرى، وتحت اللوح."},{"label":"C","text":"العضلة العريضة الظهرية (Latissimus Dorsi)","isCorrect":false,"rationale":"تعتبر من عضلات الظهر السطحية الكبيرة التي تحرك الذراع للخلف والأسفل."},{"label":"D","text":"العضلة الدالية (Deltoid)","isCorrect":false,"rationale":"العضلة الدالية هي عضلة سطحية تغطي مفصل الكتف وليست من العضلات الأربع الغائرة للكتف الدوارة."}]},{"question":"ما نوع الانقباض العضلي الذي يحدث عندما تطول العضلة أثناء عملها للتحكم في هبوط الوزن أو امتصاص الصدمة؟","hint":"فكر في اتجاه حركة العضلة عندما تنزل بالوزن لأسفل ببطء للحفاظ على السلامة.","options":[{"label":"A","text":"انقباض مركزي (بالتقصير)","isCorrect":false,"rationale":"في الانقباض المركزي يقترب المنشأ من المدغم ويقل طول العضلة أثناء التغلب على المقاومة."},{"label":"B","text":"انقباض لا مركزي (بالتطويل)","isCorrect":true,"rationale":"يحدث الانقباض اللامركزي عندما تنقبض العضلة لمقاومة حمل خارجي مع زيادة في طولها، كالهبوط التدريجي."},{"label":"C","text":"انقباض ثابت (ايزومتري)","isCorrect":false,"rationale":"في الانقباض الثابت يتولد توتر داخل العضلة دون حدوث أي تغير في طولها أو حركة بالمفصل."},{"label":"D","text":"انقباض سلبي غير إرادي","isCorrect":false,"rationale":"هذا الانقباض إرادي وتتحكم فيه الإشارات العصبية للسيطرة على الحركة وتجنب الاصابات."}]},{"question":"لتفادي الإصابات في العدو السريع، كم يجب ألا تقل نسبة قوة العضلات الخلفية (Hamstrings) مقارنة بالعضلات الأمامية (Quadriceps)؟","hint":"تبحث هذه النسبة عن حد أدنى يمثل أكثر من نصف قوة العضلة الرباعية الأمامية بقليل.","options":[{"label":"A","text":"100% إلى 120%","isCorrect":false,"rationale":"عادة ما تكون العضلة الأمامية أقوى من الخلفية، بينما هذه النسبة تخص علاقة عضلات أخرى كالهيب فليكسور بالجلوتس."},{"label":"B","text":"60% إلى 70%","isCorrect":true,"rationale":"أثبتت الدراسات أن انخفاض قوة العضلات الخلفية عن 60-70% من قوة الأمامية يعرض اللاعب لإصابات التمزق العضلي."},{"label":"C","text":"40% إلى 45%","isCorrect":false,"rationale":"هذه النسبة غير كافية لحماية العضلة الخلفية أثناء سرعات الانقباض العالية في العدو."},{"label":"D","text":"20% إلى 30%","isCorrect":false,"rationale":"هذه النسبة ضئيلة جداً وتسبب اختلالاً حاداً في التوازن العضلي بين جبهتي الفخذ."}]},{"question":"كم يصل مقدار الحمل الناتجة عن الحمل والارتطام الواقع على الكاحل والقدم أثناء مرحلة السرعة القصوى (الاسبرينت)؟","hint":"فكر في القوة المضاعفة عدة مرات والتي تتطلب تقوية عالية للعضلات والمفاصل لامتصاصها.","options":[{"label":"A","text":"نصف وزن الجسم فقط","isCorrect":false,"rationale":"هذا القيمة أقل بكثير حتى من وزن الجسم الطبيعي أثناء الثبات."},{"label":"B","text":"مساوي لوزن الجسم تماماً (100%)","isCorrect":false,"rationale":"هذا الحمل يحدث تقريباً في حالة المشي العادي وليس أثناء سرعات الانطلاق والعدو."},{"label":"C","text":"3 إلى 4 أضعاف وزن الجسم","isCorrect":true,"rationale":"يتضاعف الحمل الواقع على المفاصل السفلى عند العدو بأقصى سرعة ليصل إلى 3-4 أضعاف الوزن الصافي للجسم."},{"label":"D","text":"10 إلى 12 ضعف وزن الجسم","isCorrect":false,"rationale":"هذا رقم مبالغ فيه جداً ويتجاوز قدرة تحمل الأنسجة والمفاصل البشرية."}]},{"question":"ما هي السلسلة العضلية (Kinetic Sling) التي تشمل المستقيمة البطنية والمائة الخارجية والداخلية مع العضلات المقربة بالفخذ؟","hint":"تتكون هذه السلسلة من العضلات الواجهة للبطن والتي تعمل عند رفع الركبة والجذع للأمام.","options":[{"label":"A","text":"النظام الطولي العميق (Deep Longitudinal System)","isCorrect":false,"rationale":"يشمل هذا النظام العضلات الناصبة للعمود الفقري والعضلات الخلفية للفخذ والرباط العجزي."},{"label":"B","text":"السلسلة العضلية الخلفية (Posterior Oblique System)","isCorrect":false,"rationale":"تتكون السلسلة الخلفية بشكل رئيسي من العريضة الظهرية والعضلة الأليوية الكبرى واللفافه القطنية."},{"label":"C","text":"النظام الجانبي (Lateral Line System)","isCorrect":false,"rationale":"يركز النظام الجانبي على العضلات الأليوية المتوسطة والصغرى والمقربات للثبات الجانبي."},{"label":"D","text":"السلسلة العضلية المائلة الأمامية (Anterior Oblique System)","isCorrect":true,"rationale":"تربط هذه السلسلة بين جدار البطن الأمامي والعضلات الضامة والمقربة بالفخذ لنقل القوة أثناء الجري وثبات الحوض."}]},{"question":"ما الذي يتميز به العمل العضلي باستخدام أجهزة الايزوكينتيك (Isokinetic) في مجال التدريب والـتأهيل؟","hint":"يرتبط اسم هذا الانقباض بالسرعة المتساوية والمحددة آلياً طوال المدى الحركي.","options":[{"label":"A","text":"اعتماد الأجهزة على التحفيز الكهربائي الخارجي دون أي جهد إرادي","isCorrect":false,"rationale":"هذا يصف أجهزة التحفيز الكهربائي (Electro-stimulation) وليس تدريبات التحكم الحركي الأيزوكينتيكي."},{"label":"B","text":"ثبات سرعة الحركة وتكيف المقاومة ذاتياً مع القوة المبذولة عند كل زاوية","isCorrect":true,"rationale":"توفر أجهزة الايزوكينتيك سرعة حركة محددة وثابتة مع تغيير المقاومة لتناسب أقصى قوة يستطيع المفصل إنتاجها في كل زاوية."},{"label":"C","text":"انعدام الحركة بالكامل مع زيادة التوتر العضلي الداخلي","isCorrect":false,"rationale":"هذا هو التعريف الدقيق للانقباض الثابت أو الايزومتري."},{"label":"D","text":"تغير السرعة مع ثبات الوزن الخارجي المحمول فقط","isCorrect":false,"rationale":"هذا الوصف ينطبق على التدريب بالأوزان الحرة التقليدية (الايزوتونيك) وليس الايزوكينتيك."}]},{"question":"ما السبب الرئيسي الذي أرجعت له الأبحاث التحسن في سرعة أوسين بولت والحفاظ عليها حتى نهاية السباق مقارنة ببداياته؟","hint":"ترتبط هذه الصفة بمنع الشد الزائد في الجزء العلوي للجسم أثناء الجري باقصى شدة.","options":[{"label":"A","text":"زيادة كتلته العضلية في الذراعين بدرجة ضخمة جداً","isCorrect":false,"rationale":"الضخامة العضلية المفرطة في الذراعين ليست السبب الرئيسي، بل التناسق وزيادة مساحة الاندغام والاسترخاء."},{"label":"B","text":"اعتماده الكامل على نظام إنتاج الطاقة الهوائي طوال السباق","isCorrect":false,"rationale":"سباق 100 متر يعتمد بشكل أساسي ورئيسي على نظام إنتاج الطاقات الالهوائية الفوسفاتية واللاكتيكية."},{"label":"C","text":"قدرته العالية على الاسترخاء العضلي (Relaxation) في عضلات الرقبة والكتفين","isCorrect":true,"rationale":"أظهرت التحليلات أن التخلص من التوتر العضلي الزائد في عضلات شبه المنحرفة (الترابيزيوس) والكتف منحه كفاءة حركية وسرعة مستمرة."},{"label":"D","text":"زيادة زمن تلامس القدم مع الأرض عند كل خطوة","isCorrect":false,"rationale":"تقليل زمن التلامس مع الأرض هو العامل الأساسي لزيادة السرعة وليس زيادته."}]}];
+const tr = {"correct":"صحيح!","incorrect":"خطأ","next":"السؤال التالي ←","seeResults":"عرض النتائج","complete":"اكتمل الاختبار!","scoreText":"أجبت {correct} من {total} بشكل صحيح","tryAgain":"حاول مرة أخرى","rightAnswer":"إجابة صحيحة","notQuite":"ليس تماماً"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار وتقييم بطاقات التشريح التطبيقي (70 بطاقة)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #102a43;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 750px;
+        }
+        h1 {
+            color: #0b69a3;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #486581;
+            font-size: 0.95rem;
+        }
+        /* Score Board */
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ffffff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 750px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            font-weight: bold;
+        }
+        .score-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: white;
+            font-size: 0.85rem;
+        }
+        .bg-correct { background-color: #27ab83; }
+        .bg-wrong { background-color: #e12d39; }
+        .bg-total { background-color: #0b69a3; }
+
+        /* Card Container */
+        .card-container {
+            width: 100%;
+            max-width: 750px;
+            min-height: 380px;
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+        .card {
+            width: 100%;
+            min-height: 380px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            background: white;
+        }
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 25px;
+            border-radius: 16px;
+            border: 2px solid #e4e7eb;
+        }
+        .card-front {
+            background: #ffffff;
+        }
+        .card-back {
+            background: linear-gradient(135deg, #102a43 0%, #243b53 100%);
+            color: #ffffff;
+            transform: rotateY(180deg);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #627d98;
+            border-bottom: 1px solid #f0f4f8;
+            padding-bottom: 8px;
+        }
+        .card-back .card-header {
+            color: #bcccdc;
+            border-bottom-color: #334e68;
+        }
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            text-align: center;
+            padding: 15px 0;
+        }
+        .question-text {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            font-weight: 600;
+            color: #102a43;
+        }
+        .explanation-text {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            color: #f0f4f8;
+        }
+
+        /* True / False Buttons */
+        .tf-buttons {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .btn-tf {
+            flex: 1;
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+        .btn-true {
+            background-color: #27ab83;
+        }
+        .btn-true:hover { background-color: #199473; }
+        .btn-false {
+            background-color: #e12d39;
+        }
+        .btn-false:hover { background-color: #cf1124; }
+        
+        .result-box {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: bold;
+            width: 100%;
+            text-align: center;
+        }
+        .res-correct { background-color: #e3f9e5; color: #199473; border: 1px solid #27ab83; }
+        .res-wrong { background-color: #ffe3e3; color: #cf1124; border: 1px solid #e12d39; }
+
+        /* Navigation Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 750px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-nav {
+            background-color: #0b69a3;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-nav:hover { background-color: #044e7a; }
+        .btn-sec {
+            background-color: #9fb3c8;
+            color: #102a43;
+        }
+        .btn-sec:hover { background-color: #829ab1; }
+
+        /* Summary Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .modal h2 { color: #0b69a3; margin-bottom: 15px; }
+        .score-circle {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: #f0f4f8;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            margin: 15px auto;
+            border: 4px solid #0b69a3;
+            font-size: 1.5rem; font-weight: bold; color: #0b69a3;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>التشريح التطبيقي في مسابقات العدو والحواجز</h1>
+        <p class="subtitle">بطاقات تفاعلية وتقييم شامل (70 سؤال صح/خطأ مع الشرح)</p>
+    </header>
+
+    <!-- لوحة التقييم والنتائج -->
+    <div class="score-board">
+        <div class="score-item">
+            <span>البطاقة:</span>
+            <span class="badge bg-total" id="progressBadge">1 / 70</span>
+        </div>
+        <div class="score-item">
+            <span>إجابات صحيحة:</span>
+            <span class="badge bg-correct" id="correctBadge">0</span>
+        </div>
+        <div class="score-item">
+            <span>إجابات خاطئة:</span>
+            <span class="badge bg-wrong" id="wrongBadge">0</span>
+        </div>
+    </div>
+
+    <!-- حاوية البطاقة -->
+    <div class="card-container">
+        <div class="card" id="card">
+            <!-- الوجه الأمامي (السؤال وإجابة صح/خطأ) -->
+            <div class="card-face card-front">
+                <div class="card-header">
+                    <span>تقييم صح أم خطأ</span>
+                    <span id="cardIdLabel">سؤال #1</span>
+                </div>
+                <div class="card-body">
+                    <p class="question-text" id="questionText">جاري تحميل السؤال...</p>
+                    <div id="resultFeedback" style="display: none; width:100%;"></div>
+                </div>
+                <div class="tf-buttons" id="tfButtons">
+                    <button class="btn-tf btn-true" onclick="answerQuestion(true)">صح ✔</button>
+                    <button class="btn-tf btn-false" onclick="answerQuestion(false)">خطأ ✖</button>
+                </div>
+            </div>
+
+            <!-- الوجه الخلفي (الشرح والتفسير التشريحي) -->
+            <div class="card-face card-back">
+                <div class="card-header">
+                    <span>التفسير والتعليل التشريحي</span>
+                    <span>التشريح التطبيقي</span>
+                </div>
+                <div class="card-body">
+                    <p class="explanation-text" id="explanationText">الشرح...</p>
+                </div>
+                <button class="btn-nav btn-sec" onclick="flipCard()">العودة للسؤال</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- أزرار التحكم والتحرك -->
+    <div class="controls">
+        <button class="btn-nav btn-sec" onclick="prevCard()">السابق</button>
+        <button class="btn-nav" onclick="flipCard()">قلب البطاقة / الشرح</button>
+        <button class="btn-nav btn-sec" onclick="nextCard()">التالي</button>
+        <button class="btn-nav btn-sec" onclick="randomCard()">بطاقة عشوائية</button>
+        <button class="btn-nav" style="background-color: #e12d39;" onclick="showFinalEvaluation()">إنهاء وعرض التقييم</button>
+    </div>
+
+    <!-- نافذة التقييم النهائي -->
+    <div class="modal" id="evalModal">
+        <div class="modal-content">
+            <h2>التقييم النهائي للاختبار</h2>
+            <div class="score-circle">
+                <span id="finalPercent">0%</span>
+                <span style="font-size: 0.8rem; color: #486581;">النسبة المئوية</span>
+            </div>
+            <p id="evalSummaryText" style="margin-bottom: 20px; line-height: 1.5;"></p>
+            <button class="btn-nav" onclick="resetQuiz()">إعادة الاختبار من جديد</button>
+        </div>
+    </div>
+
+    <script>
+        const cardsData = [
+  {
+    "id": 1,
+    "q": "يدرس التشريح الوصفي كيفية عمل العضلات والمفاصل أثناء الأداء الرياضي التنافسي.",
+    "a": false,
+    "e": "خطأ؛ التشريح الوصفي يدرس شكل وتركيب الجسم، بينما التشريح التطبيقي/الوظيفي هو من يدرس كيفية عمل العضلات والمفاصل أثناء الحركة."
+  },
+  {
+    "id": 2,
+    "q": "يعتمد النجاح في العدو السريع على التكامل بين الجوانب التشريحية والبايوميكانيكية والفسيولوجية.",
+    "a": true,
+    "e": "صحيح؛ كفاءة العدو متوقفة على عمل مجموعات عضلية محددة بالارتباط مع الأداء الحركي (البايوميكانيك) ومواد الطاقة (الفسيولوجي)."
+  },
+  {
+    "id": 3,
+    "q": "نظام إنتاج الطاقة الغالب في مسابقة 100 متر هو النظام الهوائي (Aerobic).",
+    "a": false,
+    "e": "خطأ؛ مسابقة 100 متر تعتمد بشكل رئيسي على نظام الطاقة اللاهوائي الفوسفاتي (ATP-PC) وبداية النظام اللاكتاتي."
+  },
+  {
+    "id": 4,
+    "q": "تعتبر مسابقة العدو مهاره حركة تحتاج لتطوير وتدريب مبني على التشريح التطبيقي وليس مجرد تكرار للجري.",
+    "a": true,
+    "e": "صحيح؛ الجري السريع مهارة حركية تتطلب تحليلاً تشريحياً وبايوميكانيكياً لتطوير طول وتردد الخطوة."
+  },
+  {
+    "id": 5,
+    "q": "المستوى السهمي (Sagittal) يقسم الجسم إلى جزء علوي وجزء سفلي.",
+    "a": false,
+    "e": "خطأ؛ المستوى الذي يقسم الجسم إلى علوي وسفلي هو المستوى المستعرض (Transverse)."
+  },
+  {
+    "id": 6,
+    "q": "مصطلح 'إنسي' (Medial) يعني الأجزاء الأقرب لخط منتصف الجسم، و'وحشي' (Lateral) للأجزاء الأبعد.",
+    "a": true,
+    "e": "صحيح؛ الإنسي هو القريب من خط المنتصف، والوحشي هو البعيد عنه."
+  },
+  {
+    "id": 7,
+    "q": "يحتوي الهيكل العظمي للإنسان على أكثر من 206 عظيمة، منها عظام مفردة وعظام مزدوجة.",
+    "a": true,
+    "e": "صحيح؛ يحتوي جسم الإنسان على أكثر من 206 عظيمة مقسمة إلى عظام مفردة وأخرى مزدوجة على الجانبين."
+  },
+  {
+    "id": 8,
+    "q": "تعتبر مفاصل سلميات الأصابع من المفاصل واسعة الحركة مقارنة بمفصل الكتف.",
+    "a": false,
+    "e": "خطأ؛ مفاصل سلميات الأصابع محدودة الحركة، بينما مفصل الكتف هو أوسع المفاصل حركية في الجسم."
+  },
+  {
+    "id": 9,
+    "q": "تتحول الألياف العضلية بالكامل من بطيئة إلى سريعة في أي مرحلة عمرية دون الحاجة لنوافذ تدريبية.",
+    "a": false,
+    "e": "خطأ؛ توزيع الألياف يخضع للوراثة، ولكن هناك نوافذ تطويرية (من 6-8 سنوات ومن 13-15 سنة) تميل فيها الألياف المتوسطة نحو السرعة."
+  },
+  {
+    "id": 10,
+    "q": "النافذة العمرية الأولى لتطوير السرعة عند الأطفال تبدأ من سن 6 إلى 8 سنوات.",
+    "a": true,
+    "e": "صحيح؛ أكد الاتحاد الدولي أن سن 6 إلى 8 سنوات هو النافذة الأولى لتطوير عنصر السرعة عبر الألعاب الصغير السريعة."
+  },
+  {
+    "id": 11,
+    "q": "التعريف الفسيولوجي للسرعة هو قدرة الجهاز العصبي على إرسال أكبر عدد من الإشارات الحركية للعضلات لإحداث انقباضات سريعة.",
+    "a": true,
+    "e": "صحيح؛ الفسيولوجيا تعرف السرعة بكفاءة الجهاز العصبي في إرسال السيالات الحركية السريعة للعضلات."
+  },
+  {
+    "id": 12,
+    "q": "المنشأ (Origin) في التشريح هو نقطة اتصال العضلة بالقطاع الأكثر حركة في العظم.",
+    "a": false,
+    "e": "خطأ؛ المنشأ هو نقطة البداية الأكثر ثباتاً، بينما المدغم (Insertion) هو الجزء الأكثر حركة."
+  },
+  {
+    "id": 13,
+    "q": "تقوم العضلة الواحدة بفي نفس الوقت بثني المفصل وفرد نفس المفصل.",
+    "a": false,
+    "e": "خطأ؛ العضلة تنقبض في اتجاه واحد لتسحب العظم، ولكل عضلة عاملة عضلة أخرى مقابلة تقوم بالعمل العكسي."
+  },
+  {
+    "id": 14,
+    "q": "عملية 'التقوية العضلية' تشريحياً تشمل تقريب المنشأ من المدغم ضد مقاومة.",
+    "a": true,
+    "e": "صحيح؛ التقوية هي إحداث انقباض عضلي يقرب المنشأ من المدغم ضد ثقل أو مقاومة خارجية."
+  },
+  {
+    "id": 15,
+    "q": "الاستطالة أو الإطالة العضلية (Stretching) هي إبعاد المنشأ عن المدغم بشكل إرادي.",
+    "a": true,
+    "e": "صحيح؛ الإطالة تعني تشريحياً زيادة المسافة وإبعاد المنشأ عن المدغم."
+  },
+  {
+    "id": 16,
+    "q": "تمرين البوش أب (الضغط) يعتمد بشكل أساسي على العضلة العريضة الظهرية كعضلة رئيسية دافعة.",
+    "a": false,
+    "e": "خطأ؛ العضلة الرئيسية الداعمة والدافعة في البوش أب هي العضلة الصدرية العظمى والعضلة الترايسبس."
+  },
+  {
+    "id": 17,
+    "q": "العضلة ذات الأربع رؤوس الفخذية (Quadriceps) تنشأ من الحوض والفخذ وتندغم في عظيمة القصبة.",
+    "a": true,
+    "e": "صحيح؛ تنشأ إحدى رؤوسها من الحوض والباقي من الفخذ وتندغم جميعها عبر وتر الرتقة في القصبة."
+  },
+  {
+    "id": 18,
+    "q": "الوظيفة الأساسية للعضلة الرباعية (Quadriceps) هي ثني مفصل الركبة.",
+    "a": false,
+    "e": "خطأ؛ الوظيفة الأساسية للعضلة الرباعية هي فرد مفصل الركبة، والمساعدة في ثني مفصل الفخذ."
+  },
+  {
+    "id": 19,
+    "q": "تثبيت القدمين أثناء تمرين البطن يجعل التمرين أسهل لمشاركة عضلة الكوادريسبس والهيب فليكسور.",
+    "a": true,
+    "e": "صحيح؛ عند تثبيت القدمين تدخل العضلة الرباعية والهيب فليكسور كمساعد في رفع الجذع مما يقلل الحمل على البطن."
+  },
+  {
+    "id": 20,
+    "q": "تتكون العضلة الترايسبس (ذات الثلاث رؤوس العضدية) من رؤوس تعدي على مفصلي الكتف والمرفق.",
+    "a": true,
+    "e": "صحيح؛ الرأس الطويلة للترايسبس تتعدى مفصل الكتف وتندغم تحت مفصل المرفق بالتالي تعمل على المفصلين."
+  },
+  {
+    "id": 21,
+    "q": "تتشارك العضلة العريضة الظهرية والصدرية العظمى في خفض وتقريب الذراعين للجسم.",
+    "a": true,
+    "e": "صحيح؛ على الرغم من اختلاف موقعيهما، إلا أنهما العضلات المقابلة للعضلة الدالية وتعملان على تقريب الذراع للجسم."
+  },
+  {
+    "id": 22,
+    "q": "كان العداء أوسين بولت يعاني من تماثل تام ودقيق في طول الساقين واستقامة العمود الفقري.",
+    "a": false,
+    "e": "خطأ؛ كان بولت يعاني من انحراف جانبي في العمود الفقري (سكليوزيز) واختلاف في طول الساقين بمقدار سنتيمتر وربع."
+  },
+  {
+    "id": 23,
+    "q": "أدى الاختلاف التشريحي لدى أوسين بولت إلى إعطاء الساق اليسرى خطوات أطول وقوة اندفاع أكبر.",
+    "a": true,
+    "e": "صحيح؛ بسبب قصر الساق اليمنى قليلاً، كانت الساق اليسرى تعوض ذلك بخطوة أطول وقوة اندفاع أعلى."
+  },
+  {
+    "id": 24,
+    "q": "من عوامل التميز لدى بولت قدرته العالية على استرخاء عضلات الكتف والترابيز أثناء السرعة القصوى.",
+    "a": true,
+    "e": "صحيح؛ أثبتت التحليلات أن استرخاء عضلات الترابيز والكتف يمنع هدر الطاقة ويعزز السرعة والحفاظ عليها."
+  },
+  {
+    "id": 25,
+    "q": "يستطيع وتر أكيلس لدى العدائين التكيف مع قوى ارتدادية تتجاوز 400 كجم.",
+    "a": true,
+    "e": "صحيح؛ وتر أكيلس هو أقوى وأطول وتر ويمتلك طاقة ارتدادية عالية جداً تخزن وتطلق أثناء الجري."
+  },
+  {
+    "id": 26,
+    "q": "طول وتر أكيلس والمرونة العالية فيه يوفران طاقة ارتدادية تقلل من زمن تلامس القدم بالأرض.",
+    "a": true,
+    "e": "صحيح؛ يعمل الوتر كزنبرك يخزن الطاقة عند الهبوط ويطلقها فوراً لزيادة السرعة الانتقالية."
+  },
+  {
+    "id": 27,
+    "q": "زيادة زمن تلامس القدم بالأرض تؤدي إلى تحسين السرعة القصوى للعداء.",
+    "a": false,
+    "e": "خطأ؛ تقليل زمن التلامس وتقليل قوة الفرملة هما المفتاح الرئيسي لزيادة السرعة القصوى."
+  },
+  {
+    "id": 28,
+    "q": "قوة الفرملة (Braking force) هي القوة المقاومة التي تحدث لحظة ملامسة القدم للأرض أمام مركز الثقل.",
+    "a": true,
+    "e": "صحيح؛ وتحدث في مرحلة الارتكاز المبكر ويجب تقليلها عبر الهبوط الأسفل والقريب من مركز الثقل."
+  },
+  {
+    "id": 29,
+    "q": "السرعة القصوى التي سجلها أوسين بولت بلغت حوالي 12.32 متر/ثانية.",
+    "a": true,
+    "e": "صحيح؛ أظهرت التحليلات البايوميكانيكية وصول معدل سرعته إلى 12.32 م/ث في الجزء بين 60 إلى 70 متراً."
+  },
+  {
+    "id": 30,
+    "q": "تحليل الأدوات والمسافات يُظهر أن أعلى تزايد لسرعة بولت كان بين أمتار 60 إلى 70 متراً في السباق.",
+    "a": true,
+    "e": "صحيح؛ بلغ بولت قمة السرعة والتسرع بين 60 و70 متراً بفضل طول وتردد الخطوة والاسترخاء."
+  },
+  {
+    "id": 31,
+    "q": "يتضمن وضع 'استعد' في البدء المنخفض ارتجاز الجسم على 5 نقاط ارتكاز ثابتة.",
+    "a": false,
+    "e": "خطأ؛ وضع 'خذ مكانك' هو من يرتكز على 5 نقاط، أما وضع 'استعد' فيرفع فيه الحوض والركبة الخلفية لتبقى 4 نقاط ارتكاز."
+  },
+  {
+    "id": 32,
+    "q": "الوضع الأسهل تشريحياً في خذ مكانك يكون عندما يكون الكتف عمودياً تماماً على كف اليدين.",
+    "a": true,
+    "e": "صحيح؛ عمودية الكتف على اليدين تمنع الشد المفرط والإجهاد في العضلة الدالية وتمنع الارتعاش."
+  },
+  {
+    "id": 33,
+    "q": "عند أخذ وضع 'استعد'، تنقبض العضلات الناصبة للعمود الفقري وعضلات الجلوتس لرفع الحوض.",
+    "a": true,
+    "e": "صحيح؛ تعمل العضلات الناصبة للجذع وعضلات الجلوتس والممتدة للركبة على رفع الحوض لأعلى للتهيؤ للانطلاق."
+  },
+  {
+    "id": 34,
+    "q": "الانقباض العضلي في وضع 'استعد' قبل الانطلاق هو انقباض متحرك بالتقصير (Concentric).",
+    "a": false,
+    "e": "خطأ؛ الانقباض في وضع الثبات والتهيؤ هو انقباض ثنائي/ثابت (Isometric) حيث لا تتغير أطوال العضلات أثناء الانتظار."
+  },
+  {
+    "id": 35,
+    "q": "العضلة الحرقفية القطنية (Iliopsoas) تسمى أيضاً بعضلة 'الهيب فليكسور' (Hip Flexor).",
+    "a": true,
+    "e": "صحيح؛ وهي العضلة الأساسية المسؤولة عن ثني مفصل الفخذ ورفع الركبة للأمام والأعلى."
+  },
+  {
+    "id": 36,
+    "q": "مرحلة 'الارتكاز المبكر' في خطوة الجري تمثل حوالي 50% من إجمالي طول الخطوة.",
+    "a": false,
+    "e": "خطأ؛ مرحلة الارتكاز المبكر تمثل من 0 إلى 15% فقط من طول الخطوة."
+  },
+  {
+    "id": 37,
+    "q": "تحدث مرحلة المرجحة الأمامية للفخذ بعد دفع الأرض مباشرة بفعل انقباض عضلات ثني الفخذ.",
+    "a": true,
+    "e": "صحيح؛ بعد الدفع، تنقبض الهيب فليكسور لسحب الفخذ والركبة للأمام بسرعة لتهيئة الخطوة التالية."
+  },
+  {
+    "id": 38,
+    "q": "تمرين 'الطعن الأمامي' (Walking Lunge) يركز بشكل رئيسي على تقوية العضلة القصبية الأمامية فقط.",
+    "a": false,
+    "e": "خطأ؛ الطعن الأمامي يركز على العضلة الرباعية الفخذية (Quadriceps) والعضلة الألية (Glutes)."
+  },
+  {
+    "id": 39,
+    "q": "تمرين الميزان بقدم واحدة (Single-leg Romanian Deadlift) يعمل على إطالة وتقوية العضلات الخلفية (Hamstrings) والجلوتس.",
+    "a": true,
+    "e": "صحيح؛ عند انثناء الجذع للأمام على قدم واحدة تنشد العضلات الخلفية وتتفعل عضلات ثبات الجذع."
+  },
+  {
+    "id": 40,
+    "q": "إهمال تقوية بعض المجموعات العضلية التركيز فقط على السكوات يؤدي إلى عدم توازن عضلي وإصابات.",
+    "a": true,
+    "e": "صحيح؛ الاقتصار على تدريب عضلات ودون الأخرى يخل بالتوازن العضلي التشريحي ويسبب إصابات حادة."
+  },
+  {
+    "id": 41,
+    "q": "العضلة النعلية (Soleus) تتعدى مفصلي الركبة والكاحل معاً.",
+    "a": false,
+    "e": "خطأ؛ العضلة النعلية تعمل على مفصل واحد فقط وهو مفصل الكاحل، بينما التوأمية (Gastrocnemius) تعمل على المفصلين."
+  },
+  {
+    "id": 42,
+    "q": "تنشأ العضلة التوأمية (Gastrocnemius) من اللقمتين الخلفيتين لعظمة الفخذ وتندغم في وتر أكيلس.",
+    "a": true,
+    "e": "صحيح؛ العضلة التوأمية ثنائية المفاصل تنشأ من الفخذ وتندغم في العقب عبر وتر أكيلس."
+  },
+  {
+    "id": 43,
+    "q": "العضلة القصبية الأمامية (Tibialis Anterior) تقع في الجانب الخلفي من الساق.",
+    "a": false,
+    "e": "خطأ؛ القصبية الأمامية تقع في الجزء الأمامي من الساق ووظيفتها ثني القدم لأعلى (Dorsiflexion)."
+  },
+  {
+    "id": 44,
+    "q": "تساعد العضلة القصبية الأمامية في تجهيز وتر أكيلس وتخزين الطاقة الارتدادية بفرملة أقل.",
+    "a": true,
+    "e": "صحيح؛ عندما ترفع مشط القدم لأعلى يمتد وتر أكيلس ويتجهز لاختزان طاقة الصدمة وإطلاقها."
+  },
+  {
+    "id": 45,
+    "q": "المشي على الكعبين يعد من التدريبات الشائعة لتقوية العضلة القصبية الأمامية.",
+    "a": true,
+    "e": "صحيح؛ رفع مشط القدم والمشي على الكعبين يقوي العضلة القصبية الأمامية بفاعلية."
+  },
+  {
+    "id": 46,
+    "q": "مجموعة عضلات الكفة الدوارة (Rotator Cuff) تتكون من خمس عضلات رئيسية سطحية.",
+    "a": false,
+    "e": "خطأ؛ تتكون الكفة الدوارة من 4 عضلات غائرة تثبت مفصل الكتف وتدوره."
+  },
+  {
+    "id": 47,
+    "q": "العضلة فوق الشوكية (Supraspinatus) تساعد العضلة الدالية في رفع الذراع للخارج (تبعيد الذراع).",
+    "a": true,
+    "e": "صحيح؛ تنشأ من التجويف فوق الشوكي للوح وتندغم في العضد لتساعد في بدء رفع الذراع جانباً."
+  },
+  {
+    "id": 48,
+    "q": "العضلتان تحت الشوكية (Infraspinatus) والمدورة الصغرى (Teres Minor) تعملان على تدوير الذراع للداخل.",
+    "a": false,
+    "e": "خطأ؛ العضلتان تحت الشوكية والمدورة الصغرى تعملان على تدوير الذراع للخارج (External rotation)."
+  },
+  {
+    "id": 49,
+    "q": "العضلة تحت اللوح (Subscapularis) تقع على السطح الأمامي للوح وتعمل على تدوير الذراع للداخل.",
+    "a": true,
+    "e": "صحيح؛ تنشأ من السطح الأمامي الأملس للوح الكتف وتعمل على تدوير رأس العضد نحو الداخل."
+  },
+  {
+    "id": 50,
+    "q": "تعتبر عضلات الكفة الدوارة عضلات غائرة تثبت رأس عظم العضد داخل التجويف العنابي للوح.",
+    "a": true,
+    "e": "صحيح؛ توفر الدعم الثابت والتوازني لمنع خلع مفصل الكتف أثناء الحركات السريعة كالرمي والعدو."
+  },
+  {
+    "id": 51,
+    "q": "السلسلة العضلية المائلة الأمامية (Anterior Oblique Sling) تشمل العضلات المائلة للبطن والعضلة الضامة بالفخذ.",
+    "a": true,
+    "e": "صحيح؛ تربط العضلات المائلة الخارجية والداخلية للبطن بالعضلة الضامة (Adductor) عبر اللفافة البطنية."
+  },
+  {
+    "id": 52,
+    "q": "السلسلة العضلية المائلة الخلفية (Posterior Oblique Sling) تربط العضلة العريضة الظهرية بالعضلة الألية الكبرى في الجانب المقابل.",
+    "a": true,
+    "e": "صحيح؛ تعمل هذه السلسلة على نقل القوة القطرية عبر الجذع بين الطرف العلوي والسفلي."
+  },
+  {
+    "id": 53,
+    "q": "النظام الجانبي لثبات الجذع (Lateral Line) يعتمد بشكل أساسي على العضلة الألية المتوسطة والصغرى والعضلات الضامة.",
+    "a": true,
+    "e": "صحيح؛ يضمن هذا النظام الثبات الجانبي للحوض أثناء الارتكاز على قدم واحدة أثناء الجري."
+  },
+  {
+    "id": 54,
+    "q": "عضلة العمود الفقري الناصبة (Erector Spinae) تدخل ضمن النظام الطولي العميق لثبات الجذع.",
+    "a": true,
+    "e": "صحيح؛ تمتد العضلة الناصبة بطول العمود الفقري وترتبط بالعضلات الخلفية للفخذ لنقل القوة."
+  },
+  {
+    "id": 55,
+    "q": "عند تعدية الحاجز، تنقبض عضلات البطن المستقيمة مع الهيب فليكسور لثني الجذع والأمر فوق الحاجز.",
+    "a": true,
+    "e": "صحيح؛ يميل عداء الحواجز بجذعه للأمام بفضل انقباض عضلات البطن والهيب فليكسور للرجل القائدة."
+  },
+  {
+    "id": 56,
+    "q": "قوة العضلات الخلفية للفخذ (Hamstrings) يجب ألا تقل عن 30% مقارنة بالعضلة الرباعية (Quadriceps).",
+    "a": false,
+    "e": "خطأ؛ يجب ألا تقل قوة العضلات الخلفية عن 60% إلى 70% من قوة العضلة الرباعية لتجنب الإصابة."
+  },
+  {
+    "id": 57,
+    "q": "النسبة التشريحية المثالية للتوازن العضلي بين عضلات البطن وعضلات الظهر هي 1 : 1.",
+    "a": true,
+    "e": "صحيح؛ تتطلب كفاءة وثبات الجذع تكافؤ القوة بنسبة 1 إلى 1 بين عضلات البطن والظهر."
+  },
+  {
+    "id": 58,
+    "q": "قوة العضلة الحرقفية القطنية (الهيب فليكسور) تكون حوالي 80% إلى 90% من قوة العضلة الألية العظمى.",
+    "a": true,
+    "e": "صحيح؛ هذا التوازن يضمن كفاءة ثني ومد الفخذ أثناء ركض السرعة."
+  },
+  {
+    "id": 59,
+    "q": "تصل أحمال القوة الواقعة على مفصل الكاحل أثناء الجري السريع (الاسبرينت) إلى 3 إلى 4 أضعاف وزن الجسم.",
+    "a": true,
+    "e": "صحيح؛ يقع لود يبلغ 3 إلى 4 أضعاف وزن اللاعب على القدم والكاحل مع كل خطوة اسبرينت."
+  },
+  {
+    "id": 60,
+    "q": "تساعد تدريبات امتصاص الصدمات وتقليل الفرملة في حماية المفصل والعظام من الكسور والإجهاد.",
+    "a": true,
+    "e": "صحيح؛ الهبوط المرن وتقليل قوة الصدمة يوزعان الأحمال التشريحية ويحميان المفاصل والعمود الفقري."
+  },
+  {
+    "id": 61,
+    "q": "الانقباض العضلي بالتقصير يسمى انقباضاً لا مركزياً (Eccentric).",
+    "a": false,
+    "e": "خطأ؛ الانقباض بالتقصير هو الانقباض المركزي (Concentric)، بينما الانقباض بالتطويل هو اللا مركزي (Eccentric)."
+  },
+  {
+    "id": 62,
+    "q": "الانقباض بالتقصير يحدث عندما تتغلب العضلة على المقاومة ويقترب المنشأ من المدغم.",
+    "a": true,
+    "e": "صحيح؛ تقصر العضلة لتوليد قوة تتغلب على الوزن."
+  },
+  {
+    "id": 63,
+    "q": "الانقباض بالتطويل (اللا مركزي) يعمل كفرملة ويساعد العضلة على امتصاص الصدمات والتحكم في الهبوط.",
+    "a": true,
+    "e": "صحيح؛ تنقبض العضلة وهي تتطاول للتحكم بالوزن وتخزين الطاقة والوقاية من التمزق."
+  },
+  {
+    "id": 64,
+    "q": "تمرين البلانك يعتبر مثالاً حياً على الانقباض العضلي المتحرك السريع.",
+    "a": false,
+    "e": "خطأ؛ تمرين البلانك هو مثال على الانقباض الثابت/الايزومتري (Isometric) حيث يثبت طول العضلات تحت التوتر."
+  },
+  {
+    "id": 65,
+    "q": "أجهزة 'الايزوكينتيك' (Isokinetic) توفر سرعة حركة ثابتة ومقاومة متكيفة مع قوة المفصل في جميع الزوايا.",
+    "a": true,
+    "e": "صحيح؛ تمتاز أجهزة الايزوكينتيك بتكييف المقاومة ذاتياً عند سرعة حركية ثابتة وتستخدم في التأهيل والتقويم."
+  },
+  {
+    "id": 66,
+    "q": "الكهرباء التنبيهية (Electro-stimulation) تُستخدم لإحداث انقباضات عضلية غير إرادية لسرعة الاستشفاء والتقوية.",
+    "a": true,
+    "e": "صحيح؛ تُستخدم المثيرات الكهربائية لتنبيه الألياف العضلية وتقويتها في برامج التاهيل والتدريب الحديث."
+  },
+  {
+    "id": 67,
+    "q": "زيادة القوة المفاجئة في العضلة الرباعية دون تطوير العضلات الخلفية يقلل من فرص حدوث التمزق.",
+    "a": false,
+    "e": "خطأ؛ اختلال التوازن العضلي بزيادة قوة الرباعية عن الخلفية يزيد بشكل كبير من خطر تمزق العضلات الخلفية."
+  },
+  {
+    "id": 68,
+    "q": "تمرين الجري على النجيله أو السطح الممتص للصدمات يقلل الإجهاد الواقع على الساقين ومفصل الكاحل.",
+    "a": true,
+    "e": "صحيح؛ الأسطح المرنة كالجيل تخفف شدة رد فعل الأرض وحجم الصدمات التراكمية."
+  },
+  {
+    "id": 69,
+    "q": "تدريبات الاي بي سي (ABC drills) والوثب فوق الاقماع تهيئ الجهاز العصبي والعضلي لتقليل زمن التلامس.",
+    "a": true,
+    "e": "صحيح؛ تعمل تدريبات التوافق والسرعة على تدريب الجهاز العصبي والعضلي لتقليل زمن الاستجابة والفرملة."
+  },
+  {
+    "id": 70,
+    "q": "الفهم التطبيقي للتشريح يتيح للمدرب تصميم برامج تدريبية وتأهيلية مخصصة حتى للرياضيين ذوي الاحتياجات الخاصة.",
+    "a": true,
+    "e": "صحيح؛ تحليل العمل العضلي والمفاصل المتاحة يُمكّن المدرب من بناء برامج رياضية فعالة لأي جسم وأي لاعب."
+  }
+];
+
+        let currentIndex = 0;
+        let userAnswers = {}; // store indexed results: true (correct), false (wrong)
+        let isFlipped = false;
+
+        const card = document.getElementById('card');
+        const questionText = document.getElementById('questionText');
+        const explanationText = document.getElementById('explanationText');
+        const cardIdLabel = document.getElementById('cardIdLabel');
+        const resultFeedback = document.getElementById('resultFeedback');
+        const tfButtons = document.getElementById('tfButtons');
+
+        const progressBadge = document.getElementById('progressBadge');
+        const correctBadge = document.getElementById('correctBadge');
+        const wrongBadge = document.getElementById('wrongBadge');
+
+        function updateCard() {
+            if(isFlipped) {
+                card.classList.remove('flipped');
+                isFlipped = false;
+            }
+            
+            setTimeout(() => {
+                const item = cardsData[currentIndex];
+                questionText.innerText = item.q;
+                explanationText.innerText = item.e;
+                cardIdLabel.innerText = `سؤال #${item.id} من ${cardsData.length}`;
+                progressBadge.innerText = `${currentIndex + 1} / ${cardsData.length}`;
+
+                // Check if user already answered this card
+                if (userAnswers.hasOwnProperty(currentIndex)) {
+                    const isUserCorrect = userAnswers[currentIndex];
+                    tfButtons.style.display = 'none';
+                    resultFeedback.style.display = 'block';
+                    if (isUserCorrect) {
+                        resultFeedback.className = 'result-box res-correct';
+                        resultFeedback.innerText = `إجابة صحيحة! ✔ (الإجابة الصحيحة: ${item.a ? 'صح' : 'خطأ'})
+انقر لقلب البطاقة وقراءة الشرح.`;
+                    } else {
+                        resultFeedback.className = 'result-box res-wrong';
+                        resultFeedback.innerText = `إجابة خاطئة ✖ (الإجابة الصحيحة: ${item.a ? 'صح' : 'خطأ'})
+انقر لقلب البطاقة وقراءة الشرح التشريحي.`;
+                    }
+                } else {
+                    tfButtons.style.display = 'flex';
+                    resultFeedback.style.display = 'none';
+                }
+            }, 150);
+        }
+
+        function answerQuestion(userChoice) {
+            const item = cardsData[currentIndex];
+            const isCorrect = (userChoice === item.a);
+            userAnswers[currentIndex] = isCorrect;
+            
+            updateScoreBoard();
+            updateCard();
+
+            // Auto flip after answer to show explanation
+            setTimeout(() => {
+                if(!isFlipped) flipCard();
+            }, 1200);
+        }
+
+        function updateScoreBoard() {
+            let correctCount = 0;
+            let wrongCount = 0;
+            for (let idx in userAnswers) {
+                if (userAnswers[idx] === true) correctCount++;
+                else wrongCount++;
+            }
+            correctBadge.innerText = correctCount;
+            wrongBadge.innerText = wrongCount;
+        }
+
+        function flipCard() {
+            card.classList.toggle('flipped');
+            isFlipped = !isFlipped;
+        }
+
+        function nextCard() {
+            currentIndex = (currentIndex + 1) % cardsData.length;
+            updateCard();
+        }
+
+        function prevCard() {
+            currentIndex = (currentIndex - 1 + cardsData.length) % cardsData.length;
+            updateCard();
+        }
+
+        function randomCard() {
+            currentIndex = Math.floor(Math.random() * cardsData.length);
+            updateCard();
+        }
+
+        function showFinalEvaluation() {
+            let answered = Object.keys(userAnswers).length;
+            let correct = 0;
+            for (let idx in userAnswers) {
+                if (userAnswers[idx] === true) correct++;
+            }
+            let percent = answered > 0 ? Math.round((correct / cardsData.length) * 100) : 0;
+            
+            document.getElementById('finalPercent').innerText = percent + '%';
+            
+            let evalMsg = `أجبت على ${answered} من أصل ${cardsData.length} سؤالاً.
+`;
+            evalMsg += `الإجابات الصحيحة: ${correct} | الإجابات الخاطئة: ${answered - correct}
+
+`;
+            
+            if (percent >= 85) {
+                evalMsg += "🎉 التقييم: ممتاز! لديك استيعاب عميق ومتقن للتشريح التطبيقي لمسابقات العدو والحواجز.";
+            } else if (percent >= 65) {
+                evalMsg += "👍 التقييم: جيد جداً! مستواك جيد وتستطيع مراجعة التعليلات والبطاقات الخاطئة لإتقان المادة.";
+            } else {
+                evalMsg += "📚 التقييم: بحاجة لمراجعة المصادر والتعليلات التشريحية لتعزيز فهمك لبايوميكانيك وعضلات السرعة.";
+            }
+            
+            document.getElementById('evalSummaryText').innerText = evalMsg;
+            document.getElementById('evalModal').style.display = 'flex';
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            currentIndex = 0;
+            updateScoreBoard();
+            document.getElementById('evalModal').style.display = 'none';
+            updateCard();
+        }
+
+        updateCard();
+    </script>
+</body>
+</html>
