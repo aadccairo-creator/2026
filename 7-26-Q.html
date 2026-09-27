@@ -3,88 +3,141 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>اختبار لاعبات</title>
+<title>اختبر فهمك</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: 'Baloo 2', 'Comic Sans MS', 'Trebuchet MS', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(135deg, #ff6b6b 0%, #feca57 45%, #48dbfb 75%, #ff9ff3 100%);
-  background-size: 300% 300%;
-  animation: bgshift 12s ease infinite;
-  min-height: 100vh; padding: 20px; color: #2d2d2d;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
 }
-@keyframes bgshift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 .container { max-width: 700px; margin: 0 auto; }
-.header { text-align: center; color: #fff; padding: 26px 20px; }
-.header h1 { font-size: 30px; font-weight: 800; margin-bottom: 6px; text-shadow: 0 3px 0 rgba(0,0,0,0.15); }
-.header .meta { font-size: 14px; opacity: 0.95; font-weight: 600; }
-.progress-bar { background: rgba(255,255,255,0.35); border-radius: 20px; height: 12px; margin: 18px 0; overflow: hidden; border: 2px solid rgba(255,255,255,0.5); }
-.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 20px; }
-.question { background: #fff; border-radius: 24px; padding: 28px; box-shadow: 0 14px 0 rgba(0,0,0,0.12); display: none; border: 4px solid #2d2d2d; position: relative; overflow: hidden; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
 .question.active { display: block; }
-.q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; font-size: 13px; }
-.q-number { font-weight: 800; color: #ff6b6b; background: #fff0f0; padding: 6px 12px; border-radius: 20px; }
-.streak { font-weight: 800; color: #e67e22; }
-.streak:empty { display: none; }
-.q-text { font-size: 19px; font-weight: 700; line-height: 1.5; margin-bottom: 22px; color: #222; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
 .options { display: flex; flex-direction: column; gap: 12px; }
 .option-wrapper { display: flex; flex-direction: column; }
 .option {
-  display: flex; align-items: center; gap: 12px; padding: 16px 18px;
-  border: 3px solid #2d2d2d; border-radius: 18px; background: #fffdf5;
-  cursor: pointer; transition: transform 0.12s, background 0.2s; text-align: left; font-size: 15px; font-weight: 600; width: 100%;
-  box-shadow: 0 4px 0 #2d2d2d;
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
 }
 [dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
-.option:hover:not(.disabled) { transform: translateY(-2px); background: #fff7e0; }
-.option:active:not(.disabled) { transform: translateY(2px); box-shadow: 0 2px 0 #2d2d2d; }
-.option.selected { background: #eef2ff; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
 .option.correct { border-color: #22c55e; background: #dcfce7; }
 .option.incorrect { border-color: #ef4444; background: #fee2e2; }
 .option.disabled { cursor: default; }
 .option.show-correct { border-color: #22c55e; background: #dcfce7; }
-.opt-emoji { font-size: 20px; flex-shrink: 0; }
-.opt-text { line-height: 1.5; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
 
-.option-feedback { margin: 6px 0 4px 4px; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.5; border: 2px dashed transparent; }
-.option-feedback.correct-feedback { background: #dcfce7; border-color: #22c55e; }
-.option-feedback.incorrect-feedback { background: #fef3f2; border-color: #fca5a5; }
-.feedback-status { font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .feedback-status.correct { color: #166534; }
 .feedback-status.incorrect { color: #991b1b; }
 .feedback-rationale { color: #444; }
 
-.hint-box { margin: 12px 0; border-radius: 16px; overflow: hidden; background: #fffbeb; border: 2px solid #fcd34d; }
-.hint-toggle { width: 100%; padding: 10px 16px; background: transparent; border: none; cursor: pointer; font-size: 14px; font-weight: 700; color: #92400e; text-align: left; display: flex; align-items: center; gap: 8px; }
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .hint-toggle:hover { background: #fef3c7; }
-.hint-content { padding: 0 16px; max-height: 0; overflow: hidden; transition: max-height 0.3s, padding 0.3s; font-size: 14px; color: #78350f; line-height: 1.5; }
-.hint-box.show .hint-content { padding: 0 16px 12px; max-height: 200px; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
 
 .next-btn {
-  margin-top: 20px; width: 100%; padding: 15px;
-  background: #ff6b6b; color: #fff; border: 3px solid #2d2d2d;
-  border-radius: 18px; font-size: 16px; font-weight: 800; cursor: pointer;
-  box-shadow: 0 5px 0 #2d2d2d; transition: transform 0.12s;
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
-.next-btn:hover { transform: translateY(-2px); }
-.next-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #2d2d2d; }
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
 .hidden { display: none !important; }
-
-.results { background: #fff; border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 14px 0 rgba(0,0,0,0.12); border: 4px solid #2d2d2d; display: none; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
 .results.active { display: block; }
-.results h2 { font-size: 30px; margin-bottom: 6px; color: #333; font-weight: 800; }
-.stars { font-size: 40px; margin: 14px 0; letter-spacing: 4px; }
-.results .score { font-size: 60px; font-weight: 800; color: #ff6b6b; margin: 10px 0; }
-.results .score-text { font-size: 17px; color: #666; margin-bottom: 26px; font-weight: 600; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
 .restart-btn {
-  padding: 15px 40px; background: #48dbfb; color: #103a45; border: 3px solid #2d2d2d;
-  border-radius: 18px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 5px 0 #2d2d2d;
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
 }
-.restart-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #2d2d2d; }
 
-.confetti-piece { position: fixed; top: -10px; width: 8px; height: 14px; opacity: 0.9; pointer-events: none; z-index: 999; animation: fall linear forwards; }
-@keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: 0.3; } }
-
+/* Math CSS */
 .math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
 .math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
 .frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
@@ -100,60 +153,67 @@ sub { vertical-align: sub; }
 <body>
 <div class="container">
   <div class="header">
-    <h1>🎉 اختبار لاعبات</h1>
+    <h1>اختبر فهمك</h1>
     <div class="meta">10 أسئلة</div>
     <div class="progress-bar"><div class="progress-fill"></div></div>
   </div>
   <div id="quiz-container">
         <div class="question" data-index="0">
           <div class="q-header">
-            <span class="q-number">🎯 سؤال 1 / 10</span>
-            <span class="streak" id="streak-badge"></span>
+            <span class="q-number">سؤال 1</span>
+            <span class="q-of">/ 10</span>
           </div>
-          <div class="q-text">إيه هو الفرق الرئيسي في زاوية <span class="math">Q</span> (\angle Q) بين اللاعبات واللاعبين، وإيه تأثيره البايوميكانيكي؟</div>
+          <div class="q-text">ما هو التأثير الرئيسي لزيادة زاوية <span class="math">Q</span> (الزاوية كيو) لدى اللاعبات مقارنة بالرجال؟</div>
           
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في كيفية تأثير ميل عظمة الفخذ بالنسبة للساق على المفاصل الوسطى.</div>
+        </div>
+      
           <div class="options">
         <div class="option-wrapper">
-          <button class="option" data-label="A" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅰️</span>
-            <span class="opt-text">مفيش فرق في الزاوية، الفرق بس في قوة العضلات المحيطة بالركبة.</span>
+          <button class="option" data-label="A" data-correct="true" data-rationale="اتساع زاوية $Q$ الناتج عن عرض الحوض يؤدي لزيادة الضغط الميكانيكي على مفصل الركبة والأربطة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">زيادة الضغط على الرباط الصليبي والركبة</span>
           </button>
           <div class="option-feedback hidden" data-for="A">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">اتساع زاوية <span class="math">Q</span> الناتج عن عرض الحوض يؤدي لزيادة الضغط الميكانيكي على مفصل الركبة والأربطة.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="B" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅱️</span>
-            <span class="opt-text">الزاوية عند اللاعبات أصغر (<span class="math">10<sup>°</sup></span> إلى <span class="math">12<sup>°</sup></span>)، وده بيخلي الخطوة أسرع.</span>
+          <button class="option" data-label="B" data-correct="false" data-rationale="زاوية $Q$ تتعلق بالبناء التشريحي وتأثيره على الاستقامة، وليس لها علاقة مباشرة بسرعة الانقباض العضلي.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">تحسين سرعة انقباض العضلات الرباعية</span>
           </button>
           <div class="option-feedback hidden" data-for="B">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">زاوية <span class="math">Q</span> تتعلق بالبناء التشريحي وتأثيره على الاستقامة، وليس لها علاقة مباشرة بسرعة الانقباض العضلي.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="C" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅲️</span>
-            <span class="opt-text">الزاوية أكبر عند اللاعبات، وده بيقلل احتمالات الإصابة في المسافات الطويلة.</span>
+          <button class="option" data-label="C" data-correct="false" data-rationale="زيادة الزاوية ترفع من مخاطر الإصابات الميكانيكية في الطرف السفلي ولا تحمي من الكسور.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">تقليل احتمالية الإصابة بكسور الإجهاد</span>
           </button>
           <div class="option-feedback hidden" data-for="C">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">زيادة الزاوية ترفع من مخاطر الإصابات الميكانيكية في الطرف السفلي ولا تحمي من الكسور.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="D" data-correct="true" data-rationale="">
-            <span class="opt-emoji">🅳️</span>
-            <span class="opt-text">الزاوية عند اللاعبات أكبر (<span class="math">14<sup>°</sup></span> إلى <span class="math">16<sup>°</sup></span>)، وده بيزود الضغط على الركبة والرباط الصليبي.</span>
+          <button class="option" data-label="D" data-correct="false" data-rationale="بالعكس، هذه الزاوية قد تسبب اهتزازات جانبية تقلل من كفاءة واتجاه القوة الأمامية للخطوة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">زيادة طول الخطوة بشكل طبيعي</span>
           </button>
           <div class="option-feedback hidden" data-for="D">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">بالعكس، هذه الزاوية قد تسبب اهتزازات جانبية تقلل من كفاءة واتجاه القوة الأمامية للخطوة.</div>
           </div>
         </div>
       </div>
@@ -162,53 +222,60 @@ sub { vertical-align: sub; }
       
         <div class="question" data-index="1">
           <div class="q-header">
-            <span class="q-number">🎯 سؤال 2 / 10</span>
-            <span class="streak" id="streak-badge"></span>
+            <span class="q-number">سؤال 2</span>
+            <span class="q-of">/ 10</span>
           </div>
-          <div class="q-text">ليـه المدرب لازم يهتم بتقوية العضلة الأليوية الوسطى (Gluteus Medius) بصفة خاصة عند تدريب الإناث؟</div>
+          <div class="q-text">أي من العضلات التالية هي المسؤولة بشكل أساسي عن تثبيت الحوض ومنعه من الهبوط أثناء الجري؟</div>
           
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">ابحث عن العضلة التي تقوم بعملية 'التبعيد' (<span class="math">Abduction</span>) للورك.</div>
+        </div>
+      
           <div class="options">
         <div class="option-wrapper">
-          <button class="option" data-label="A" data-correct="true" data-rationale="">
-            <span class="opt-emoji">🅰️</span>
-            <span class="opt-text">عشان بتساعد في تثبيت الحوض ومنع هبوطه للجانب المعاكس أثناء الجري والمشي.</span>
+          <button class="option" data-label="A" data-correct="true" data-rationale="تقوم هذه العضلة بوظيفة التبعيد وتثبيت الحوض ومنعه من الميلان الجانبي عند الارتكاز على قدم واحدة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">العضلة الإيليوية المتوسطة (<span class="math">Gluteus text Medius</span>)</span>
           </button>
           <div class="option-feedback hidden" data-for="A">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">تقوم هذه العضلة بوظيفة التبعيد وتثبيت الحوض ومنعه من الميلان الجانبي عند الارتكاز على قدم واحدة.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="B" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅱️</span>
-            <span class="opt-text">عشان بتزود مرونة الحوض أثناء عملية الإنجاب.</span>
+          <button class="option" data-label="B" data-correct="false" data-rationale="وظيفتها الأساسية هي مد الركبة والتحكم في امتصاص الصدمات وليس تثبيت ميل الحوض.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">العضلة الرباعية الرؤوس (<span class="math">Quadriceps</span>)</span>
           </button>
           <div class="option-feedback hidden" data-for="B">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">وظيفتها الأساسية هي مد الركبة والتحكم في امتصاص الصدمات وليس تثبيت ميل الحوض.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="C" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅲️</span>
-            <span class="opt-text">عشان هي المصدر الرئيسي للطاقة اللاهوائية في العضلات.</span>
+          <button class="option" data-label="C" data-correct="false" data-rationale="تعمل هذه العضلات على مستوى مفصل الكاحل للدفع ولا تؤثر مباشرة على ثبات عظام الحوض.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">عضلات الساق الخلفية (<span class="math">Gastrocnemius</span>)</span>
           </button>
           <div class="option-feedback hidden" data-for="C">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">تعمل هذه العضلات على مستوى مفصل الكاحل للدفع ولا تؤثر مباشرة على ثبات عظام الحوض.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="D" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅳️</span>
-            <span class="opt-text">عشان هي المسؤولة عن زيادة سرعة الانطلاق في سباقات الـ <span class="math">100</span> متر.</span>
+          <button class="option" data-label="D" data-correct="false" data-rationale="هذه العضلة مسؤولة بشكل أكبر عن الدفع والارتقاء ومد القدم للخلف.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">العضلة الإيليوية الكبرى (<span class="math">Gluteus text Maximus</span>)</span>
           </button>
           <div class="option-feedback hidden" data-for="D">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">هذه العضلة مسؤولة بشكل أكبر عن الدفع والارتقاء ومد القدم للخلف.</div>
           </div>
         </div>
       </div>
@@ -217,53 +284,60 @@ sub { vertical-align: sub; }
       
         <div class="question" data-index="2">
           <div class="q-header">
-            <span class="q-number">🎯 سؤال 3 / 10</span>
-            <span class="streak" id="streak-badge"></span>
+            <span class="q-number">سؤال 3</span>
+            <span class="q-of">/ 10</span>
           </div>
-          <div class="q-text">إيه اللي بيحصل لتكنيك الجري عند البنات في مرحلة البلوغ (سن <span class="math">11</span> إلى <span class="math">14</span> سنة)؟</div>
+          <div class="q-text">لماذا تمتلك اللاعبات ميزة نسبية في سباقات المسافات الطويلة جداً (الألترا ماراثون) مقارنة بالرجال؟</div>
           
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">ركز على نوع الوقود الذي يحرقه الجسم في المجهودات الطويلة دون القصوى.</div>
+        </div>
+      
           <div class="options">
         <div class="option-wrapper">
-          <button class="option" data-label="A" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅰️</span>
-            <span class="opt-text">العضلات بتنمو أسرع من العظام، فالتكنيك بيبقى أقوى وأثبت.</span>
+          <button class="option" data-label="A" data-correct="true" data-rationale="بفعل هرمون الاستروجين والنسبة العالية من الألياف البطيئة، تستطيع النساء أكسدة الدهون بكفاءة أعلى وتأخير التعب.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">قدرتهن الأكبر على استخدام الدهون كمصدر للطاقة وتوفير الجلايكوجين</span>
           </button>
           <div class="option-feedback hidden" data-for="A">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">بفعل هرمون الاستروجين والنسبة العالية من الألياف البطيئة، تستطيع النساء أكسدة الدهون بكفاءة أعلى وتأخير التعب.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="B" data-correct="true" data-rationale="">
-            <span class="opt-emoji">🅱️</span>
-            <span class="opt-text">بيحصل خلل مؤقت في التكنيك لأن العظام بتنمو أسرع من العضلات، وده بيأثر على الزمن.</span>
+          <button class="option" data-label="B" data-correct="false" data-rationale="صغر حجم القلب هو أحد المعوقات الفسيولوجية لضخ كميات كبيرة من الأكسجين وليس ميزة.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">بسبب صغر حجم القلب وسرعة نبضاته</span>
           </button>
           <div class="option-feedback hidden" data-for="B">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">صغر حجم القلب هو أحد المعوقات الفسيولوجية لضخ كميات كبيرة من الأكسجين وليس ميزة.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="C" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅲️</span>
-            <span class="opt-text">الأداء بيتحسن فجأة بسبب زيادة إفراز هرمون التستوستيرون.</span>
+          <button class="option" data-label="C" data-correct="false" data-rationale="النساء يمتلكن مستويات أقل بكثير من التستوستيرون مقارنة بالرجال، وهو هرمون مرتبط بالقوة الانفجارية.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">بسبب ارتفاع مستويات التستوستيرون لديهن</span>
           </button>
           <div class="option-feedback hidden" data-for="C">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">النساء يمتلكن مستويات أقل بكثير من التستوستيرون مقارنة بالرجال، وهو هرمون مرتبط بالقوة الانفجارية.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="D" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅳️</span>
-            <span class="opt-text">التكنيك مبيتأثرش، التغيير بس بيبقى في الحالة النفسية للاعبة.</span>
+          <button class="option" data-label="D" data-correct="false" data-rationale="تمتلك النساء غالباً كتلة عظمية وعضلية أقل، لكن الميزة تكمن في التمثيل الغذائي ونوع الألياف.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">بسبب زيادة كتلة العظام التي تتحمل الجهد لفترات طويلة</span>
           </button>
           <div class="option-feedback hidden" data-for="D">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">تمتلك النساء غالباً كتلة عظمية وعضلية أقل، لكن الميزة تكمن في التمثيل الغذائي ونوع الألياف.</div>
           </div>
         </div>
       </div>
@@ -272,53 +346,60 @@ sub { vertical-align: sub; }
       
         <div class="question" data-index="3">
           <div class="q-header">
-            <span class="q-number">🎯 سؤال 4 / 10</span>
-            <span class="streak" id="streak-badge"></span>
+            <span class="q-number">سؤال 4</span>
+            <span class="q-of">/ 10</span>
           </div>
-          <div class="q-text">من الناحية الفيزيولوجية، ليه قلب المرأة بيحتاج عدد ضربات أكتر (<span class="math">78</span> إلى <span class="math">82</span> نبضة) مقارنة بالرجل في حالة الراحة؟</div>
+          <div class="q-text">في أي مرحلة من الدورة الشهرية يُنصح المدرب بالتركيز على تدريبات السرعة والشدة العالية؟</div>
           
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">ابحث عن الفترة التي يكون فيها هرمون الاستروجين في صعود ويحفز حرق الوقود السريع.</div>
+        </div>
+      
           <div class="options">
         <div class="option-wrapper">
-          <button class="option" data-label="A" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅰️</span>
-            <span class="opt-text">عشان المرأة بتستهلك أكسجين أكتر في حالة السكون.</span>
+          <button class="option" data-label="A" data-correct="true" data-rationale="ارتفاع الاستروجين يجعل الجسم يفضل استخدام الكربوهيدرات كوقود سريع، مما يناسب الشدة والسرعة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">النصف الأول من الطور الجريبي (بعد الطمث مباشرة حتى قمة الاستروجين)</span>
           </button>
           <div class="option-feedback hidden" data-for="A">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">ارتفاع الاستروجين يجعل الجسم يفضل استخدام الكربوهيدرات كوقود سريع، مما يناسب الشدة والسرعة.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="B" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅱️</span>
-            <span class="opt-text">بسبب زيادة نسبة الدهون اللي بتعيق حركة عضلة القلب.</span>
+          <button class="option" data-label="B" data-correct="false" data-rationale="في هذه المرحلة يرتفع البروجسترون وتزيد درجة حرارة الجسم، مما يناسب تدريبات التحمل والحجم أكثر.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">الطور اللوتيني (بعد التبويض حتى نهاية الدورة)</span>
           </button>
           <div class="option-feedback hidden" data-for="B">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">في هذه المرحلة يرتفع البروجسترون وتزيد درجة حرارة الجسم، مما يناسب تدريبات التحمل والحجم أكثر.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="C" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅲️</span>
-            <span class="opt-text">لأن نسبة الهيموجلوبين عندها أعلى، فمحتاج سرعة دوران أكبر.</span>
+          <button class="option" data-label="C" data-correct="false" data-rationale="هذا اليوم يمثل نهاية الدورة وبداية نزول الهرمونات الحاد، وهو وقت غير مثالي للشدة القصوى.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">يوم 28 من الدورة الشهرية</span>
           </button>
           <div class="option-feedback hidden" data-for="C">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">هذا اليوم يمثل نهاية الدورة وبداية نزول الهرمونات الحاد، وهو وقت غير مثالي للشدة القصوى.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="D" data-correct="true" data-rationale="">
-            <span class="opt-emoji">🅳️</span>
-            <span class="opt-text">بسبب صغر حجم القلب (<span class="math">230</span> إلى <span class="math">280</span> جرام)، فبيحتاج يضخ أكتر عشان يوصل نفس كمية الدم.</span>
+          <button class="option" data-label="D" data-correct="false" data-rationale="في هذه المرحلة تكون الهرمونات في أدنى مستوياتها والجسم يحتاج للراحة أو تدريبات خفيفة جداً.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">مرحلة الطمث (الأيام الخمسة الأولى)</span>
           </button>
           <div class="option-feedback hidden" data-for="D">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">في هذه المرحلة تكون الهرمونات في أدنى مستوياتها والجسم يحتاج للراحة أو تدريبات خفيفة جداً.</div>
           </div>
         </div>
       </div>
@@ -327,53 +408,60 @@ sub { vertical-align: sub; }
       
         <div class="question" data-index="4">
           <div class="q-header">
-            <span class="q-number">🎯 سؤال 5 / 10</span>
-            <span class="streak" id="streak-badge"></span>
+            <span class="q-number">سؤال 5</span>
+            <span class="q-of">/ 10</span>
           </div>
-          <div class="q-text">إيه هي الميزة اللي بتمتلكها اللاعبات في المسافات الطويلة جداً (الماراثون وما فوقه) مقارنة بالرجال؟</div>
+          <div class="q-text">ما هي 'عتبة الإنذار' في متلازمة نقص الطاقة النسبي (<span class="math">RED-S</span>) التي يبدأ عندها الدماغ بتفعيل وضع الاقتصاد؟</div>
           
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">الرقم يمثل كمية السعرات الحرارية المتاحة لكل كيلوجرام من كتلة الجسم غير الدهنية.</div>
+        </div>
+      
           <div class="options">
         <div class="option-wrapper">
-          <button class="option" data-label="A" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅰️</span>
-            <span class="opt-text">قوة انفجارية أكبر في عضلات الفخد.</span>
+          <button class="option" data-label="A" data-correct="false" data-rationale="هذا المستوى يمثل منطقة انتقالية لكنه لا يمثل حالة الطوارئ القصوى للجسم.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">40 text kcal/kg</span> من الكتلة العضلية يومياً</span>
           </button>
           <div class="option-feedback hidden" data-for="A">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">هذا المستوى يمثل منطقة انتقالية لكنه لا يمثل حالة الطوارئ القصوى للجسم.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="B" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅱️</span>
-            <span class="opt-text">قدرة القلب على ضخ كميات ضخمة من الدم في زمن قياسي.</span>
+          <button class="option" data-label="B" data-correct="false" data-rationale="هذا المستوى يعتبر طاقة كافية جداً لتغطية كافة الوظائف الحيوية والرياضية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">50 text kcal/kg</span> من الكتلة العضلية يومياً</span>
           </button>
           <div class="option-feedback hidden" data-for="B">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">هذا المستوى يعتبر طاقة كافية جداً لتغطية كافة الوظائف الحيوية والرياضية.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="C" data-correct="true" data-rationale="">
-            <span class="opt-emoji">🅲️</span>
-            <span class="opt-text">امتلاك نسبة أعلى من الألياف العضلية البطيئة وقدرة أكبر على أكسدة الدهون.</span>
+          <button class="option" data-label="C" data-correct="false" data-rationale="هذا المستوى منخفض جداً لدرجة الموت الفوري وليس مجرد تفعيل وضع الاقتصاد الحيوي.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">أقل من <span class="math">10 text kcal/kg</span> من الكتلة العضلية يومياً</span>
           </button>
           <div class="option-feedback hidden" data-for="C">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">هذا المستوى منخفض جداً لدرجة الموت الفوري وليس مجرد تفعيل وضع الاقتصاد الحيوي.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="D" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅳️</span>
-            <span class="opt-text">قدرة أعلى على إنتاج حامض اللاكتيك بسرعة.</span>
+          <button class="option" data-label="D" data-correct="true" data-rationale="تحت هذا المستوى، يغلق الجسم الأنظمة غير الضرورية مثل التكاثر وترميم العظام لضمان بقاء القلب والدماغ.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">أقل من <span class="math">30 text kcal/kg</span> من الكتلة العضلية يومياً</span>
           </button>
           <div class="option-feedback hidden" data-for="D">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">تحت هذا المستوى، يغلق الجسم الأنظمة غير الضرورية مثل التكاثر وترميم العظام لضمان بقاء القلب والدماغ.</div>
           </div>
         </div>
       </div>
@@ -382,53 +470,60 @@ sub { vertical-align: sub; }
       
         <div class="question" data-index="5">
           <div class="q-header">
-            <span class="q-number">🎯 سؤال 6 / 10</span>
-            <span class="streak" id="streak-badge"></span>
+            <span class="q-number">سؤال 6</span>
+            <span class="q-of">/ 10</span>
           </div>
-          <div class="q-text">في أي مرحلة من الدورة الشهرية يُنصح المدرب ببرمجة تدريبات السرعة والشدة والقوة العالية؟</div>
+          <div class="q-text">أي من المواد التالية يُنصح بتجنب تناولها مباشرة مع الوجبات الغنية بالحديد لضمان امتصاص أفضل؟</div>
           
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في المشروبات التي تحتوي على مواد ترتبط بالمعادن وتجعلها 'ثقيلة' على الامتصاص.</div>
+        </div>
+      
           <div class="options">
         <div class="option-wrapper">
-          <button class="option" data-label="A" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅰️</span>
-            <span class="opt-text">في نهاية الدورة الشهرية (يوم <span class="math">28</span>) عشان الجسم يستعد لدورة جديدة.</span>
+          <button class="option" data-label="A" data-correct="false" data-rationale="اللحوم الحمراء هي المصدر الأغنى بالحديد 'الهيمي' سريع الامتصاص ولا تعيق العملية.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">اللحوم الحمراء</span>
           </button>
           <div class="option-feedback hidden" data-for="A">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">اللحوم الحمراء هي المصدر الأغنى بالحديد 'الهيمي' سريع الامتصاص ولا تعيق العملية.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="B" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅱️</span>
-            <span class="opt-text">أثناء فترة الطمث (أول <span class="math">5</span> أيام).</span>
+          <button class="option" data-label="B" data-correct="true" data-rationale="تحتوي هذه المشروبات على مادة 'التانين' التي ترتبط بالحديد وتمنع الأمعاء من امتصاصه.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">الشاي والقهوة</span>
           </button>
           <div class="option-feedback hidden" data-for="B">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">تحتوي هذه المشروبات على مادة 'التانين' التي ترتبط بالحديد وتمنع الأمعاء من امتصاصه.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="C" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅲️</span>
-            <span class="opt-text">في النصف الثاني من الدورة (الفترة اللوتينية) عشان البروجسترون عالي.</span>
+          <button class="option" data-label="C" data-correct="false" data-rationale="هذه الخضروات تحتوي على فيتامينات تدعم الامتصاص ولا تعيقه.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">الطماطم والفلفل</span>
           </button>
           <div class="option-feedback hidden" data-for="C">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">هذه الخضروات تحتوي على فيتامينات تدعم الامتصاص ولا تعيقه.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="D" data-correct="true" data-rationale="">
-            <span class="opt-emoji">🅳️</span>
-            <span class="opt-text">في النصف الأول (الطور الجريبي) وتحديداً لما يوصل الاستروجين لقمته.</span>
+          <button class="option" data-label="D" data-correct="false" data-rationale="فيتامين $C$ هو محفز أساسي يساعد على امتصاص الحديد، خاصة المصادر النباتية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">الليمون والبرتقال (فيتامين <span class="math">C</span>)</span>
           </button>
           <div class="option-feedback hidden" data-for="D">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">فيتامين <span class="math">C</span> هو محفز أساسي يساعد على امتصاص الحديد، خاصة المصادر النباتية.</div>
           </div>
         </div>
       </div>
@@ -437,53 +532,60 @@ sub { vertical-align: sub; }
       
         <div class="question" data-index="6">
           <div class="q-header">
-            <span class="q-number">🎯 سؤال 7 / 10</span>
-            <span class="streak" id="streak-badge"></span>
+            <span class="q-number">سؤال 7</span>
+            <span class="q-of">/ 10</span>
           </div>
-          <div class="q-text">ليه شرب الشاي أو القهوة مباشرة بعد وجبة غنية بالحديد (نباتي) بيعتبر ممارسة خاطئة للاعبة؟</div>
+          <div class="q-text">ما هو التأثير الميكانيكي المباشر لميل الحوض للأمام (<span class="math">Anterior text Pelvic Tilt</span>) على الأداء؟</div>
           
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تخيل كيف يؤثر وضع 'قاعدة الجذع' على حركة الساقين المترابطة بها.</div>
+        </div>
+      
           <div class="options">
         <div class="option-wrapper">
-          <button class="option" data-label="A" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅰️</span>
-            <span class="opt-text">لأن الكافيين بيدمر كريات الدم الحمراء مباشرة.</span>
+          <button class="option" data-label="A" data-correct="false" data-rationale="ميل الحوض للأمام غالباً ما يكون ناتجاً عن ضعف في عضلات البطن وليس تنشيطاً لها.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">تنشيط عضلات البطن بشكل تلقائي</span>
           </button>
           <div class="option-feedback hidden" data-for="A">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">ميل الحوض للأمام غالباً ما يكون ناتجاً عن ضعف في عضلات البطن وليس تنشيطاً لها.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="B" data-correct="true" data-rationale="">
-            <span class="opt-emoji">🅱️</span>
-            <span class="opt-text">لأن مادة &quot;الطنا&quot; بتلتحم بالحديد وبتمنع الأمعاء من امتصاصه.</span>
+          <button class="option" data-label="B" data-correct="false" data-rationale="ميل الحوض للأمام يحد من المدى الحركي للمفصل ويؤدي لتقصير الخطوة وليس زيادتها.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">زيادة طول الخطوة وقوة الدفع</span>
           </button>
           <div class="option-feedback hidden" data-for="B">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">ميل الحوض للأمام يحد من المدى الحركي للمفصل ويؤدي لتقصير الخطوة وليس زيادتها.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="C" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅲️</span>
-            <span class="opt-text">لأن الشاي بيحول الحديد من حيواني لنباتي.</span>
+          <button class="option" data-label="C" data-correct="false" data-rationale="ميل الحوض يسبب ضغطاً على الفقرات القطنية ($Lumbar$) ويؤدي لانحناء غير صحي.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">تحسين استقامة العمود الفقري</span>
           </button>
           <div class="option-feedback hidden" data-for="C">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">ميل الحوض يسبب ضغطاً على الفقرات القطنية (<span class="math">Lumbar</span>) ويؤدي لانحناء غير صحي.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="D" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅳️</span>
-            <span class="opt-text">لأن الشاي بيزود نسبة الفريتين في الكبد بشكل مبالغ فيه.</span>
+          <button class="option" data-label="D" data-correct="true" data-rationale="عدم ثبات الحوض وميله للأمام يغير من زوايا الدفع والارتكاز مما يقلل المسافة المقطوعة في كل خطوة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">تقصير طول الخطوة وتراجع اقتصادية الجري</span>
           </button>
           <div class="option-feedback hidden" data-for="D">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">عدم ثبات الحوض وميله للأمام يغير من زوايا الدفع والارتكاز مما يقلل المسافة المقطوعة في كل خطوة.</div>
           </div>
         </div>
       </div>
@@ -492,53 +594,60 @@ sub { vertical-align: sub; }
       
         <div class="question" data-index="7">
           <div class="q-header">
-            <span class="q-number">🎯 سؤال 8 / 10</span>
-            <span class="streak" id="streak-badge"></span>
+            <span class="q-number">سؤال 8</span>
+            <span class="q-of">/ 10</span>
           </div>
-          <div class="q-text">إيه هي متلازمة نقص الطاقة النسبي (<span class="math">RED-S</span>)، وإيه أخطر تأثيراتها على اللاعبة؟</div>
+          <div class="q-text">تمرين 'الصدفة' (<span class="math">Clam text Shell</span>) يهدف بشكل محدد إلى عزل وتقوية:</div>
           
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">هذا التمرين يتم بأداء فتح الركبتين بعيداً عن بعضهما أثناء الاستلقاء الجانبي.</div>
+        </div>
+      
           <div class="options">
         <div class="option-wrapper">
-          <button class="option" data-label="A" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅰️</span>
-            <span class="opt-text">هي زيادة مفرطة في الطاقة بتأدي لزيادة الوزن.</span>
+          <button class="option" data-label="A" data-correct="false" data-rationale="تمرين الصدفة لا يشمل حركة لمفصل الكاحل، وبالتالي لا يستهدف عضلة السمانة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">عضلة السمانة</span>
           </button>
           <div class="option-feedback hidden" data-for="A">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">تمرين الصدفة لا يشمل حركة لمفصل الكاحل، وبالتالي لا يستهدف عضلة السمانة.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="B" data-correct="true" data-rationale="">
-            <span class="opt-emoji">🅱️</span>
-            <span class="opt-text">حالة بيستهلك فيها الجسم طاقة أكتر من اللي بياخدها، فبيوقف وظائف حيوية زي التبويض وترميم العظام.</span>
+          <button class="option" data-label="B" data-correct="false" data-rationale="على الرغم من أهمية الظهر، إلا أن التمرين يركز على حركة تدوير وتبعيد الورك.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">عضلات الظهر السفلي</span>
           </button>
           <div class="option-feedback hidden" data-for="B">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">على الرغم من أهمية الظهر، إلا أن التمرين يركز على حركة تدوير وتبعيد الورك.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="C" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅲️</span>
-            <span class="opt-text">مرض وراثي بيخلي اللاعبة ترفض الأكل قبل المنافسات.</span>
+          <button class="option" data-label="C" data-correct="true" data-rationale="الوضع الجانبي مع فتح الركبة يحاكي وظيفة التبعيد التي تقوم بها هذه العضلة المسؤولة عن ثبات الحوض.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">العضلة الإيليوية المتوسطة</span>
           </button>
           <div class="option-feedback hidden" data-for="C">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">الوضع الجانبي مع فتح الركبة يحاكي وظيفة التبعيد التي تقوم بها هذه العضلة المسؤولة عن ثبات الحوض.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="D" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅳️</span>
-            <span class="opt-text">هي حالة من النشاط الزائد بتخلي اللاعبة متنامش بالليل.</span>
+          <button class="option" data-label="D" data-correct="false" data-rationale="عضلات البطن تعمل كمثبت ثانوي في هذا التمرين لكن الشغل الأساسي يقع على عضلات الورك.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">عضلات البطن الجانبية</span>
           </button>
           <div class="option-feedback hidden" data-for="D">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">عضلات البطن تعمل كمثبت ثانوي في هذا التمرين لكن الشغل الأساسي يقع على عضلات الورك.</div>
           </div>
         </div>
       </div>
@@ -547,53 +656,60 @@ sub { vertical-align: sub; }
       
         <div class="question" data-index="8">
           <div class="q-header">
-            <span class="q-number">🎯 سؤال 9 / 10</span>
-            <span class="streak" id="streak-badge"></span>
+            <span class="q-number">سؤال 9</span>
+            <span class="q-of">/ 10</span>
           </div>
-          <div class="q-text">المدرب لاحظ إن اللاعبة عندها إصابات متكررة زي &quot;شرخ الإجهاد&quot; وانقطاع في الدورة الشهرية. ده مؤشر لإيه؟</div>
+          <div class="q-text">وفقاً لمتلازمة <span class="math">RED-S</span>، لماذا تزيد مخاطر كسور الإجهاد عند انقطاع الطمث لدى اللاعبات؟</div>
           
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في العلاقة بين الهرمونات الأنثوية وكثافة الهيكل العظمي.</div>
+        </div>
+      
           <div class="options">
         <div class="option-wrapper">
-          <button class="option" data-label="A" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅰️</span>
-            <span class="opt-text">إن الحذاء الرياضي بتاعها مش مناسب لنوع التراك.</span>
+          <button class="option" data-label="A" data-correct="false" data-rationale="الجسم لا يستهلك بروتين العظام مباشرة كمصدر طاقة، بل يتوقف عن ترميمها وصيانتها الدورية.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">بسبب استهلاك الجسم للبروتين الموجود في العظام</span>
           </button>
           <div class="option-feedback hidden" data-for="A">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">الجسم لا يستهلك بروتين العظام مباشرة كمصدر طاقة، بل يتوقف عن ترميمها وصيانتها الدورية.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="B" data-correct="true" data-rationale="">
-            <span class="opt-emoji">🅱️</span>
-            <span class="opt-text">إن اللاعبة دخلت في &quot;المنطقة الحمراء&quot; لنقص الطاقة المتاح (أقل من <span class="math">30</span> سعر حراري/كجم).</span>
+          <button class="option" data-label="B" data-correct="false" data-rationale="نقص الطاقة يضعف بناء الكولاجين مما يقلل من جودة الأوتار لكنه لا يزيد مرونتها بشكل إيجابي.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">بسبب زيادة مرونة الأوتار بشكل مفرط</span>
           </button>
           <div class="option-feedback hidden" data-for="B">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">نقص الطاقة يضعف بناء الكولاجين مما يقلل من جودة الأوتار لكنه لا يزيد مرونتها بشكل إيجابي.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="C" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅲️</span>
-            <span class="opt-text">إن عندها زيادة في هرمون الاستروجين بيخلي العظام هشة.</span>
+          <button class="option" data-label="C" data-correct="true" data-rationale="الاستروجين له دور حيوي في تحفيز بناء الخلايا العظمية وترميمها؛ ونقصه يضعف كثافة العظام.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">بسبب هبوط هرمون الاستروجين الذي يوقف عملية تجدد العظام</span>
           </button>
           <div class="option-feedback hidden" data-for="C">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">الاستروجين له دور حيوي في تحفيز بناء الخلايا العظمية وترميمها؛ ونقصه يضعف كثافة العظام.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="D" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅳️</span>
-            <span class="opt-text">إن اللاعبة محتاجة تزود أحجام التدريب عشان تتقوى.</span>
+          <button class="option" data-label="D" data-correct="false" data-rationale="انقطاع الطمث في هذه الحالة مرتبط بنقص الطاقة الذي يؤدي غالباً لنحافة مفرطة وليس زيادة وزن.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">بسبب زيادة وزن اللاعبة المفاجئ</span>
           </button>
           <div class="option-feedback hidden" data-for="D">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">انقطاع الطمث في هذه الحالة مرتبط بنقص الطاقة الذي يؤدي غالباً لنحافة مفرطة وليس زيادة وزن.</div>
           </div>
         </div>
       </div>
@@ -602,53 +718,60 @@ sub { vertical-align: sub; }
       
         <div class="question" data-index="9">
           <div class="q-header">
-            <span class="q-number">🎯 سؤال 10 / 10</span>
-            <span class="streak" id="streak-badge"></span>
+            <span class="q-number">سؤال 10</span>
+            <span class="q-of">/ 10</span>
           </div>
-          <div class="q-text">قاعدة الـ <span class="math">30</span> دقيقة (النافذة الأيضية) بعد التمرين هدفها الأساسي إيه؟</div>
+          <div class="q-text">ما هي الفائدة من قاعدة 'النافذة الأيضية' (30 دقيقة بعد التمرين)؟</div>
           
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تتعلق هذه القاعدة بسرعة استبدال ما فقده الجسم لمنع استمرار 'تآكل' الأنسجة.</div>
+        </div>
+      
           <div class="options">
         <div class="option-wrapper">
-          <button class="option" data-label="A" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅰️</span>
-            <span class="opt-text">عشان اللاعبة تحس بالشبع ومتاكلش وجبات تقيلة بليل.</span>
+          <button class="option" data-label="A" data-correct="false" data-rationale="شرب الماء ضروري دائماً لاسترجاع ما فُقد، والنافذة الأيضية تتعلق بالمغذيات الكبرى.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">تقليل الحاجة لشرب الماء</span>
           </button>
           <div class="option-feedback hidden" data-for="A">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">شرب الماء ضروري دائماً لاسترجاع ما فُقد، والنافذة الأيضية تتعلق بالمغذيات الكبرى.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="B" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅱️</span>
-            <span class="opt-text">عشان الميزان ميزيدش، لأن الحرق بيبقى عالي في الوقت ده.</span>
+          <button class="option" data-label="B" data-correct="false" data-rationale="نبضات القلب تعود لطبيعتها عبر التهدئة والراحة، وليس عبر تناول وجبة.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">منع ارتفاع ضربات القلب بعد الحصة</span>
           </button>
           <div class="option-feedback hidden" data-for="B">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">نبضات القلب تعود لطبيعتها عبر التهدئة والراحة، وليس عبر تناول وجبة.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="C" data-correct="false" data-rationale="">
-            <span class="opt-emoji">🅲️</span>
-            <span class="opt-text">عشان تنشط هرمون الأدرينالين اللي بيساعد على التركيز.</span>
+          <button class="option" data-label="C" data-correct="true" data-rationale="توفير البروتين والكربوهيدرات في هذا التوقيت يقلص مده العجز الطاقي ويحفز الاستشفاء.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">إيقاف عملية الهدم العضلي وبدء الترميم فوراً</span>
           </button>
           <div class="option-feedback hidden" data-for="C">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">توفير البروتين والكربوهيدرات في هذا التوقيت يقلص مده العجز الطاقي ويحفز الاستشفاء.</div>
           </div>
         </div>
       
         <div class="option-wrapper">
-          <button class="option" data-label="D" data-correct="true" data-rationale="">
-            <span class="opt-emoji">🅳️</span>
-            <span class="opt-text">إيقاف عملية الهدم العضلي وبدء الاستشفاء فوراً بتعويض السكريات والبروتينات.</span>
+          <button class="option" data-label="D" data-correct="false" data-rationale="الفائدة الأساسية هي التعويض السريع وليس زيادة الحرق في تلك اللحظة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">زيادة معدل حرق الدهون أثناء النوم</span>
           </button>
           <div class="option-feedback hidden" data-for="D">
             <div class="feedback-status"></div>
-            
+            <div class="feedback-rationale">الفائدة الأساسية هي التعويض السريع وليس زيادة الحرق في تلك اللحظة.</div>
           </div>
         </div>
       </div>
@@ -657,42 +780,21 @@ sub { vertical-align: sub; }
       </div>
   <div class="results" id="results">
     <h2>اكتمل الاختبار!</h2>
-    <div class="stars" id="stars"></div>
     <div class="score" id="score">0%</div>
     <div class="score-text" id="score-text"></div>
-    <button class="restart-btn" onclick="restart()">🔁 حاول مرة أخرى</button>
+    <button class="restart-btn" onclick="restart()">حاول مرة أخرى</button>
   </div>
 </div>
 <script>
-const quizData = [{"question":"إيه هو الفرق الرئيسي في زاوية $Q$ (\\angle Q) بين اللاعبات واللاعبين، وإيه تأثيره البايوميكانيكي؟","hint":"فكر في علاقة اتساع الحوض بموضع الركبة أثناء الجري.","options":[{"label":"A","text":"مفيش فرق في الزاوية، الفرق بس في قوة العضلات المحيطة بالركبة.","isCorrect":false,"rationale":""},{"label":"B","text":"الزاوية عند اللاعبات أصغر ($10^{\\circ}$ إلى $12^{\\circ}$)، وده بيخلي الخطوة أسرع.","isCorrect":false,"rationale":""},{"label":"C","text":"الزاوية أكبر عند اللاعبات، وده بيقلل احتمالات الإصابة في المسافات الطويلة.","isCorrect":false,"rationale":""},{"label":"D","text":"الزاوية عند اللاعبات أكبر ($14^{\\circ}$ إلى $16^{\\circ}$)، وده بيزود الضغط على الركبة والرباط الصليبي.","isCorrect":true,"rationale":""}]},{"question":"ليـه المدرب لازم يهتم بتقوية العضلة الأليوية الوسطى (Gluteus Medius) بصفة خاصة عند تدريب الإناث؟","hint":"ركز على فكرة الحفاظ على توازن الحوض ومنع \"الميلان\" الجانبي.","options":[{"label":"A","text":"عشان بتساعد في تثبيت الحوض ومنع هبوطه للجانب المعاكس أثناء الجري والمشي.","isCorrect":true,"rationale":""},{"label":"B","text":"عشان بتزود مرونة الحوض أثناء عملية الإنجاب.","isCorrect":false,"rationale":""},{"label":"C","text":"عشان هي المصدر الرئيسي للطاقة اللاهوائية في العضلات.","isCorrect":false,"rationale":""},{"label":"D","text":"عشان هي المسؤولة عن زيادة سرعة الانطلاق في سباقات الـ $100$ متر.","isCorrect":false,"rationale":""}]},{"question":"إيه اللي بيحصل لتكنيك الجري عند البنات في مرحلة البلوغ (سن $11$ إلى $14$ سنة)؟","hint":"فكر في الفرق بين سرعة نمو العضم وسرعة تكيف العضلات.","options":[{"label":"A","text":"العضلات بتنمو أسرع من العظام، فالتكنيك بيبقى أقوى وأثبت.","isCorrect":false,"rationale":""},{"label":"B","text":"بيحصل خلل مؤقت في التكنيك لأن العظام بتنمو أسرع من العضلات، وده بيأثر على الزمن.","isCorrect":true,"rationale":""},{"label":"C","text":"الأداء بيتحسن فجأة بسبب زيادة إفراز هرمون التستوستيرون.","isCorrect":false,"rationale":""},{"label":"D","text":"التكنيك مبيتأثرش، التغيير بس بيبقى في الحالة النفسية للاعبة.","isCorrect":false,"rationale":""}]},{"question":"من الناحية الفيزيولوجية، ليه قلب المرأة بيحتاج عدد ضربات أكتر ($78$ إلى $82$ نبضة) مقارنة بالرجل في حالة الراحة؟","hint":"فكر في العلاقة بين حجم \"المضخة\" وعدد المرات اللي لازم تشتغل فيها.","options":[{"label":"A","text":"عشان المرأة بتستهلك أكسجين أكتر في حالة السكون.","isCorrect":false,"rationale":""},{"label":"B","text":"بسبب زيادة نسبة الدهون اللي بتعيق حركة عضلة القلب.","isCorrect":false,"rationale":""},{"label":"C","text":"لأن نسبة الهيموجلوبين عندها أعلى، فمحتاج سرعة دوران أكبر.","isCorrect":false,"rationale":""},{"label":"D","text":"بسبب صغر حجم القلب ($230$ إلى $280$ جرام)، فبيحتاج يضخ أكتر عشان يوصل نفس كمية الدم.","isCorrect":true,"rationale":""}]},{"question":"إيه هي الميزة اللي بتمتلكها اللاعبات في المسافات الطويلة جداً (الماراثون وما فوقه) مقارنة بالرجال؟","hint":"ركز على نوع الألياف العضلية ومصدر الوقود اللي بيفضل موجود فترة طويلة.","options":[{"label":"A","text":"قوة انفجارية أكبر في عضلات الفخد.","isCorrect":false,"rationale":""},{"label":"B","text":"قدرة القلب على ضخ كميات ضخمة من الدم في زمن قياسي.","isCorrect":false,"rationale":""},{"label":"C","text":"امتلاك نسبة أعلى من الألياف العضلية البطيئة وقدرة أكبر على أكسدة الدهون.","isCorrect":true,"rationale":""},{"label":"D","text":"قدرة أعلى على إنتاج حامض اللاكتيك بسرعة.","isCorrect":false,"rationale":""}]},{"question":"في أي مرحلة من الدورة الشهرية يُنصح المدرب ببرمجة تدريبات السرعة والشدة والقوة العالية؟","hint":"فكر في الهرمون اللي بيساعد الجسم يستخدم الكربوهيدرات كوقود سريع.","options":[{"label":"A","text":"في نهاية الدورة الشهرية (يوم $28$) عشان الجسم يستعد لدورة جديدة.","isCorrect":false,"rationale":""},{"label":"B","text":"أثناء فترة الطمث (أول $5$ أيام).","isCorrect":false,"rationale":""},{"label":"C","text":"في النصف الثاني من الدورة (الفترة اللوتينية) عشان البروجسترون عالي.","isCorrect":false,"rationale":""},{"label":"D","text":"في النصف الأول (الطور الجريبي) وتحديداً لما يوصل الاستروجين لقمته.","isCorrect":true,"rationale":""}]},{"question":"ليه شرب الشاي أو القهوة مباشرة بعد وجبة غنية بالحديد (نباتي) بيعتبر ممارسة خاطئة للاعبة؟","hint":"فكر في \"العائق\" اللي بيمنع الدم إنه يستفيد من الحديد اللي في الأكل.","options":[{"label":"A","text":"لأن الكافيين بيدمر كريات الدم الحمراء مباشرة.","isCorrect":false,"rationale":""},{"label":"B","text":"لأن مادة \"الطنا\" بتلتحم بالحديد وبتمنع الأمعاء من امتصاصه.","isCorrect":true,"rationale":""},{"label":"C","text":"لأن الشاي بيحول الحديد من حيواني لنباتي.","isCorrect":false,"rationale":""},{"label":"D","text":"لأن الشاي بيزود نسبة الفريتين في الكبد بشكل مبالغ فيه.","isCorrect":false,"rationale":""}]},{"question":"إيه هي متلازمة نقص الطاقة النسبي ($RED-S$)، وإيه أخطر تأثيراتها على اللاعبة؟","hint":"افتكر كلام المحاضر عن \"هرمية البقاء\" وتوزيع الطاقة المتاحة.","options":[{"label":"A","text":"هي زيادة مفرطة في الطاقة بتأدي لزيادة الوزن.","isCorrect":false,"rationale":""},{"label":"B","text":"حالة بيستهلك فيها الجسم طاقة أكتر من اللي بياخدها، فبيوقف وظائف حيوية زي التبويض وترميم العظام.","isCorrect":true,"rationale":""},{"label":"C","text":"مرض وراثي بيخلي اللاعبة ترفض الأكل قبل المنافسات.","isCorrect":false,"rationale":""},{"label":"D","text":"هي حالة من النشاط الزائد بتخلي اللاعبة متنامش بالليل.","isCorrect":false,"rationale":""}]},{"question":"المدرب لاحظ إن اللاعبة عندها إصابات متكررة زي \"شرخ الإجهاد\" وانقطاع في الدورة الشهرية. ده مؤشر لإيه؟","hint":"اربط بين انقطاع وظيفة بيولوجية وهشاشة العظام الناتجة عن نقص \"الوقود\".","options":[{"label":"A","text":"إن الحذاء الرياضي بتاعها مش مناسب لنوع التراك.","isCorrect":false,"rationale":""},{"label":"B","text":"إن اللاعبة دخلت في \"المنطقة الحمراء\" لنقص الطاقة المتاح (أقل من $30$ سعر حراري/كجم).","isCorrect":true,"rationale":""},{"label":"C","text":"إن عندها زيادة في هرمون الاستروجين بيخلي العظام هشة.","isCorrect":false,"rationale":""},{"label":"D","text":"إن اللاعبة محتاجة تزود أحجام التدريب عشان تتقوى.","isCorrect":false,"rationale":""}]},{"question":"قاعدة الـ $30$ دقيقة (النافذة الأيضية) بعد التمرين هدفها الأساسي إيه؟","hint":"فكر في إيه اللي بيحتاجه الجسم عشان يبني اللي \"هدمه\" المجهود الشاق.","options":[{"label":"A","text":"عشان اللاعبة تحس بالشبع ومتاكلش وجبات تقيلة بليل.","isCorrect":false,"rationale":""},{"label":"B","text":"عشان الميزان ميزيدش، لأن الحرق بيبقى عالي في الوقت ده.","isCorrect":false,"rationale":""},{"label":"C","text":"عشان تنشط هرمون الأدرينالين اللي بيساعد على التركيز.","isCorrect":false,"rationale":""},{"label":"D","text":"إيقاف عملية الهدم العضلي وبدء الاستشفاء فوراً بتعويض السكريات والبروتينات.","isCorrect":true,"rationale":""}]}];
+const quizData = [{"question":"ما هو التأثير الرئيسي لزيادة زاوية $Q$ (الزاوية كيو) لدى اللاعبات مقارنة بالرجال؟","hint":"فكر في كيفية تأثير ميل عظمة الفخذ بالنسبة للساق على المفاصل الوسطى.","options":[{"label":"A","text":"زيادة الضغط على الرباط الصليبي والركبة","isCorrect":true,"rationale":"اتساع زاوية $Q$ الناتج عن عرض الحوض يؤدي لزيادة الضغط الميكانيكي على مفصل الركبة والأربطة."},{"label":"B","text":"تحسين سرعة انقباض العضلات الرباعية","isCorrect":false,"rationale":"زاوية $Q$ تتعلق بالبناء التشريحي وتأثيره على الاستقامة، وليس لها علاقة مباشرة بسرعة الانقباض العضلي."},{"label":"C","text":"تقليل احتمالية الإصابة بكسور الإجهاد","isCorrect":false,"rationale":"زيادة الزاوية ترفع من مخاطر الإصابات الميكانيكية في الطرف السفلي ولا تحمي من الكسور."},{"label":"D","text":"زيادة طول الخطوة بشكل طبيعي","isCorrect":false,"rationale":"بالعكس، هذه الزاوية قد تسبب اهتزازات جانبية تقلل من كفاءة واتجاه القوة الأمامية للخطوة."}]},{"question":"أي من العضلات التالية هي المسؤولة بشكل أساسي عن تثبيت الحوض ومنعه من الهبوط أثناء الجري؟","hint":"ابحث عن العضلة التي تقوم بعملية 'التبعيد' ($Abduction$) للورك.","options":[{"label":"A","text":"العضلة الإيليوية المتوسطة ($Gluteus \\text{ Medius}$)","isCorrect":true,"rationale":"تقوم هذه العضلة بوظيفة التبعيد وتثبيت الحوض ومنعه من الميلان الجانبي عند الارتكاز على قدم واحدة."},{"label":"B","text":"العضلة الرباعية الرؤوس ($Quadriceps$)","isCorrect":false,"rationale":"وظيفتها الأساسية هي مد الركبة والتحكم في امتصاص الصدمات وليس تثبيت ميل الحوض."},{"label":"C","text":"عضلات الساق الخلفية ($Gastrocnemius$)","isCorrect":false,"rationale":"تعمل هذه العضلات على مستوى مفصل الكاحل للدفع ولا تؤثر مباشرة على ثبات عظام الحوض."},{"label":"D","text":"العضلة الإيليوية الكبرى ($Gluteus \\text{ Maximus}$)","isCorrect":false,"rationale":"هذه العضلة مسؤولة بشكل أكبر عن الدفع والارتقاء ومد القدم للخلف."}]},{"question":"لماذا تمتلك اللاعبات ميزة نسبية في سباقات المسافات الطويلة جداً (الألترا ماراثون) مقارنة بالرجال؟","hint":"ركز على نوع الوقود الذي يحرقه الجسم في المجهودات الطويلة دون القصوى.","options":[{"label":"A","text":"قدرتهن الأكبر على استخدام الدهون كمصدر للطاقة وتوفير الجلايكوجين","isCorrect":true,"rationale":"بفعل هرمون الاستروجين والنسبة العالية من الألياف البطيئة، تستطيع النساء أكسدة الدهون بكفاءة أعلى وتأخير التعب."},{"label":"B","text":"بسبب صغر حجم القلب وسرعة نبضاته","isCorrect":false,"rationale":"صغر حجم القلب هو أحد المعوقات الفسيولوجية لضخ كميات كبيرة من الأكسجين وليس ميزة."},{"label":"C","text":"بسبب ارتفاع مستويات التستوستيرون لديهن","isCorrect":false,"rationale":"النساء يمتلكن مستويات أقل بكثير من التستوستيرون مقارنة بالرجال، وهو هرمون مرتبط بالقوة الانفجارية."},{"label":"D","text":"بسبب زيادة كتلة العظام التي تتحمل الجهد لفترات طويلة","isCorrect":false,"rationale":"تمتلك النساء غالباً كتلة عظمية وعضلية أقل، لكن الميزة تكمن في التمثيل الغذائي ونوع الألياف."}]},{"question":"في أي مرحلة من الدورة الشهرية يُنصح المدرب بالتركيز على تدريبات السرعة والشدة العالية؟","hint":"ابحث عن الفترة التي يكون فيها هرمون الاستروجين في صعود ويحفز حرق الوقود السريع.","options":[{"label":"A","text":"النصف الأول من الطور الجريبي (بعد الطمث مباشرة حتى قمة الاستروجين)","isCorrect":true,"rationale":"ارتفاع الاستروجين يجعل الجسم يفضل استخدام الكربوهيدرات كوقود سريع، مما يناسب الشدة والسرعة."},{"label":"B","text":"الطور اللوتيني (بعد التبويض حتى نهاية الدورة)","isCorrect":false,"rationale":"في هذه المرحلة يرتفع البروجسترون وتزيد درجة حرارة الجسم، مما يناسب تدريبات التحمل والحجم أكثر."},{"label":"C","text":"يوم 28 من الدورة الشهرية","isCorrect":false,"rationale":"هذا اليوم يمثل نهاية الدورة وبداية نزول الهرمونات الحاد، وهو وقت غير مثالي للشدة القصوى."},{"label":"D","text":"مرحلة الطمث (الأيام الخمسة الأولى)","isCorrect":false,"rationale":"في هذه المرحلة تكون الهرمونات في أدنى مستوياتها والجسم يحتاج للراحة أو تدريبات خفيفة جداً."}]},{"question":"ما هي 'عتبة الإنذار' في متلازمة نقص الطاقة النسبي ($RED-S$) التي يبدأ عندها الدماغ بتفعيل وضع الاقتصاد؟","hint":"الرقم يمثل كمية السعرات الحرارية المتاحة لكل كيلوجرام من كتلة الجسم غير الدهنية.","options":[{"label":"A","text":"$40 \\text{ kcal/kg}$ من الكتلة العضلية يومياً","isCorrect":false,"rationale":"هذا المستوى يمثل منطقة انتقالية لكنه لا يمثل حالة الطوارئ القصوى للجسم."},{"label":"B","text":"$50 \\text{ kcal/kg}$ من الكتلة العضلية يومياً","isCorrect":false,"rationale":"هذا المستوى يعتبر طاقة كافية جداً لتغطية كافة الوظائف الحيوية والرياضية."},{"label":"C","text":"أقل من $10 \\text{ kcal/kg}$ من الكتلة العضلية يومياً","isCorrect":false,"rationale":"هذا المستوى منخفض جداً لدرجة الموت الفوري وليس مجرد تفعيل وضع الاقتصاد الحيوي."},{"label":"D","text":"أقل من $30 \\text{ kcal/kg}$ من الكتلة العضلية يومياً","isCorrect":true,"rationale":"تحت هذا المستوى، يغلق الجسم الأنظمة غير الضرورية مثل التكاثر وترميم العظام لضمان بقاء القلب والدماغ."}]},{"question":"أي من المواد التالية يُنصح بتجنب تناولها مباشرة مع الوجبات الغنية بالحديد لضمان امتصاص أفضل؟","hint":"فكر في المشروبات التي تحتوي على مواد ترتبط بالمعادن وتجعلها 'ثقيلة' على الامتصاص.","options":[{"label":"A","text":"اللحوم الحمراء","isCorrect":false,"rationale":"اللحوم الحمراء هي المصدر الأغنى بالحديد 'الهيمي' سريع الامتصاص ولا تعيق العملية."},{"label":"B","text":"الشاي والقهوة","isCorrect":true,"rationale":"تحتوي هذه المشروبات على مادة 'التانين' التي ترتبط بالحديد وتمنع الأمعاء من امتصاصه."},{"label":"C","text":"الطماطم والفلفل","isCorrect":false,"rationale":"هذه الخضروات تحتوي على فيتامينات تدعم الامتصاص ولا تعيقه."},{"label":"D","text":"الليمون والبرتقال (فيتامين $C$)","isCorrect":false,"rationale":"فيتامين $C$ هو محفز أساسي يساعد على امتصاص الحديد، خاصة المصادر النباتية."}]},{"question":"ما هو التأثير الميكانيكي المباشر لميل الحوض للأمام ($Anterior \\text{ Pelvic Tilt}$) على الأداء؟","hint":"تخيل كيف يؤثر وضع 'قاعدة الجذع' على حركة الساقين المترابطة بها.","options":[{"label":"A","text":"تنشيط عضلات البطن بشكل تلقائي","isCorrect":false,"rationale":"ميل الحوض للأمام غالباً ما يكون ناتجاً عن ضعف في عضلات البطن وليس تنشيطاً لها."},{"label":"B","text":"زيادة طول الخطوة وقوة الدفع","isCorrect":false,"rationale":"ميل الحوض للأمام يحد من المدى الحركي للمفصل ويؤدي لتقصير الخطوة وليس زيادتها."},{"label":"C","text":"تحسين استقامة العمود الفقري","isCorrect":false,"rationale":"ميل الحوض يسبب ضغطاً على الفقرات القطنية ($Lumbar$) ويؤدي لانحناء غير صحي."},{"label":"D","text":"تقصير طول الخطوة وتراجع اقتصادية الجري","isCorrect":true,"rationale":"عدم ثبات الحوض وميله للأمام يغير من زوايا الدفع والارتكاز مما يقلل المسافة المقطوعة في كل خطوة."}]},{"question":"تمرين 'الصدفة' ($Clam \\text{ Shell}$) يهدف بشكل محدد إلى عزل وتقوية:","hint":"هذا التمرين يتم بأداء فتح الركبتين بعيداً عن بعضهما أثناء الاستلقاء الجانبي.","options":[{"label":"A","text":"عضلة السمانة","isCorrect":false,"rationale":"تمرين الصدفة لا يشمل حركة لمفصل الكاحل، وبالتالي لا يستهدف عضلة السمانة."},{"label":"B","text":"عضلات الظهر السفلي","isCorrect":false,"rationale":"على الرغم من أهمية الظهر، إلا أن التمرين يركز على حركة تدوير وتبعيد الورك."},{"label":"C","text":"العضلة الإيليوية المتوسطة","isCorrect":true,"rationale":"الوضع الجانبي مع فتح الركبة يحاكي وظيفة التبعيد التي تقوم بها هذه العضلة المسؤولة عن ثبات الحوض."},{"label":"D","text":"عضلات البطن الجانبية","isCorrect":false,"rationale":"عضلات البطن تعمل كمثبت ثانوي في هذا التمرين لكن الشغل الأساسي يقع على عضلات الورك."}]},{"question":"وفقاً لمتلازمة $RED-S$، لماذا تزيد مخاطر كسور الإجهاد عند انقطاع الطمث لدى اللاعبات؟","hint":"فكر في العلاقة بين الهرمونات الأنثوية وكثافة الهيكل العظمي.","options":[{"label":"A","text":"بسبب استهلاك الجسم للبروتين الموجود في العظام","isCorrect":false,"rationale":"الجسم لا يستهلك بروتين العظام مباشرة كمصدر طاقة، بل يتوقف عن ترميمها وصيانتها الدورية."},{"label":"B","text":"بسبب زيادة مرونة الأوتار بشكل مفرط","isCorrect":false,"rationale":"نقص الطاقة يضعف بناء الكولاجين مما يقلل من جودة الأوتار لكنه لا يزيد مرونتها بشكل إيجابي."},{"label":"C","text":"بسبب هبوط هرمون الاستروجين الذي يوقف عملية تجدد العظام","isCorrect":true,"rationale":"الاستروجين له دور حيوي في تحفيز بناء الخلايا العظمية وترميمها؛ ونقصه يضعف كثافة العظام."},{"label":"D","text":"بسبب زيادة وزن اللاعبة المفاجئ","isCorrect":false,"rationale":"انقطاع الطمث في هذه الحالة مرتبط بنقص الطاقة الذي يؤدي غالباً لنحافة مفرطة وليس زيادة وزن."}]},{"question":"ما هي الفائدة من قاعدة 'النافذة الأيضية' (30 دقيقة بعد التمرين)؟","hint":"تتعلق هذه القاعدة بسرعة استبدال ما فقده الجسم لمنع استمرار 'تآكل' الأنسجة.","options":[{"label":"A","text":"تقليل الحاجة لشرب الماء","isCorrect":false,"rationale":"شرب الماء ضروري دائماً لاسترجاع ما فُقد، والنافذة الأيضية تتعلق بالمغذيات الكبرى."},{"label":"B","text":"منع ارتفاع ضربات القلب بعد الحصة","isCorrect":false,"rationale":"نبضات القلب تعود لطبيعتها عبر التهدئة والراحة، وليس عبر تناول وجبة."},{"label":"C","text":"إيقاف عملية الهدم العضلي وبدء الترميم فوراً","isCorrect":true,"rationale":"توفير البروتين والكربوهيدرات في هذا التوقيت يقلص مده العجز الطاقي ويحفز الاستشفاء."},{"label":"D","text":"زيادة معدل حرق الدهون أثناء النوم","isCorrect":false,"rationale":"الفائدة الأساسية هي التعويض السريع وليس زيادة الحرق في تلك اللحظة."}]}];
 const tr = {"correct":"صحيح!","incorrect":"خطأ","next":"السؤال التالي ←","seeResults":"عرض النتائج","complete":"اكتمل الاختبار!","scoreText":"أجبت {correct} من {total} بشكل صحيح","tryAgain":"حاول مرة أخرى","rightAnswer":"إجابة صحيحة","notQuite":"ليس تماماً"};
-let currentQ = 0, correctCount = 0, streak = 0, answered = false;
-const CONFETTI_COLORS = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#1dd1a1'];
+let currentQ = 0, correctCount = 0, answered = false;
 
 function init() {
   document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
   updateProgress();
-  updateStreakBadge();
   document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
   document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
-}
-
-function updateStreakBadge() {
-  const badge = document.getElementById('streak-badge');
-  if (!badge) return;
-  badge.textContent = streak >= 2 ? ('🔥 ' + streak) : '';
-}
-
-function burstConfetti() {
-  for (let i = 0; i < 24; i++) {
-    const piece = document.createElement('div');
-    piece.className = 'confetti-piece';
-    piece.style.left = Math.random() * 100 + 'vw';
-    piece.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
-    piece.style.animationDuration = (1.6 + Math.random() * 1.2) + 's';
-    document.body.appendChild(piece);
-    setTimeout(() => piece.remove(), 3000);
-  }
 }
 
 function selectOption(opt) {
@@ -702,35 +804,42 @@ function selectOption(opt) {
   const options = q.querySelectorAll('.option');
   const nextBtn = q.querySelector('.next-btn');
   const isCorrect = opt.dataset.correct === 'true';
-
+  
+  // Mark all options as disabled
   options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
   opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
-
+  
+  // Show correct answer if wrong
   if (!isCorrect) {
     const correctOpt = [...options].find(o => o.dataset.correct === 'true');
     if (correctOpt) correctOpt.classList.add('show-correct');
   }
-
-  if (isCorrect) { correctCount++; streak++; burstConfetti(); } else { streak = 0; }
-  updateStreakBadge();
-
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
   options.forEach(o => {
     const wrapper = o.closest('.option-wrapper');
     const feedback = wrapper.querySelector('.option-feedback');
     const rationale = o.dataset.rationale;
     const isThisCorrect = o.dataset.correct === 'true';
-
+    
     if (rationale && rationale.trim()) {
       feedback.classList.remove('hidden');
       feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
       const statusEl = feedback.querySelector('.feedback-status');
       statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
-      statusEl.innerHTML = isThisCorrect ? ('🎉 ' + tr.rightAnswer) : ('😅 ' + tr.notQuite);
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
     }
   });
-
+  
   nextBtn.classList.remove('hidden');
-  if (currentQ === quizData.length - 1) nextBtn.textContent = '🏁 ' + tr.seeResults;
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
 }
 
 function nextQuestion() {
@@ -739,7 +848,6 @@ function nextQuestion() {
   if (currentQ >= quizData.length) { showResults(); return; }
   document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
   updateProgress();
-  updateStreakBadge();
 }
 
 function updateProgress() {
@@ -750,16 +858,13 @@ function showResults() {
   document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
   document.getElementById('results').classList.add('active');
   const pct = Math.round((correctCount / quizData.length) * 100);
-  const starCount = Math.max(1, Math.round(pct / 20));
-  document.getElementById('stars').textContent = '⭐'.repeat(starCount) + '☆'.repeat(5 - starCount);
   document.getElementById('score').textContent = pct + '%';
   document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
   document.querySelector('.progress-fill').style.width = '100%';
-  if (pct >= 80) burstConfetti();
 }
 
 function restart() {
-  currentQ = 0; correctCount = 0; streak = 0; answered = false;
+  currentQ = 0; correctCount = 0; answered = false;
   document.getElementById('results').classList.remove('active');
   document.querySelectorAll('.question').forEach((q, i) => {
     q.classList.toggle('active', i === 0);
@@ -773,7 +878,6 @@ function restart() {
     btn.textContent = tr.next;
   });
   updateProgress();
-  updateStreakBadge();
 }
 
 init();
