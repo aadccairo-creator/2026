@@ -1,4 +1,12 @@
-<meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>اختبار وتعديل فهم: اختراق الضاحية</title>
+</head>
+<body>
+
 <!-- Interactive Cross Country 75 Flashcards with Assessment & Scoring System -->
 <div id="quiz-app-container" style="max-width: 720px; margin: 20px auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; direction: rtl; background: #ffffff; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); padding: 25px; border: 1px solid #e0e0e0;">
 
@@ -143,7 +151,7 @@ const quizCards = [
 
 let currentIndex = 0;
 let isAnswerShowing = false;
-let userAnswers = new Array(quizCards.length).fill(null); // true = correct, false = incorrect
+let userAnswers = new Array(quizCards.length).fill(null);
 
 function renderCard() {
   const cardData = quizCards[currentIndex];
@@ -252,3 +260,6 @@ function resetQuiz() {
 // Initial Call
 renderCard();
 </script>
+
+</body>
+</html>
