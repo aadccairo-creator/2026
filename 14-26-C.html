@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بطاقات تعليمية: قواعد والتحكيم في ألعاب القوى</title>
+    <style>
+        :root {
+            --primary-color: #1a5f7a;
+            --accent-color: #f39c12;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .flashcard-container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 25px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            margin: 0 0 8px 0;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .progress-bar {
+            font-weight: bold;
+            color: #7f8c8d;
+            font-size: 0.95rem;
+        }
+
+        /* Card Flip Styling */
+        .scene {
+            width: 100%;
+            height: 280px;
+            perspective: 1000px;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: 12px;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            box-sizing: border-box;
+            border-radius: 12px;
+            border: 2px solid #e0e6ed;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .card-face-front {
+            background-color: #ffffff;
+            color: var(--text-color);
+        }
+
+        .card-face-back {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            transform: rotateY(180deg);
+        }
+
+        .card-label {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .card-face-front .card-label {
+            background: #eef2f5;
+            color: var(--primary-color);
+        }
+
+        .card-face-back .card-label {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .card-content {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            margin: 0;
+            word-wrap: break-word;
+        }
+
+        .hint {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #95a5a6;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #13465a;
+        }
+
+        .btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .btn-flip {
+            background-color: var(--accent-color);
+        }
+
+        .btn-flip:hover {
+            background-color: #d35400;
+        }
+    </style>
+</head>
+<body>
+
+<div class="flashcard-container">
+    <div class="header">
+        <h2>بطاقات قواعد والتحكيم في ألعاب القوى</h2>
+        <div class="progress-bar" id="progress">البطاقة 1 من 10</div>
+    </div>
+
+    <div class="scene" id="scene" onclick="flipCard()">
+        <div class="card" id="card">
+            <div class="card-face card-face-front">
+                <span class="card-label">السؤال</span>
+                <p class="card-content" id="question-text">جاري تحميل السؤال...</p>
+                <div class="hint">💡 اضغط على البطاقة لعرض الإجابة</div>
+            </div>
+            <div class="card-face card-face-back">
+                <span class="card-label">الإجابة النموذجية</span>
+                <p class="card-content" id="answer-text">جاري تحميل الإجابة...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="prev-btn" onclick="prevCard()">← السابقة</button>
+        <button class="btn btn-flip" onclick="flipCard()">قلب البطاقة ↺</button>
+        <button class="btn" id="next-btn" onclick="nextCard()">التالية →</button>
+    </div>
+</div>
+
+<script>
+    const flashcards = [
+        {
+            q: "ما هي دلالات أهم رموز النتائج الرسمية: (DNS, DNF, DQ, NM, r, L)؟",
+            a: "• DNS: لم يشارك\n• DNF: لم يكمل السباق\n• DQ: استبعاد لخرق القواعد\n• NM: محاولات فاشلة بالكامل\n• r: انسحاب أثناء المنافسة\n• L: لمس خط الحارة دون إقصاء (المرة الأولى)."
+        },
+        {
+            q: "ما هي السلطة الاستثنائية الممنوحة للمندوب الطبي (Medical Delegate)؟",
+            a: "له سلطة مطلقة لإيقاف المتسابق وأمره بالانسحاب قبل أو أثناء المنافسة لأسباب صحية وحفاظاً على سلامته، ويُسجل له الرمز DNS أو DNF حسب وقت الإيقاف."
+        },
+        {
+            q: "ما هي قاعدة لمس خط الحارة (Line Infringement - L) ومتى تستوجب الإقصاء؟",
+            a: "يُسمح بلمس الخط الداخلي للحارة أو الحافة مرة واحدة فقط وتسجل العلامة (L)؛ أما إذا تكرر اللمس للمرة الثانية في نفس السباق فيؤدي ذلك للإقصاء الفوري (DQ)."
+        },
+        {
+            q: "هل تُعتمد الأرقام القياسية في سباقات الجري المتزامنة بين الذكور والإناث؟",
+            a: "لا تُعتمد الأرقام القياسية إذا تحققت في مسابقة جري متزامنة بين الذكور والإناث، ويُستثنى من ذلك مسابقات الميدان المحددة والتتابع المختلط."
+        },
+        {
+            q: "كيف يُعامل قانون الانطلاقة الخاطئة الأولى في الألعاب المركبة وعلاقتها بالأرقام القياسية؟",
+            a: "تُرفع بطاقة صفراء/سوداء أولى وتُعمم على الجميع. إذا حقق المتسبب بالانطلاقة الأولى رقماً قياسياً لا يُعتمد، بينما يُعتمد الرقم لغيره إذا حققه في انطلاقة قانونية لاحقة."
+        },
+        {
+            q: "ما طول منطقة تبادل العصا في التتابع ومتى يبدأ وينتهي التبادل رسمياً؟",
+            a: "طول المنطقة 30 متراً. يبدأ التبادل رسمياً بمجرد أول لمسة للعصا من العداء المستقبل، وينتهي تماماً عندما تصبح العصا في يد المستقبل كلياً."
+        },
+        {
+            q: "متى يُعد إسقاط الحاجز مخالفة تستوجب الإقصاء في سباقات الحواجز؟",
+            a: "يُعتبر خطأً إذا أسقط العداء الحاجز بالجزء العلوي الأمامي من رجل التعدية (فوق القدم وأمام الركبة)، بينما لا يُعد خطأً إذا أُسقط بأسفل القدم أو الجزء الخلفي."
+        },
+        {
+            q: "ما هو الشرط الذي يستوجب استبعاد المتنافس في الوثب العمودي (العالي والزانة)؟",
+            a: "يُستبعد المتنافس عند أدائه 3 محاولات فاشلة متتالية، بغض النظر عن الارتفاعات التي وقعت فيها تلك المحاولات الفاشلة."
+        },
+        {
+            q: "كيف تُدار منافسة السد (Jump-off) لفك التعادل في الوثب العمودي؟",
+            a: "تقام لفك التعادل على المركز الأول فقط؛ يُعطى كل متنافس محاولة في الارتفاع التالي، فإن فشلا يُخفض الارتفاع (2 سم للعالي / 5 سم للزانة)، وإن نجحا يُرفع الارتفاع حتى حسم المركز."
+        },
+        {
+            q: "ما هي عقوبة بطاقات المشي الثلاث وكيف تُحسب أوقات منطقة الجزاء (Penalty Zone)؟",
+            a: "عند حصول الرياضي على 3 بطاقات حمراء من 3 حكام مختلفين يدخل منطقة الجزاء لقضاء زمن محدد (30ث لـ 5000م، 1د لـ 10000م، 2د لنصف الماراثون، 3د لـ 30000م، 4د للماراثون، 5د لـ 50000م)."
+        }
+    ];
+
+    let currentIndex = 0;
+    const cardEl = document.getElementById('card');
+    const questionTextEl = document.getElementById('question-text');
+    const answerTextEl = document.getElementById('answer-text');
+    const progressEl = document.getElementById('progress');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    function updateCard() {
+        cardEl.classList.remove('is-flipped');
+        setTimeout(() => {
+            questionTextEl.innerText = flashcards[currentIndex].q;
+            answerTextEl.innerText = flashcards[currentIndex].a;
+            progressEl.innerText = `البطاقة ${currentIndex + 1} من ${flashcards.length}`;
+            
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === flashcards.length - 1;
+        }, 150);
+    }
+
+    function flipCard() {
+        cardEl.classList.toggle('is-flipped');
+    }
+
+    function nextCard() {
+        if (currentIndex < flashcards.length - 1) {
+            currentIndex++;
+            updateCard();
+        }
+    }
+
+    function prevCard() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateCard();
+        }
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') nextCard();
+        if (e.key === 'ArrowRight') prevCard();
+        if (e.key === ' ') {
+            e.preventDefault();
+            flipCard();
+        }
+    });
+
+    // Initialize
+    updateCard();
+</script>
+
+</body>
+</html>

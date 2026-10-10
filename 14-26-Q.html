@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ألعاب القوى اختبار</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>ألعاب القوى اختبار</h1>
+    <div class="meta">10 أسئلة</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">سؤال 1</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما هو الرمز الصحيح الذي يجب وضعه في النتائج عند استبعاد متسابق قبل بدء المنافسة بأمر من المندوب الطبي نظراً لظروفه الصحية؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في الرمز الذي يشير إلى أن الرياضي لم يبدأ المنافسة إطلاقاً.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="يعبر هذا الرمز عن عدم المشاركة، ويُطبق عندما يُمنع المتسابق من انطلاق المنافسة بقرار طبي قبل بدايتها.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">DNS</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يعبر هذا الرمز عن عدم المشاركة، ويُطبق عندما يُمنع المتسابق من انطلاق المنافسة بقرار طبي قبل بدايتها.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="يُستخدم هذا الرمز لإثبات عدم إنهاء السباق عندما يتم توقيف المتنافس أو انسحابه بعد بدء المنافسة وليس قبلها.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">DNF</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يُستخدم هذا الرمز لإثبات عدم إنهاء السباق عندما يتم توقيف المتنافس أو انسحابه بعد بدء المنافسة وليس قبلها.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="يُوضع هذا الرمز عادة عند امتناع أو انسحاب المتنافس عن استكمال بقية المحاولات أثناء جريان المسابقة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">r</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يُوضع هذا الرمز عادة عند امتناع أو انسحاب المتنافس عن استكمال بقية المحاولات أثناء جريان المسابقة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="يرمز هذا إلى الإقصاء الناتج عن مخالفة القواعد أو عدم الامتثال والسلوك غير الرياضي وليس للانسحاب الطبي الوقائي قبل البداية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">DQ</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يرمز هذا إلى الإقصاء الناتج عن مخالفة القواعد أو عدم الامتثال والسلوك غير الرياضي وليس للانسحاب الطبي الوقائي قبل البداية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">سؤال 2</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">من هو الحكم الذي يُعد الوحيد الذي لا توجد سلطة فوقه من قِبل الحكام الآخرين (بما في ذلك حكم الفيديو) وفقاً لللوائح المشروحة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تذكر المسؤول عن إعطاء إشارة البدء والسيطرة على خط البداية.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="يمكن لحكم الفيديو أو الحكم العام تعديل القرار المتخذ في مسابقات الميدان بناءً على الدلائل المصورة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">حكم الميدان</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يمكن لحكم الفيديو أو الحكم العام تعديل القرار المتخذ في مسابقات الميدان بناءً على الدلائل المصورة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="تتمتع قرارات حكم الانطلاقة باستقلالية تامة ولا يتدخل حكم الفيديو أو غيره من الحكام في سلطته المباشرة.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">حكم الانطلاقة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تتمتع قرارات حكم الانطلاقة باستقلالية تامة ولا يتدخل حكم الفيديو أو غيره من الحكام في سلطته المباشرة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="تنتهي سلطة حكم غرفة النداء بمجرد وصول العدائين إلى الملعب وتخضع قراراته للمراجعة والتعديل.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">حكم غرفة النداء</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تنتهي سلطة حكم غرفة النداء بمجرد وصول العدائين إلى الملعب وتخضع قراراته للمراجعة والتعديل.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="تخضع قرارات حكم المضمار لمراجعة حكم الفيديو الذي يمكنه اتخاذ قرار مغاير استناداً للقطات المصورة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">حكم المضمار</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تخضع قرارات حكم المضمار لمراجعة حكم الفيديو الذي يمكنه اتخاذ قرار مغاير استناداً للقطات المصورة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">سؤال 3</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">كيف يتعامل القاضي مع المحاولة الثانية الموالية لمتسابق غاب عنها في مسابقات الميدان بسبب مشاركته المتزامنة في سباق آخر ولم يحضر قبل انقضاء الوقت؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تذكر أن التسهيل بالامتناع يُعطى للمرة الأولى فقط عند الغياب، ثم يتغير الرمز في المرات اللاحقة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="المحاولة الأولى التالية لغيابه تمنح رمزا خاصا بالمرور (Pass)، بينما المحاولات التالية التي ينقضي وقتها دون حضوره تسجل كمحاولة فاشلة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">تسجيل محاولة فاشلة (x)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المحاولة الأولى التالية لغيابه تمنح رمزا خاصا بالمرور (Pass)، بينما المحاولات التالية التي ينقضي وقتها دون حضوره تسجل كمحاولة فاشلة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="لا يوضع رمز الانسحاب إلا إذا أعلن الرياضي ذلك أو انتهت المسابقة بالكامل دون حضوره وهو ممتنع.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">وضع رمز الانسحاب النهائي (r)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لا يوضع رمز الانسحاب إلا إذا أعلن الرياضي ذلك أو انتهت المسابقة بالكامل دون حضوره وهو ممتنع.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="المشاركة المتزامنة مصرح بها بقوانين محددة ولا تؤدي للإقصاء المباشر لمجرد نفاد وقت المحاولة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">إقصاء المتسابق فوراً ببطاقة حمراء</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المشاركة المتزامنة مصرح بها بقوانين محددة ولا تؤدي للإقصاء المباشر لمجرد نفاد وقت المحاولة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="يُمنح رمز الامتناع (Pass) فقط في المحاولة الأولى التي تلي الذهاب، أما في المحاولات التالية فيتغير التعامل مع انقضاء الوقت.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">تسجيل محاولة ممتنعة (Pass)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يُمنح رمز الامتناع (Pass) فقط في المحاولة الأولى التي تلي الذهاب، أما في المحاولات التالية فيتغير التعامل مع انقضاء الوقت.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">سؤال 4</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">متى تبدأ عملية تبادل العصا رسمياً بين العدائين في سباقات التتابع؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">ركز على التلامس الأول بين الأداة والرياضي الآخذ لها.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="لحظة استقرار العصا بالكامل في يد المستقبل تمثل نقطة نهاية عملية التبادل وليس بدايتها.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">عندما تستقر العصا بالكامل في يد المتسلم فقط</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لحظة استقرار العصا بالكامل في يد المستقبل تمثل نقطة نهاية عملية التبادل وليس بدايتها.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="تحدد القواعد أن بداية التبادل تحسب بمجرد ملامسة العصا ليد المتسلم، بصرف النظر عن موقع جسم العداء.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">عند أول لمسة للعصا من طرف العداء المستقبل</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تحدد القواعد أن بداية التبادل تحسب بمجرد ملامسة العصا ليد المتسلم، بصرف النظر عن موقع جسم العداء.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="موقع العداء وجسمه ليس هو المعيار المستخدَم لتحديد بداية ونهاية تبادل العصا بل حركة العصا نفسها.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">عندما تتجاوز قدم المتسلم خط بداية منطقة التسليم</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">موقع العداء وجسمه ليس هو المعيار المستخدَم لتحديد بداية ونهاية تبادل العصا بل حركة العصا نفسها.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="دخول العداء للمنطقة هو تمهيد إجرائي لكنه لا يمثل بداية عملية التسليم والتسلم الفعلية للعصا.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">عند دخول العداء المسلم لمنطقة التبادل</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">دخول العداء للمنطقة هو تمهيد إجرائي لكنه لا يمثل بداية عملية التسليم والتسلم الفعلية للعصا.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">سؤال 5</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما الإشارة الرسمية التي يرفعها الحكم للعلن عند السماح لعداء بالمشاركة تحت الاحتجاج (Competing under protest)؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في بطاقة ذات لونين مختلفين لإيضاح الحالة الاستثنائية للرياضي.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="البطاقة الخضراء تُرفع أمام جميع العدائين لإعلان أن الانطلاقة الخاطئة ناجمة عن أسباب خارجية ولا تخص عداءً بعينه.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">إشهار البطاقة الخضراء في وجه العداء بمفرده</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">البطاقة الخضراء تُرفع أمام جميع العدائين لإعلان أن الانطلاقة الخاطئة ناجمة عن أسباب خارجية ولا تخص عداءً بعينه.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="تُستخدم البطاقة المزدوجة (أبيض وأحمر) لتوضيح أن العداء يخوض السباق بصفة مؤقتة تحت الاحتجاج لحين البت فيه.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">رفع البطاقة المقسومة بين اللونين الأبيض والأحمر</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تُستخدم البطاقة المزدوجة (أبيض وأحمر) لتوضيح أن العداء يخوض السباق بصفة مؤقتة تحت الاحتجاج لحين البت فيه.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="البطاقة الحمراء تعني الاستبعاد المباشر، بينما المشاركة تحت الاحتجاج تهدف لاستمرار الرياضي مؤقتاً للحفاظ على حقوقه.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">إشهار البطاقة الحمراء مع كتابة رمز الإقصاء</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">البطاقة الحمراء تعني الاستبعاد المباشر، بينما المشاركة تحت الاحتجاج تهدف لاستمرار الرياضي مؤقتاً للحفاظ على حقوقه.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="تُستخدم البطاقة الصفراء للتحذير بسبب سلوك غير رياضي وليس لإتاحة المشاركة المؤقتة تحت الاحتجاج.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">رفع البطاقة الصفراء المباشرة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تُستخدم البطاقة الصفراء للتحذير بسبب سلوك غير رياضي وليس لإتاحة المشاركة المؤقتة تحت الاحتجاج.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">سؤال 6</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما موقف الرقم القياسي العالمي المكسور في الألعاب المركبة إذا جرت انطلاقة خاطئة أولى في السباق بواسطة عداء آخر وتم التعميم؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تذكر التمييز بين العداء المتسبب بالانطلاقة الخاطئة الأولى والعدائين الآخرين الذين تعمم عليهم الإنذار.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="القانون يمنع الاعتماد فقط إذا كان العداء هو نفسه صاحب الانطلاقة الخاطئة الأولى، أما إذا كانت من متسابق آخر فيحق له اعتماد رقمه.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">يتم المصادقة على الرقم القياسي إذا كانت انطلاقة العداء الثاني صحيحة وحطم الرقم</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">القانون يمنع الاعتماد فقط إذا كان العداء هو نفسه صاحب الانطلاقة الخاطئة الأولى، أما إذا كانت من متسابق آخر فيحق له اعتماد رقمه.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="اعتماد الرقم القياسي في هذه الحالة إجراء قانوني تلقائي ولا يتطلب تقديم احتجاج أو دفع مبالغ.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">يُعتمد الرقم فقط بشرط تقديم احتجاج كتابي ودفع الغرامة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">اعتماد الرقم القياسي في هذه الحالة إجراء قانوني تلقائي ولا يتطلب تقديم احتجاج أو دفع مبالغ.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="يرتبط المنع بالشخص الذي أحدث الخلل في الانطلاقة الأولى وليس بكل المشاركين الذين عُمم عليهم الإنذار.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">لا يتم المصادقة على الرقم مطلقاً لوجود بداية خاطئة بالسباق</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يرتبط المنع بالشخص الذي أحدث الخلل في الانطلاقة الأولى وليس بكل المشاركين الذين عُمم عليهم الإنذار.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="لا تلغى السباقات الصحيحة لمجرد وجود إنذار عام تم التعامل معه وفقاً للقواعد الرسمية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">تُلغى جميع نتائج السباق وتُعاد الدورة دون احتساب أرقام قياسية</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لا تلغى السباقات الصحيحة لمجرد وجود إنذار عام تم التعامل معه وفقاً للقواعد الرسمية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">سؤال 7</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما الإجراء التنبيهي الذي يتخذه القاضي عند بقاء <span class="math">15</span> ثانية على نهاية الوقت المسموح به للمحاولة في مسابقات الميدان؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">ابحث عن الراية ذات اللون التحذيري التقليدي المستخدَم في التوقيت.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="رفع الراية الصفراء في هذا التوقيت يُعد التنبيه البصري المحدد بقواعد اللعبة لإعلام المتنافس بقرب نفاد الوقت.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">يرفع الراية الصفراء وتبقى مرفوعة حتى نهاية الوقت أو أداء المحاولة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">رفع الراية الصفراء في هذا التوقيت يُعد التنبيه البصري المحدد بقواعد اللعبة لإعلام المتنافس بقرب نفاد الوقت.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="وسيلة التنبيه المعتمدة في اللوائح لإعادة التذكير بالوقت هي الراية الملونة وليست الإشارات الصوتية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">يطلق صافرة صوتية لإجبار الرياضي على القفز</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">وسيلة التنبيه المعتمدة في اللوائح لإعادة التذكير بالوقت هي الراية الملونة وليست الإشارات الصوتية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="تُستخدم الراية الحمراء للإعلان عن محاولة خاطئة أو انتهاء الوقت بالكامل وليس للتنبيه قبل انتشائه.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">يرفع الراية الحمراء لإلغاء المحاولة فوراً</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تُستخدم الراية الحمراء للإعلان عن محاولة خاطئة أو انتهاء الوقت بالكامل وليس للتنبيه قبل انتشائه.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="البطاقة الخضراء لا علاقة لها بتوقيت المحاولات الفردية في ميدان المسابقات.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">يرفع البطاقة الخضراء للمنافس</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">البطاقة الخضراء لا علاقة لها بتوقيت المحاولات الفردية في ميدان المسابقات.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">سؤال 8</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">كم يبلغ الوقت المسموح به لمنح متسابق أداء &quot;المحاولة الأولى له&quot; عند دخوله المنافسة لأول مرة في أي علو بالوثب العمودي؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تذكر التنبيه الخاص بالوقت الأدنى المخصص لأول محاولة يدخل بها الرياضي في جدول الارتفاعات.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="الوقت الممتد لثلاث دقائق يُخصص عادة للمحاولات المتعاقبة لمتسابق واحد متبقٍ بمفرده.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">ثلاث دقائق</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الوقت الممتد لثلاث دقائق يُخصص عادة للمحاولات المتعاقبة لمتسابق واحد متبقٍ بمفرده.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="هذا التوقيت غير مستخدم كزمن قياسي للمحاولة الأولى عند بداية دخول المنافسة.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">ثلاثون ثانية</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا التوقيت غير مستخدم كزمن قياسي للمحاولة الأولى عند بداية دخول المنافسة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="تُمنح الدقيقتان في حالات خاصة عندما يتبقى متسابقان أو ثلاثة وليس كقاعدة للمحاولة الأولى لدخول المسابقة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">دقيقتان</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تُمنح الدقيقتان في حالات خاصة عندما يتبقى متسابقان أو ثلاثة وليس كقاعدة للمحاولة الأولى لدخول المسابقة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="تنص اللائحة بوضوح على أن المحاولة الأولى كبداية للمتنافس داخل المسابقة تُمنح دقيقة واحدة بغض النظر عن الارتفاع.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">دقيقة واحدة فقط</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تنص اللائحة بوضوح على أن المحاولة الأولى كبداية للمتنافس داخل المسابقة تُمنح دقيقة واحدة بغض النظر عن الارتفاع.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">سؤال 9</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">في مسابقات المشي، ما السلطة الاستثنائية الممنوحة لرئيس القضاة في آخر <span class="math">100textm</span> من السباق؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">ركز على القرارات الحاسمة والسريعة المتخذة لمنع الفوز بطريقة غير قانونية قرب خط النهاية.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="البطاقات الحمراء الموجهة من القضاة تعتبر مسجلة ولا يتم إلغاؤها عند الوصول للمرحلة الأخيرة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">إلغاء جميع البطاقات الحمراء السابقة وإعطاء فرصة أخيره</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">البطاقات الحمراء الموجهة من القضاة تعتبر مسجلة ولا يتم إلغاؤها عند الوصول للمرحلة الأخيرة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="لا يجوز لرئيس القضاة تعطيل السباق الجماعي وإنما يتعامل مع المخالفات الفردية للرياضيين.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">إيقاف السباق بالكامل وإعادة فحص جميع المتنافسين</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لا يجوز لرئيس القضاة تعطيل السباق الجماعي وإنما يتعامل مع المخالفات الفردية للرياضيين.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="منطقة الجزاء لا تُستخدم في الأمتار الأخيرة بقرار مباشر بل يخضع الترتيب لإضافة الوقت أو الاستبعاد الصريح.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">تحويل الرياضي فوراً إلى منطقة الجزاء لمدة <span class="math">5</span> دقائق</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">منطقة الجزاء لا تُستخدم في الأمتار الأخيرة بقرار مباشر بل يخضع الترتيب لإضافة الوقت أو الاستبعاد الصريح.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="يملك رئيس القضاة الصلاحية المباشرة للاستبعاد في الجزء الأخير من السباق لحماية النزاهة إذا حدث خرق صريح لقاعدة المشي.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">استبعاد الرياضي مباشرة إذا فشل أسلوب تقدمه بوضوح دون الحاجة لبطاقات حمراء سابقة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يملك رئيس القضاة الصلاحية المباشرة للاستبعاد في الجزء الأخير من السباق لحماية النزاهة إذا حدث خرق صريح لقاعدة المشي.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">سؤال 10</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">إذا حصل العداء (أ) على بطاقة صفراء في مسابقة فردية، ثم شارك في سباق التتابع وحصل بنفسه على بطاقة صفراء ثانية، فما هو الإجراء القانوني المتبع؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في أثر تجميع الإنذارات الشخصية على منافسات الفرق.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="استبعاد العداء بالبطاقة الحمراء أثناء التتابع يؤدي تلقائياً لإقصاء الفريق كاملاً من ذلك السباق.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">يُستبعد العداء (أ) بمفرده ويُسمح للفريق باستبداله فوراً</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">استبعاد العداء بالبطاقة الحمراء أثناء التتابع يؤدي تلقائياً لإقصاء الفريق كاملاً من ذلك السباق.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="تتحول البطاقات الصفراء المتعددة لنفس الرياضي إلى إقصاء ولا تُعزل عند الانتقال للتتابع.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">تُفصل نتائج المسابقة الفردية ولا تؤثر البطاقة على سباق التتابع</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تتحول البطاقات الصفراء المتعددة لنفس الرياضي إلى إقصاء ولا تُعزل عند الانتقال للتتابع.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="تراكم البطاقات الصفراء للرياضي نفسه عبر المسابقات الفردية والتتابع يؤدي لإنذار أحمر يترتب عليه استبعاد الفريق في التتابع.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">تُجمع البطاقتان لتصبحا بطاقة حمراء ويُستبعد فريق التتابع</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تراكم البطاقات الصفراء للرياضي نفسه عبر المسابقات الفردية والتتابع يؤدي لإنذار أحمر يترتب عليه استبعاد الفريق في التتابع.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="تُسجل الإنذارات رسمياً ولا تُسحب البطاقات الأولى عند ارتكاب مخالفة ثانية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">تُسحب البطاقة الصفراء الأولى ويكتفى بإنذار شفوي</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تُسجل الإنذارات رسمياً ولا تُسحب البطاقات الأولى عند ارتكاب مخالفة ثانية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>اكتمل الاختبار!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">حاول مرة أخرى</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"ما هو الرمز الصحيح الذي يجب وضعه في النتائج عند استبعاد متسابق قبل بدء المنافسة بأمر من المندوب الطبي نظراً لظروفه الصحية؟","hint":"فكر في الرمز الذي يشير إلى أن الرياضي لم يبدأ المنافسة إطلاقاً.","options":[{"label":"A","text":"DNS","isCorrect":true,"rationale":"يعبر هذا الرمز عن عدم المشاركة، ويُطبق عندما يُمنع المتسابق من انطلاق المنافسة بقرار طبي قبل بدايتها."},{"label":"B","text":"DNF","isCorrect":false,"rationale":"يُستخدم هذا الرمز لإثبات عدم إنهاء السباق عندما يتم توقيف المتنافس أو انسحابه بعد بدء المنافسة وليس قبلها."},{"label":"C","text":"r","isCorrect":false,"rationale":"يُوضع هذا الرمز عادة عند امتناع أو انسحاب المتنافس عن استكمال بقية المحاولات أثناء جريان المسابقة."},{"label":"D","text":"DQ","isCorrect":false,"rationale":"يرمز هذا إلى الإقصاء الناتج عن مخالفة القواعد أو عدم الامتثال والسلوك غير الرياضي وليس للانسحاب الطبي الوقائي قبل البداية."}]},{"question":"من هو الحكم الذي يُعد الوحيد الذي لا توجد سلطة فوقه من قِبل الحكام الآخرين (بما في ذلك حكم الفيديو) وفقاً لللوائح المشروحة؟","hint":"تذكر المسؤول عن إعطاء إشارة البدء والسيطرة على خط البداية.","options":[{"label":"A","text":"حكم الميدان","isCorrect":false,"rationale":"يمكن لحكم الفيديو أو الحكم العام تعديل القرار المتخذ في مسابقات الميدان بناءً على الدلائل المصورة."},{"label":"B","text":"حكم الانطلاقة","isCorrect":true,"rationale":"تتمتع قرارات حكم الانطلاقة باستقلالية تامة ولا يتدخل حكم الفيديو أو غيره من الحكام في سلطته المباشرة."},{"label":"C","text":"حكم غرفة النداء","isCorrect":false,"rationale":"تنتهي سلطة حكم غرفة النداء بمجرد وصول العدائين إلى الملعب وتخضع قراراته للمراجعة والتعديل."},{"label":"D","text":"حكم المضمار","isCorrect":false,"rationale":"تخضع قرارات حكم المضمار لمراجعة حكم الفيديو الذي يمكنه اتخاذ قرار مغاير استناداً للقطات المصورة."}]},{"question":"كيف يتعامل القاضي مع المحاولة الثانية الموالية لمتسابق غاب عنها في مسابقات الميدان بسبب مشاركته المتزامنة في سباق آخر ولم يحضر قبل انقضاء الوقت؟","hint":"تذكر أن التسهيل بالامتناع يُعطى للمرة الأولى فقط عند الغياب، ثم يتغير الرمز في المرات اللاحقة.","options":[{"label":"A","text":"تسجيل محاولة فاشلة (x)","isCorrect":true,"rationale":"المحاولة الأولى التالية لغيابه تمنح رمزا خاصا بالمرور (Pass)، بينما المحاولات التالية التي ينقضي وقتها دون حضوره تسجل كمحاولة فاشلة."},{"label":"B","text":"وضع رمز الانسحاب النهائي (r)","isCorrect":false,"rationale":"لا يوضع رمز الانسحاب إلا إذا أعلن الرياضي ذلك أو انتهت المسابقة بالكامل دون حضوره وهو ممتنع."},{"label":"C","text":"إقصاء المتسابق فوراً ببطاقة حمراء","isCorrect":false,"rationale":"المشاركة المتزامنة مصرح بها بقوانين محددة ولا تؤدي للإقصاء المباشر لمجرد نفاد وقت المحاولة."},{"label":"D","text":"تسجيل محاولة ممتنعة (Pass)","isCorrect":false,"rationale":"يُمنح رمز الامتناع (Pass) فقط في المحاولة الأولى التي تلي الذهاب، أما في المحاولات التالية فيتغير التعامل مع انقضاء الوقت."}]},{"question":"متى تبدأ عملية تبادل العصا رسمياً بين العدائين في سباقات التتابع؟","hint":"ركز على التلامس الأول بين الأداة والرياضي الآخذ لها.","options":[{"label":"A","text":"عندما تستقر العصا بالكامل في يد المتسلم فقط","isCorrect":false,"rationale":"لحظة استقرار العصا بالكامل في يد المستقبل تمثل نقطة نهاية عملية التبادل وليس بدايتها."},{"label":"B","text":"عند أول لمسة للعصا من طرف العداء المستقبل","isCorrect":true,"rationale":"تحدد القواعد أن بداية التبادل تحسب بمجرد ملامسة العصا ليد المتسلم، بصرف النظر عن موقع جسم العداء."},{"label":"C","text":"عندما تتجاوز قدم المتسلم خط بداية منطقة التسليم","isCorrect":false,"rationale":"موقع العداء وجسمه ليس هو المعيار المستخدَم لتحديد بداية ونهاية تبادل العصا بل حركة العصا نفسها."},{"label":"D","text":"عند دخول العداء المسلم لمنطقة التبادل","isCorrect":false,"rationale":"دخول العداء للمنطقة هو تمهيد إجرائي لكنه لا يمثل بداية عملية التسليم والتسلم الفعلية للعصا."}]},{"question":"ما الإشارة الرسمية التي يرفعها الحكم للعلن عند السماح لعداء بالمشاركة تحت الاحتجاج (Competing under protest)؟","hint":"فكر في بطاقة ذات لونين مختلفين لإيضاح الحالة الاستثنائية للرياضي.","options":[{"label":"A","text":"إشهار البطاقة الخضراء في وجه العداء بمفرده","isCorrect":false,"rationale":"البطاقة الخضراء تُرفع أمام جميع العدائين لإعلان أن الانطلاقة الخاطئة ناجمة عن أسباب خارجية ولا تخص عداءً بعينه."},{"label":"B","text":"رفع البطاقة المقسومة بين اللونين الأبيض والأحمر","isCorrect":true,"rationale":"تُستخدم البطاقة المزدوجة (أبيض وأحمر) لتوضيح أن العداء يخوض السباق بصفة مؤقتة تحت الاحتجاج لحين البت فيه."},{"label":"C","text":"إشهار البطاقة الحمراء مع كتابة رمز الإقصاء","isCorrect":false,"rationale":"البطاقة الحمراء تعني الاستبعاد المباشر، بينما المشاركة تحت الاحتجاج تهدف لاستمرار الرياضي مؤقتاً للحفاظ على حقوقه."},{"label":"D","text":"رفع البطاقة الصفراء المباشرة","isCorrect":false,"rationale":"تُستخدم البطاقة الصفراء للتحذير بسبب سلوك غير رياضي وليس لإتاحة المشاركة المؤقتة تحت الاحتجاج."}]},{"question":"ما موقف الرقم القياسي العالمي المكسور في الألعاب المركبة إذا جرت انطلاقة خاطئة أولى في السباق بواسطة عداء آخر وتم التعميم؟","hint":"تذكر التمييز بين العداء المتسبب بالانطلاقة الخاطئة الأولى والعدائين الآخرين الذين تعمم عليهم الإنذار.","options":[{"label":"A","text":"يتم المصادقة على الرقم القياسي إذا كانت انطلاقة العداء الثاني صحيحة وحطم الرقم","isCorrect":true,"rationale":"القانون يمنع الاعتماد فقط إذا كان العداء هو نفسه صاحب الانطلاقة الخاطئة الأولى، أما إذا كانت من متسابق آخر فيحق له اعتماد رقمه."},{"label":"B","text":"يُعتمد الرقم فقط بشرط تقديم احتجاج كتابي ودفع الغرامة","isCorrect":false,"rationale":"اعتماد الرقم القياسي في هذه الحالة إجراء قانوني تلقائي ولا يتطلب تقديم احتجاج أو دفع مبالغ."},{"label":"C","text":"لا يتم المصادقة على الرقم مطلقاً لوجود بداية خاطئة بالسباق","isCorrect":false,"rationale":"يرتبط المنع بالشخص الذي أحدث الخلل في الانطلاقة الأولى وليس بكل المشاركين الذين عُمم عليهم الإنذار."},{"label":"D","text":"تُلغى جميع نتائج السباق وتُعاد الدورة دون احتساب أرقام قياسية","isCorrect":false,"rationale":"لا تلغى السباقات الصحيحة لمجرد وجود إنذار عام تم التعامل معه وفقاً للقواعد الرسمية."}]},{"question":"ما الإجراء التنبيهي الذي يتخذه القاضي عند بقاء $15$ ثانية على نهاية الوقت المسموح به للمحاولة في مسابقات الميدان؟","hint":"ابحث عن الراية ذات اللون التحذيري التقليدي المستخدَم في التوقيت.","options":[{"label":"A","text":"يرفع الراية الصفراء وتبقى مرفوعة حتى نهاية الوقت أو أداء المحاولة","isCorrect":true,"rationale":"رفع الراية الصفراء في هذا التوقيت يُعد التنبيه البصري المحدد بقواعد اللعبة لإعلام المتنافس بقرب نفاد الوقت."},{"label":"B","text":"يطلق صافرة صوتية لإجبار الرياضي على القفز","isCorrect":false,"rationale":"وسيلة التنبيه المعتمدة في اللوائح لإعادة التذكير بالوقت هي الراية الملونة وليست الإشارات الصوتية."},{"label":"C","text":"يرفع الراية الحمراء لإلغاء المحاولة فوراً","isCorrect":false,"rationale":"تُستخدم الراية الحمراء للإعلان عن محاولة خاطئة أو انتهاء الوقت بالكامل وليس للتنبيه قبل انتشائه."},{"label":"D","text":"يرفع البطاقة الخضراء للمنافس","isCorrect":false,"rationale":"البطاقة الخضراء لا علاقة لها بتوقيت المحاولات الفردية في ميدان المسابقات."}]},{"question":"كم يبلغ الوقت المسموح به لمنح متسابق أداء \"المحاولة الأولى له\" عند دخوله المنافسة لأول مرة في أي علو بالوثب العمودي؟","hint":"تذكر التنبيه الخاص بالوقت الأدنى المخصص لأول محاولة يدخل بها الرياضي في جدول الارتفاعات.","options":[{"label":"A","text":"ثلاث دقائق","isCorrect":false,"rationale":"الوقت الممتد لثلاث دقائق يُخصص عادة للمحاولات المتعاقبة لمتسابق واحد متبقٍ بمفرده."},{"label":"B","text":"ثلاثون ثانية","isCorrect":false,"rationale":"هذا التوقيت غير مستخدم كزمن قياسي للمحاولة الأولى عند بداية دخول المنافسة."},{"label":"C","text":"دقيقتان","isCorrect":false,"rationale":"تُمنح الدقيقتان في حالات خاصة عندما يتبقى متسابقان أو ثلاثة وليس كقاعدة للمحاولة الأولى لدخول المسابقة."},{"label":"D","text":"دقيقة واحدة فقط","isCorrect":true,"rationale":"تنص اللائحة بوضوح على أن المحاولة الأولى كبداية للمتنافس داخل المسابقة تُمنح دقيقة واحدة بغض النظر عن الارتفاع."}]},{"question":"في مسابقات المشي، ما السلطة الاستثنائية الممنوحة لرئيس القضاة في آخر $100\\text{m}$ من السباق؟","hint":"ركز على القرارات الحاسمة والسريعة المتخذة لمنع الفوز بطريقة غير قانونية قرب خط النهاية.","options":[{"label":"A","text":"إلغاء جميع البطاقات الحمراء السابقة وإعطاء فرصة أخيره","isCorrect":false,"rationale":"البطاقات الحمراء الموجهة من القضاة تعتبر مسجلة ولا يتم إلغاؤها عند الوصول للمرحلة الأخيرة."},{"label":"B","text":"إيقاف السباق بالكامل وإعادة فحص جميع المتنافسين","isCorrect":false,"rationale":"لا يجوز لرئيس القضاة تعطيل السباق الجماعي وإنما يتعامل مع المخالفات الفردية للرياضيين."},{"label":"C","text":"تحويل الرياضي فوراً إلى منطقة الجزاء لمدة $5$ دقائق","isCorrect":false,"rationale":"منطقة الجزاء لا تُستخدم في الأمتار الأخيرة بقرار مباشر بل يخضع الترتيب لإضافة الوقت أو الاستبعاد الصريح."},{"label":"D","text":"استبعاد الرياضي مباشرة إذا فشل أسلوب تقدمه بوضوح دون الحاجة لبطاقات حمراء سابقة","isCorrect":true,"rationale":"يملك رئيس القضاة الصلاحية المباشرة للاستبعاد في الجزء الأخير من السباق لحماية النزاهة إذا حدث خرق صريح لقاعدة المشي."}]},{"question":"إذا حصل العداء (أ) على بطاقة صفراء في مسابقة فردية، ثم شارك في سباق التتابع وحصل بنفسه على بطاقة صفراء ثانية، فما هو الإجراء القانوني المتبع؟","hint":"فكر في أثر تجميع الإنذارات الشخصية على منافسات الفرق.","options":[{"label":"A","text":"يُستبعد العداء (أ) بمفرده ويُسمح للفريق باستبداله فوراً","isCorrect":false,"rationale":"استبعاد العداء بالبطاقة الحمراء أثناء التتابع يؤدي تلقائياً لإقصاء الفريق كاملاً من ذلك السباق."},{"label":"B","text":"تُفصل نتائج المسابقة الفردية ولا تؤثر البطاقة على سباق التتابع","isCorrect":false,"rationale":"تتحول البطاقات الصفراء المتعددة لنفس الرياضي إلى إقصاء ولا تُعزل عند الانتقال للتتابع."},{"label":"C","text":"تُجمع البطاقتان لتصبحا بطاقة حمراء ويُستبعد فريق التتابع","isCorrect":true,"rationale":"تراكم البطاقات الصفراء للرياضي نفسه عبر المسابقات الفردية والتتابع يؤدي لإنذار أحمر يترتب عليه استبعاد الفريق في التتابع."},{"label":"D","text":"تُسحب البطاقة الصفراء الأولى ويكتفى بإنذار شفوي","isCorrect":false,"rationale":"تُسجل الإنذارات رسمياً ولا تُسحب البطاقات الأولى عند ارتكاب مخالفة ثانية."}]}];
+const tr = {"correct":"صحيح!","incorrect":"خطأ","next":"السؤال التالي ←","seeResults":"عرض النتائج","complete":"اكتمل الاختبار!","scoreText":"أجبت {correct} من {total} بشكل صحيح","tryAgain":"حاول مرة أخرى","rightAnswer":"إجابة صحيحة","notQuite":"ليس تماماً"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
