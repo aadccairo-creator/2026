@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>50 بطاقة تفاعلية - استراتيجيات تسويق ألعاب القوى</title>
+  <style>
+    :root {
+      --primary: #1e3c72;
+      --secondary: #2a5298;
+      --accent: #ff7e5f;
+      --bg-color: #f4f7f9;
+      --text-color: #2c3e50;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 20px;
+      direction: rtl;
+    }
+
+    .flashcards-app {
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .header-title {
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .controls-panel {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover, .btn.active {
+      background: var(--accent);
+    }
+
+    .card-wrapper {
+      perspective: 1000px;
+      width: 100%;
+      height: 280px;
+      margin: 0 auto 20px;
+    }
+
+    .flashcard {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s ease-in-out;
+      cursor: pointer;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .flashcard.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      padding: 25px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card-front {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+    }
+
+    .card-front h3 {
+      font-size: 1.25rem;
+      line-height: 1.6;
+      margin: 0 0 15px 0;
+    }
+
+    .card-category {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: rgba(255,255,255,0.2);
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+
+    .hint-text {
+      font-size: 0.85rem;
+      opacity: 0.85;
+      margin-top: 10px;
+    }
+
+    .card-back {
+      background: white;
+      color: var(--text-color);
+      transform: rotateY(180deg);
+      border: 2px solid var(--secondary);
+    }
+
+    .card-back p {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .navigation-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+    .counter {
+      font-weight: bold;
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+<div class="flashcards-app">
+  <h2 class="header-title">🏃‍♂️ 50 بطاقة تفاعلية: استراتيجيات تسويق ألعاب القوى</h2>
+
+  <!-- أزرار التصنيف -->
+  <div class="controls-panel" id="categoryFilter">
+    <button class="btn active" onclick="filterCards('all')">الكل (50)</button>
+    <button class="btn" onclick="filterCards('تحديات')">التحديات</button>
+    <button class="btn" onclick="filterCards('استراتيجية')">الاستراتيجية</button>
+    <button class="btn" onclick="filterCards('رعاية')">الشراكات والرعاية</button>
+    <button class="btn" onclick="filterCards('أصول')">الأصول والتسعير</button>
+    <button class="btn" onclick="filterCards('تكنولوجيا')">CRM والتكنولوجيا</button>
+  </div>
+
+  <!-- البطاقة التفاعلية -->
+  <div class="card-wrapper">
+    <div class="flashcard" id="cardElement" onclick="flipCard()">
+      <div class="card-face card-front">
+        <span class="card-category" id="cardCat">تصنيف</span>
+        <h3 id="cardQuestion">السؤال يظهر هنا...</h3>
+        <span class="hint-text">💡 اضغط على البطاقة لقلبها واكتشاف الإجابة</span>
+      </div>
+      <div class="card-face card-back">
+        <p id="cardAnswer">الإجابة تظهر هنا...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- شريط التنقل -->
+  <div class="navigation-bar">
+    <button class="btn" onclick="prevCard()">⬅️ البطاقة السابقة</button>
+    <span class="counter" id="cardCounter">بطاقة 1 من 50</span>
+    <button class="btn" onclick="nextCard()">البطاقة التالية ➡️</button>
+  </div>
+</div>
+
+<script>
+  const cardsData = [
+    // التحديات (1-8)
+    { q: "ما التحدي الإعلامي الأبرز الذي يعاني منه ألعاب القوى؟", a: "ضعف التغطية الإعلامية للبطولات المحلية مقارنة بالرياضات الجماعية.", cat: "تحديات" },
+    { q: "لماذا ترفض بعض الشركات رعاية بطولات الاتحادات الوطنية؟", a: "غياب المقترحات التسويقية الاحترافية والمحددة التكاليف والحقوق.", cat: "تحديات" },
+    { q: "ما هي صعوبة قياس العائد الاستثماري (ROI) لدى الاتحادات؟", a: "عدم توفير بيانات كمية محددة عن أعداد الجماهير والمشاهدات المباشرة.", cat: "تحديات" },
+    { q: "ما هي المشكلة الإدارية الهيكلية في تسويق الاتحادات؟", a: "نقص الكوادر التسويقية المتخصصة والاعتماد على الاجتهادات الفردية.", cat: "تحديات" },
+    { q: "كيف يؤثر الاعتماد الكلي على الدعم الحكومي سلباً؟", a: "يجعل الاتحادات عرضة لتقلبات الميزانيات ويحد من ابتغاء شراكات استثمارية مستدامة.", cat: "تحديات" },
+    { q: "ما العائق الأساسي في جذب المشجعين الشباب؟", a: "تقديم البطولات بأسلوب تقليدي بطيء لا يتناسب مع سرعة المنصات الحديثة.", cat: "تحديات" },
+    { q: "لماذا تفشل بعض الشراكات فور انتهاء البطولة؟", a: "لعدم وجود خطة تفعيل الميداني وتتبع نتائج الرعاية بعد الحدث.", cat: "تحديات" },
+    { q: "ما سبب ضعف الثقة بين الاتحادات والقطاع الخاص؟", a: "غياب الشفافية وتقارير الإنجاز الدورية الموجهة للشركاء.", cat: "تحديات" },
+
+    // الاستراتيجية (9-17)
+    { q: "ما هي الرؤية الثلاثية للاتحاد الدولي لألعاب القوى (2024-2027)؟", a: "النمو (Grow)، الإلهام (Inspire)، والقيادة (Lead).", cat: "استراتيجية" },
+    { q: "ماذا يقصد بركيزة 'النمو' في استراتيجية الاتحاد الدولي؟", a: "توسيع قاعدة المشاركة والرقمنة والجماهيرية في مختلف الفئات.", cat: "استراتيجية" },
+    { q: "ماذا تستهدف ركيزة 'الإلهام'؟", a: "تنظيم بطولات عالية الجودة وتقديم نجوم القوى كقدوة محفزة للمجتمع.", cat: "استراتيجية" },
+    { q: "كيف تتحقق ركيزة 'القيادة والحوكمة'؟", a: "من خلال الشفافية، إتاحة البيانات، وتطبيق معايير نزيهة ومستدامة.", cat: "استراتيجية" },
+    { q: "ما هي الفئات المستهدفة لزيادة المشاركة؟", a: "الأطفال، الفتيات، المدارس، وفئة الرواد (Masters).", cat: "استراتيجية" },
+    { q: "ما الهدف من بناء القدرات البشرية داخل الاتحاد؟", a: "تأهيل الكوادر عبر برامج تدريبية وشراكات أكاديمية مستمرة.", cat: "استراتيجية" },
+    { q: "كيف يمكن تنويع الشراكات التجارية؟", a: "بالدخول في شراكات مع قطاعات التكنولوجيا، الصحة، والأغذية.", cat: "استراتيجية" },
+    { q: "ما دور المسؤولية المجتمعية والبيئية في الاستراتيجية؟", a: "تعزيز الاستدامة، المساواة بين الجنسين، ودعم الصحة العامة.", cat: "استراتيجية" },
+    { q: "كيف تستهدف الاستراتيجية جيل Gen Z و Gen Alpha؟", a: "بصناعة محتوى تفاعلي قصير وسريع عبر شبكات التواصل الاجتماعي.", cat: "استراتيجية" },
+
+    // الشراكات والرعاية (18-26)
+    { q: "ما الفرق بين التبرع والشراكة الاستراتيجية؟", a: "التبرع دعم مؤقت، بينما الشراكة علاقة تبادلية تحقق منافع تجارية متبادلة.", cat: "رعاية" },
+    { q: "ما هي حزمة الحقوق التسويقية (Sponsorship Package)؟", a: "مجموعة المنافع التجارية المحددة التي يحصل عليها الراعي مقابل تمويله.", cat: "رعاية" },
+    { q: "متى يجب البدء في تسويق الفعالية الرياضية؟", a: "قبل انطلاق البطولة بـ 6 أشهر على الأقل لضمان التخطيط والتفعيل.", cat: "رعاية" },
+    { q: "ما هو تفعيل الرعاية (Sponsorship Activation)؟", a: "الأنشطة والتجارب الميدانية والرقمية التي تجعل الراعي متصلاً بالجمهور.", cat: "رعاية" },
+    { q: "ما أهمية تقرير ما بعد الفعالية (Post-Event Report)؟", a: "إثبات قيمة الرعاية بالأرقام وتقديم الشكر لضمان تجديد العقد.", cat: "رعاية" },
+    { q: "كيف نحدد العائد على الاستثمار (ROI) للراعي؟", a: "بقياس نسبة التعرض الإعلامي، أعداد الزوار، وتفاعل الجمهور الرقمي.", cat: "رعاية" },
+    { q: "ما هو الراعي الرئيسي (Title Sponsor)؟", a: "الشركة التي تمتلك حقوق اقتران اسم علامتها التجارية باسم البطولة.", cat: "رعاية" },
+    { q: "ما دور الشراكات الأكاديمية والجامعية؟", a: "توفير متطوعين ودراسات تسويقية ومشاريع تطويرية بأقل التكاليف.", cat: "رعاية" },
+    { q: "كيف نبني علاقة طويلة الأجل مع الشركاء؟", a: "بالتواصل المستمر خارج أوقات البطولات وتحقيق أهدافهم الخاصة.", cat: "رعاية" },
+
+    // الأصول والتسعير (27-35)
+    { q: "ماذا يقصد بأصول الاتحاد القابلة للتسويق (Commercial Assets)؟", a: "كل ما يملكه الاتحاد من بطولات، حقوق بث، منصات رقمية، ولاعبين.", cat: "أصول" },
+    { q: "ما هي حقوق التسمية (Naming Rights)؟", a: "بيع حق تسمية الملعب، البطولة، أو الجائزة باسم الشركة الراعية.", cat: "أصول" },
+    { q: "كيف يتم التسعير المعتمد على القيمة (Value-based Pricing)؟", a: "تسعير الحقوق وفق حجم الجمهور والتأثير التجاري للراعي، لا التكلفة فقط.", cat: "أصول" },
+    { q: "ما أهمية حقوق البث الرقمي (Digital Broadcast Rights)؟", a: "فتح مصادر دخل جديدة عبر البث المباشر والمنصات المدفوعة.", cat: "أصول" },
+    { q: "كيف تشكل البطولات المدرسية أصلاً تسويقياً؟", a: "لأنها تجذب العائلات والناشئين مما يستهوي شركات المنتجات الاستهلاكية.", cat: "أصول" },
+    { q: "ما دور النجوم واللاعبين في التسعير التسويقي؟", a: "قصصهم وجاذبيتهم ترفع من قيمة الحملات الإعلانية المرافقة للبطولة.", cat: "أصول" },
+    { q: "ما هي الإعلانات الميدانية (In-venue Branding)؟", a: "LOD واللافتات حول المضمار وخلفيات المؤتمرات الصحفية.", cat: "أصول" },
+    { q: "كيف تسهم بطولات الرواد (Masters) في التسويق؟", a: "تجذب فئات ذات قدرة شرائية عالية تهتم بالصحة واللياقة.", cat: "أصول" },
+    { q: "ما المبدأ الأساسي في صياغة الملف التسويقي (Sponsorship Proposal)؟", a: "التركيز على حل مشكلات الراعي وتحقيق أهدافه وليس احتياجات الاتحاد المالية فقط.", cat: "أصول" },
+
+    // CRM والتكنولوجيا والابتكار (36-50)
+    { q: "ما هو نظام CRM في الاتحادات الرياضية؟", a: "نظام إدارة علاقات المشجعين لجمع البيانات وتصنيف الجماهير والتواصل معهم.", cat: "تكنولوجيا" },
+    { q: "كيف يساعد الذكاء الاصطناعي في تسويق ألعاب القوى؟", a: "في تحليل سلوك الجماهير، إنشاء المحتوى، وصياغة مقترحات تسويقية مخصصة.", cat: "تكنولوجيا" },
+    { q: "ما هي سباقات RanX أو التريدميل المبتكرة؟", a: "سباقات ألعاب قوى داخلية مبتكرة تجمع بين التكنولوجيا والمنافسة الحية.", cat: "تكنولوجيا" },
+    { q: "كيف نستغل فترات الاستراحة في الرياضات الأخرى لتسويق القوى؟", a: "تقديم عروض استعراضية لألعاب القوى بين شوطي المباريات الكبرى.", cat: "تكنولوجيا" },
+    { q: "ما هي الفعاليات الترويجية الخارجية (Out-of-stadium Events)؟", a: "تنظيم منافسات قفز بالزانة أو رمي الجلة في المراكز التجارية والساحات العامة.", cat: "تكنولوجيا" },
+    { q: "كيف يدعم السرد القصصي (Storytelling) رياضة ألعاب القوى؟", a: "توثيق كواليس تدريب أبطال ألعاب القوى وصعوباتهم لإيجاد ارتباط عاطفي.", cat: "تكنولوجيا" },
+    { q: "ما فائدة التطبيقات الإلكترونية الخاصة بالاتحادات؟", a: "عرض نتائج البطولات المباشرة، بيع التذاكر، وتفعيل حقوق الرعاة رقمياً.", cat: "تكنولوجيا" },
+    { q: "كيف نستفيد من صانعي المحتوى (Influencers)؟", a: "دعوتهم للبطولات لنقل حماس ألعاب القوى لفئات جماهيرية جديدة.", cat: "تكنولوجيا" },
+    { q: "ما دور الاستدامة البيئية في جذب الرعاة الجدد؟", a: "الشركات الكبرى تفضل تنظيم 'بطولات خضراء' خالية من البلاستيك.", cat: "تكنولوجيا" },
+    { q: "كيف نزيد تفاعل الجمهور أثناء البطولة؟", a: "عبر الشاشات التفاعلية، مسابقات الجمهور، والتصويت المباشر.", cat: "تكنولوجيا" },
+    { q: "ما أهمية الاستثمار في العروض الضوئية والموسيقى؟", a: "تحويل بطولة ألعاب القوى من مجرد منافسة رياضية إلى مهرجان ترفيهي.", cat: "تكنولوجيا" },
+    { q: "كيف تحافظ الاتحادات على المشجع بعد نهاية الموسم؟", a: "بالتواصل البريدي الرقمي والمحتوى الحصري والمكافآت التشجيعية.", cat: "تكنولوجيا" },
+    { q: "ما الخطوة الأولى لبناء خطة تسويقية ناجحة للاتحاد؟", a: "تشخيص الوضع الحالي (SWOT) وتحديد الأصول والجمهور المستهدف بدقة.", cat: "تكنولوجيا" },
+    { q: "ما المعيار الأساسي لنجاح التسويق الرياضي الحديث؟", a: "التحول الكامل نحو تحسين تجربة المشجع والجمع بين الأثر الرياضي والتجاري.", cat: "تكنولوجيا" },
+    { q: "كيف يساهم برنامج 'ألعاب القوى للأطفال' في المستقبل التسويقي؟", a: "يبني قاعدة جماهيرية ولاعبين ورعاة مهتمين بالصحة المدرسية مبكراً.", cat: "تكنولوجيا" }
+  ];
+
+  let currentFilteredCards = [...cardsData];
+  let currentIndex = 0;
+
+  function updateCard() {
+    const card = currentFilteredCards[currentIndex];
+    document.getElementById('cardQuestion').innerText = card.q;
+    document.getElementById('cardAnswer').innerText = card.a;
+    document.getElementById('cardCat').innerText = card.cat;
+    document.getElementById('cardCounter').innerText = `بطاقة ${currentIndex + 1} من ${currentFilteredCards.length}`;
+    document.getElementById('cardElement').classList.remove('flipped');
+  }
+
+  function flipCard() {
+    document.getElementById('cardElement').classList.toggle('flipped');
+  }
+
+  function nextCard() {
+    if (currentIndex < currentFilteredCards.length - 1) {
+      currentIndex++;
+      updateCard();
+    }
+  }
+
+  function prevCard() {
+    if (currentIndex > 0) {
+      currentIndex--;
+      updateCard();
+    }
+  }
+
+  function filterCards(category) {
+    // تحديث شكل الأزرار
+    const buttons = document.querySelectorAll('#categoryFilter .btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    if (category === 'all') {
+      currentFilteredCards = [...cardsData];
+    } else {
+      currentFilteredCards = cardsData.filter(card => card.cat === category);
+    }
+    currentIndex = 0;
+    updateCard();
+  }
+
+  // تهيئة البطاقات عند التحميل
+  updateCard();
+</script>
+
+</body>
+</html>

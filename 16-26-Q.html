@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ألعاب القوى اختبار</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>ألعاب القوى اختبار</h1>
+    <div class="meta">10 أسئلة</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">سؤال 1</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما هي الفترة الزمنية المحددة للخطط الاستراتيجية الجديدة للاتحاد الدولي لألعاب القوى المذكورة في المحاضرة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">فكر في فترة الأربع سنوات التي تبدأ من العام الحالي المذكور في خطة النمو.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="يمثل عام 2030 خطة طويلة المدى لبطولات الماراثون المستقلة وليس مدا الاستراتيجية الشاملة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">2025 إلى 2030</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يمثل عام 2030 خطة طويلة المدى لبطولات الماراثون المستقلة وليس مدا الاستراتيجية الشاملة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="تستند هذه الاستراتيجية المحدثة إلى النجاحات المنجزة حتى عام 2023 وتمتد لتغطي الدورة حتى عام 2027.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">2024 إلى 2027</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تستند هذه الاستراتيجية المحدثة إلى النجاحات المنجزة حتى عام 2023 وتمتد لتغطي الدورة حتى عام 2027.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="ورغم أن العام 2023 شهد تقييم الخطوات السابقة، إلا أن الإطار المستهدف ينتهي في عام 2027.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">2023 إلى 2028</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">ورغم أن العام 2023 شهد تقييم الخطوات السابقة، إلا أن الإطار المستهدف ينتهي في عام 2027.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="هذه الفترة الزمنية ترتبط بدورات أولمبية سابقة ولا تمثل المدى الزمني للاستراتيجية المعتمدة حالياً.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">2020 إلى 2025</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذه الفترة الزمنية ترتبط بدورات أولمبية سابقة ولا تمثل المدى الزمني للاستراتيجية المعتمدة حالياً.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">سؤال 2</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما هي الأركان الثلاثة التي تشكل رؤية الاتحاد الدولي لألعاب القوى؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تتضمن الرؤية مصطلحات بالإنجليزية هي (Grow, Inspire, Lead).</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="تركز هذه المفاهيم على الجانب التسويقي والإعلامي بشكل خاص بينما تعبر الرؤية عن أهداف شاملة للرياضة.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">التوسع، الإعلام، الرعاية</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تركز هذه المفاهيم على الجانب التسويقي والإعلامي بشكل خاص بينما تعبر الرؤية عن أهداف شاملة للرياضة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="تعد هذه عناصر تنفيذية في الرياضة وليست العناوين الرئيسة الثلاثة لرؤية الاتحاد الدولي.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">المنافسة، الاحتراف، التسويق</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تعد هذه عناصر تنفيذية في الرياضة وليست العناوين الرئيسة الثلاثة لرؤية الاتحاد الدولي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="تُمثل هذه النقاط أدوات لتمكين المؤسسات الرياضية ولكنها لا تعبر عن المحاور الثلاثة للرؤية.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">التدريب، الحوكمة، الاستثمار</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تُمثل هذه النقاط أدوات لتمكين المؤسسات الرياضية ولكنها لا تعبر عن المحاور الثلاثة للرؤية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="تعتمد الرؤية على زيادة الممارسة (النمو)، وتنظيم بطولات ملهمة (الإلهام)، والعمل وفق قواعد الحوكمة والشفافية (القيادة).">
+            <span class="opt-label">D</span>
+            <span class="opt-text">النمو، الإلهام، القيادة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تعتمد الرؤية على زيادة الممارسة (النمو)، وتنظيم بطولات ملهمة (الإلهام)، والعمل وفق قواعد الحوكمة والشفافية (القيادة).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">سؤال 3</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">بحسب المحاضرة، ما هي الفئة العمرية التي تم تحديدها ضمن القوى الخارجية التي ينبغي استخدام أساليب مبتكرة لجذبها نحو الرياضة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تغطي هذه الفئة العمرية المتابعين من سن المراهقة وحتى أواخر الثلاثينيات.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="تعد هذه الفئة مستهدفة في برامج أطفال المدارس وليست الفئة المحددة ضمن دراسة الجيل الزيد والألفا.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">من 5 إلى 12 سنة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تعد هذه الفئة مستهدفة في برامج أطفال المدارس وليست الفئة المحددة ضمن دراسة الجيل الزيد والألفا.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="تُمثل هذه الفئة الجيلين (Gen Z و Gen Alpha) الذين يفضلون المحتوى الرقمي التفاعلي والمنبثق بدلاً من المتابعة التقليدية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">من 13 إلى 37 سنة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تُمثل هذه الفئة الجيلين (Gen Z و Gen Alpha) الذين يفضلون المحتوى الرقمي التفاعلي والمنبثق بدلاً من المتابعة التقليدية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="تندرج هذه الفئة غالباً ضمن فئة الرواد أو المتابعين التقليديين ذوي أنماط المشاهدة الثابتة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">من 40 إلى 60 سنة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تندرج هذه الفئة غالباً ضمن فئة الرواد أو المتابعين التقليديين ذوي أنماط المشاهدة الثابتة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="هذا النطاق ضيق جداً ولا يستوعب الشريحة الكاملة للجيل المستهدف الممتد عبر جيلين.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">من 18 إلى 25 سنة فقط</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا النطاق ضيق جداً ولا يستوعب الشريحة الكاملة للجيل المستهدف الممتد عبر جيلين.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">سؤال 4</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما هي الفعالية الرياضية المبتكرة التي يُزمع تنظيمها بالتعاون مع شركة &quot;تكنوجيم&quot; (Technogym) لتعزيز رياضة ألعاب القوى؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تعتمد الفعالية على أجهزة اللياقة البدنية المتوفرة في الصالات الرياضية المغلقة.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="هذا النوع من السباقات قائم بالفعل كسباقات طرق وليس بالتعاون التكنولوجي مع شركات معدات الصالات الرياضية.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">بطولة الماراثون في الطرق الوعرة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذا النوع من السباقات قائم بالفعل كسباقات طرق وليس بالتعاون التكنولوجي مع شركات معدات الصالات الرياضية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="تستهدف هذه المسابقة دخول الأندية الصحية (الجيمات) واستغلال شغف ممارسي الرياضة البدنية بتنظيم بطولة على التريد ميل.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">مسابقة ران إكس (Run X) على أجهزة السير المتحرك</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تستهدف هذه المسابقة دخول الأندية الصحية (الجيمات) واستغلال شغف ممارسي الرياضة البدنية بتنظيم بطولة على التريد ميل.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="تعتبر هذه فكرة لتطوير استغلال الأماكن العامة ولكنها لا ترتبط بشركة المعدات الرياضية المذكورة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">دوري القفز بالزانة في الميادين المفتوحة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تعتبر هذه فكرة لتطوير استغلال الأماكن العامة ولكنها لا ترتبط بشركة المعدات الرياضية المذكورة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="رغم وجود مسابقات افتراضية، إلا أن البطولة المحددة في الخطوة الاستراتيجية هي مسابقة جري داخل الأندية الصحية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">سباق التتابع الافتراضي للرواد</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">رغم وجود مسابقات افتراضية، إلا أن البطولة المحددة في الخطوة الاستراتيجية هي مسابقة جري داخل الأندية الصحية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">سؤال 5</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما النسبة المئوية من عوائد الاتحاد الدولي لألعاب القوى التي يتم إعادة إعادة توجيهها للرياضيين والبطولات والاتحادات الوطنية؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تتجاوز هذه النسبة ثلاثة أرباع إجمالي الدخل المالي للاتحاد.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="يخصص الاتحاد الدولي غالبية مداخيله لدعم النشاط الرياضي وحماية النزاهة وتطوير الاتحادات الأعضاء.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">80%</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يخصص الاتحاد الدولي غالبية مداخيله لدعم النشاط الرياضي وحماية النزاهة وتطوير الاتحادات الأعضاء.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="لا تُنفق غالبية الميزانية على المصاريف الإدارية كما تحي هذه النسبة المتدنية.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">30%</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لا تُنفق غالبية الميزانية على المصاريف الإدارية كما تحي هذه النسبة المتدنية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="يحتاج الاتحاد احتجاز جزء من الميزانية للتكاليف التشغيلية والتسويقية والتطويرية المؤسسية.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">100%</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يحتاج الاتحاد احتجاز جزء من الميزانية للتكاليف التشغيلية والتسويقية والتطويرية المؤسسية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="هذه النسبة أقل بكثير مما يخصصه الاتحاد الدولي لإعادة الاستثمار في اللعبة وأبطالها.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">50%</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذه النسبة أقل بكثير مما يخصصه الاتحاد الدولي لإعادة الاستثمار في اللعبة وأبطالها.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">سؤال 6</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">في قصة النجاح الخاصة ببطولة العالم للتتابع في بوتسوانا، ما هو مجال نشاط الراعي الاسمِي (Title Sponsor) الذي دعم البطولة؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">ترتبط هذه الشركة بأحد أغلى الأحجار الكريمة المستخرجة في بوتسوانا.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="قطاع السيارات لم يكن الشريك التجاري المحلي الذي قدم الرعاية الرئيسية للحدث.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">صناعة السيارات والملحقات</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">قطاع السيارات لم يكن الشريك التجاري المحلي الذي قدم الرعاية الرئيسية للحدث.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="لم تكن شركة المشروبات هي الراعي الأساسي المستهدف في حالة خبيرون بـ بوتسوانا.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">المشروبات والأغذية الرياضية</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لم تكن شركة المشروبات هي الراعي الأساسي المستهدف في حالة خبيرون بـ بوتسوانا.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="شاركت شركة &quot;ديبسوانا&quot; المتخصصة في أبحاث وتعدين الماس كراعي رسمي وحامل لاسم البطولة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">تعدين واستخراج الماس</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">شاركت شركة &quot;ديبسوانا&quot; المتخصصة في أبحاث وتعدين الماس كراعي رسمي وحامل لاسم البطولة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="رغم شيوع رعاية الاتصالات للرياضة، إلا أن هذه الحالة المحددة اعتمدت على المورد الطبيعي الرئيس للدولة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">شركات الاتصالات والحلول الرقمية</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">رغم شيوع رعاية الاتصالات للرياضة، إلا أن هذه الحالة المحددة اعتمدت على المورد الطبيعي الرئيس للدولة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">سؤال 7</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">وفقاً لما ورد في الندوة، ما الذي يميز مفهوم &quot;الاتحاد المحاوكَم&quot; أو الاتحاد الرشيد؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">يرتبط هذا المفهوم بالشفافية وإتاحة المعلومات الفنية والتنفيذية للجمهور والمتنافسين.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="تتحقق الحوكمة بوضوح الإجراءات ونشر الأرقام والمعايير للجميع بعيداً عن القرارات الفردية أو الاعتماد على الشخص الواحد.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">إعلان البيانات وضوابط ومعايير اختيار المنتخبات بشفافية على الموقع الإلكتروني</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تتحقق الحوكمة بوضوح الإجراءات ونشر الأرقام والمعايير للجميع بعيداً عن القرارات الفردية أو الاعتماد على الشخص الواحد.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="تتطلب الحوكمة استدامة مالية وتنويعاً لمصادر الدخل ولا تقتصر على تلقي الدعم الحكومي.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">الاعتماد الكامل على التمويل الحكومي دون البحث عن رعاة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تتطلب الحوكمة استدامة مالية وتنويعاً لمصادر الدخل ولا تقتصر على تلقي الدعم الحكومي.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="الحوكمة هي نظام إدارة وشفافية وليست اختيارات تتعلق بنوعية المسابقات المنظمة.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">التركيز على إقامة البطولات المحلية وتجاهل المشاركات الدولية</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">الحوكمة هي نظام إدارة وشفافية وليست اختيارات تتعلق بنوعية المسابقات المنظمة.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="يعتبر الاعتماد على الشخص الواحد (One-man show) نقيضاً صريحاً للحوكمة والإدارة المؤسسية المستدامة.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">حصر جميع الصلاحيات والقرارات في يد رئيس الاتحاد فقط</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يعتبر الاعتماد على الشخص الواحد (One-man show) نقيضاً صريحاً للحوكمة والإدارة المؤسسية المستدامة.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">سؤال 8</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما الفرق الجوهري بين الشراكة التسويقية (Partnership) والتبرع التقليدي (Donation)؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">ركز على جانب المنفعة المتبادلة والاستثمار التجاري للطرفين.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="التبرع عادة ما يكون مقطوعاً وغير مستدام لأنه يعتمد على ظروف المتبرع شخصياً.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">التبرع يمنح المؤسسة التزاماً مالياً مستمراً لسنوات طويلة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">التبرع عادة ما يكون مقطوعاً وغير مستدام لأنه يعتمد على ظروف المتبرع شخصياً.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="تتطلب الشراكة مرحلة تفعيل مستمرة وتقارير ختامية لقياس العائد على الاستثمار.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">الشراكة التسويقية تنتهي بمجرد دفع المبلغ دون الحاجة إلى تفعيل</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تتطلب الشراكة مرحلة تفعيل مستمرة وتقارير ختامية لقياس العائد على الاستثمار.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="تُبنى الشراكة على فهم احتياجات الراعي التجارية وتقديم مقابل استثماري وقيمة مضافة له بعكس التبرع.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">الشراكة تقدم حزمة من الحقوق المحددة بناءً على أهداف الراعي وتضمن منفعة متبادلة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تُبنى الشراكة على فهم احتياجات الراعي التجارية وتقديم مقابل استثماري وقيمة مضافة له بعكس التبرع.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="المتبرع التقليدي غالباً لا يطلب تقارير تسويقية تفصيلية أو عوائد استثمارية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">التبرع يتطلب تقديم تقارير أداء تفصيلية للجهة المتبرعة</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">المتبرع التقليدي غالباً لا يطلب تقارير تسويقية تفصيلية أو عوائد استثمارية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">سؤال 9</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">في دورة الرعاية التسويقية المكونة من 7 خطوات، ما هما الخطوتان اللتان يقع فيهما الخطأ الشائع بإهمالهما بعد التعاقد؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تأتي هاتان الخطوتان في نهاية خطة العمل لضمان استدامة العلاقة مع الشريك.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="البحث والاستهداف هما الخطوتان الأوليان في بداية العملية وليستا في نهايتها.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">البحث والاستهداف</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">البحث والاستهداف هما الخطوتان الأوليان في بداية العملية وليستا في نهايتها.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="تجهيز الأصول والتسعير خطوات سابقة للتعاقد والعرض المباشر على الشريك.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">تحديد الأصول والتسعير</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تجهيز الأصول والتسعير خطوات سابقة للتعاقد والعرض المباشر على الشريك.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="لا يمكن توقيع العقد أو استلام الأموال دون المرور بمرحلتي العرض والتفاوض.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">إعداد العرض والتفاوض</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">لا يمكن توقيع العقد أو استلام الأموال دون المرور بمرحلتي العرض والتفاوض.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="يتوقف الكثيرون عند التعاقد واستلام الأموال، بينما تفعيل الرعاية وإثبات العائد بالتقارير هما ما يضمنان تجديد العقود.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">تفعيل الرعاية وتقديم التقرير الختامي</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">يتوقف الكثيرون عند التعاقد واستلام الأموال، بينما تفعيل الرعاية وإثبات العائد بالتقارير هما ما يضمنان تجديد العقود.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">سؤال 10</span>
+            <span class="q-of">/ 10</span>
+          </div>
+          <div class="q-text">ما هي المدة الزمنية الموصى بها لإرسال المقترح التسويقي للشريك المحتمل قبل تاريخ تنفيذ الحدث الرياضي؟</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">تحتاج الشركات عادة لنصف عام على الأقل لتضمين الرعايا في ميزانياتها المالية.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="تتطلب الشركات المحترفة فترة زمنية كافية لمراجعة ميزانياتها وتخطيط مشاركتها التسويقية بشكل محترف.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">6 أشهر على الأقل</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">تتطلب الشركات المحترفة فترة زمنية كافية لمراجعة ميزانياتها وتخطيط مشاركتها التسويقية بشكل محترف.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="هذه المدى قصيرة جداً وتعطي انطباعاً بعدم الاحترافية وتمنع الشركات من إدراج الحدث في خططها.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">أسبوعان فقط</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">هذه المدى قصيرة جداً وتعطي انطباعاً بعدم الاحترافية وتمنع الشركات من إدراج الحدث في خططها.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="رغم أن البطولات الكبرى تُخطط مبكراً، إلا أن فترة تقديم المقترحات التشغيلية للرعاية تكون عادة في حدود أمتار زمنية أقصر للاتحادات الوطنية.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">ثلاث سنوات</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">رغم أن البطولات الكبرى تُخطط مبكراً، إلا أن فترة تقديم المقترحات التشغيلية للرعاية تكون عادة في حدود أمتار زمنية أقصر للاتحادات الوطنية.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="إرسال العروض قبل الحدث بأيام قليلة يُفقد العرض قيمته ولا يتيح أي مجال لتفعيل الرعاية.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">قبل الحدث بيومين</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">إرسال العروض قبل الحدث بأيام قليلة يُفقد العرض قيمته ولا يتيح أي مجال لتفعيل الرعاية.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">السؤال التالي ←</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>اكتمل الاختبار!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">حاول مرة أخرى</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"ما هي الفترة الزمنية المحددة للخطط الاستراتيجية الجديدة للاتحاد الدولي لألعاب القوى المذكورة في المحاضرة؟","hint":"فكر في فترة الأربع سنوات التي تبدأ من العام الحالي المذكور في خطة النمو.","options":[{"label":"A","text":"2025 إلى 2030","isCorrect":false,"rationale":"يمثل عام 2030 خطة طويلة المدى لبطولات الماراثون المستقلة وليس مدا الاستراتيجية الشاملة."},{"label":"B","text":"2024 إلى 2027","isCorrect":true,"rationale":"تستند هذه الاستراتيجية المحدثة إلى النجاحات المنجزة حتى عام 2023 وتمتد لتغطي الدورة حتى عام 2027."},{"label":"C","text":"2023 إلى 2028","isCorrect":false,"rationale":"ورغم أن العام 2023 شهد تقييم الخطوات السابقة، إلا أن الإطار المستهدف ينتهي في عام 2027."},{"label":"D","text":"2020 إلى 2025","isCorrect":false,"rationale":"هذه الفترة الزمنية ترتبط بدورات أولمبية سابقة ولا تمثل المدى الزمني للاستراتيجية المعتمدة حالياً."}]},{"question":"ما هي الأركان الثلاثة التي تشكل رؤية الاتحاد الدولي لألعاب القوى؟","hint":"تتضمن الرؤية مصطلحات بالإنجليزية هي (Grow, Inspire, Lead).","options":[{"label":"A","text":"التوسع، الإعلام، الرعاية","isCorrect":false,"rationale":"تركز هذه المفاهيم على الجانب التسويقي والإعلامي بشكل خاص بينما تعبر الرؤية عن أهداف شاملة للرياضة."},{"label":"B","text":"المنافسة، الاحتراف، التسويق","isCorrect":false,"rationale":"تعد هذه عناصر تنفيذية في الرياضة وليست العناوين الرئيسة الثلاثة لرؤية الاتحاد الدولي."},{"label":"C","text":"التدريب، الحوكمة، الاستثمار","isCorrect":false,"rationale":"تُمثل هذه النقاط أدوات لتمكين المؤسسات الرياضية ولكنها لا تعبر عن المحاور الثلاثة للرؤية."},{"label":"D","text":"النمو، الإلهام، القيادة","isCorrect":true,"rationale":"تعتمد الرؤية على زيادة الممارسة (النمو)، وتنظيم بطولات ملهمة (الإلهام)، والعمل وفق قواعد الحوكمة والشفافية (القيادة)."}]},{"question":"بحسب المحاضرة، ما هي الفئة العمرية التي تم تحديدها ضمن القوى الخارجية التي ينبغي استخدام أساليب مبتكرة لجذبها نحو الرياضة؟","hint":"تغطي هذه الفئة العمرية المتابعين من سن المراهقة وحتى أواخر الثلاثينيات.","options":[{"label":"A","text":"من 5 إلى 12 سنة","isCorrect":false,"rationale":"تعد هذه الفئة مستهدفة في برامج أطفال المدارس وليست الفئة المحددة ضمن دراسة الجيل الزيد والألفا."},{"label":"B","text":"من 13 إلى 37 سنة","isCorrect":true,"rationale":"تُمثل هذه الفئة الجيلين (Gen Z و Gen Alpha) الذين يفضلون المحتوى الرقمي التفاعلي والمنبثق بدلاً من المتابعة التقليدية."},{"label":"C","text":"من 40 إلى 60 سنة","isCorrect":false,"rationale":"تندرج هذه الفئة غالباً ضمن فئة الرواد أو المتابعين التقليديين ذوي أنماط المشاهدة الثابتة."},{"label":"D","text":"من 18 إلى 25 سنة فقط","isCorrect":false,"rationale":"هذا النطاق ضيق جداً ولا يستوعب الشريحة الكاملة للجيل المستهدف الممتد عبر جيلين."}]},{"question":"ما هي الفعالية الرياضية المبتكرة التي يُزمع تنظيمها بالتعاون مع شركة \"تكنوجيم\" (Technogym) لتعزيز رياضة ألعاب القوى؟","hint":"تعتمد الفعالية على أجهزة اللياقة البدنية المتوفرة في الصالات الرياضية المغلقة.","options":[{"label":"A","text":"بطولة الماراثون في الطرق الوعرة","isCorrect":false,"rationale":"هذا النوع من السباقات قائم بالفعل كسباقات طرق وليس بالتعاون التكنولوجي مع شركات معدات الصالات الرياضية."},{"label":"B","text":"مسابقة ران إكس (Run X) على أجهزة السير المتحرك","isCorrect":true,"rationale":"تستهدف هذه المسابقة دخول الأندية الصحية (الجيمات) واستغلال شغف ممارسي الرياضة البدنية بتنظيم بطولة على التريد ميل."},{"label":"C","text":"دوري القفز بالزانة في الميادين المفتوحة","isCorrect":false,"rationale":"تعتبر هذه فكرة لتطوير استغلال الأماكن العامة ولكنها لا ترتبط بشركة المعدات الرياضية المذكورة."},{"label":"D","text":"سباق التتابع الافتراضي للرواد","isCorrect":false,"rationale":"رغم وجود مسابقات افتراضية، إلا أن البطولة المحددة في الخطوة الاستراتيجية هي مسابقة جري داخل الأندية الصحية."}]},{"question":"ما النسبة المئوية من عوائد الاتحاد الدولي لألعاب القوى التي يتم إعادة إعادة توجيهها للرياضيين والبطولات والاتحادات الوطنية؟","hint":"تتجاوز هذه النسبة ثلاثة أرباع إجمالي الدخل المالي للاتحاد.","options":[{"label":"A","text":"80%","isCorrect":true,"rationale":"يخصص الاتحاد الدولي غالبية مداخيله لدعم النشاط الرياضي وحماية النزاهة وتطوير الاتحادات الأعضاء."},{"label":"B","text":"30%","isCorrect":false,"rationale":"لا تُنفق غالبية الميزانية على المصاريف الإدارية كما تحي هذه النسبة المتدنية."},{"label":"C","text":"100%","isCorrect":false,"rationale":"يحتاج الاتحاد احتجاز جزء من الميزانية للتكاليف التشغيلية والتسويقية والتطويرية المؤسسية."},{"label":"D","text":"50%","isCorrect":false,"rationale":"هذه النسبة أقل بكثير مما يخصصه الاتحاد الدولي لإعادة الاستثمار في اللعبة وأبطالها."}]},{"question":"في قصة النجاح الخاصة ببطولة العالم للتتابع في بوتسوانا، ما هو مجال نشاط الراعي الاسمِي (Title Sponsor) الذي دعم البطولة؟","hint":"ترتبط هذه الشركة بأحد أغلى الأحجار الكريمة المستخرجة في بوتسوانا.","options":[{"label":"A","text":"صناعة السيارات والملحقات","isCorrect":false,"rationale":"قطاع السيارات لم يكن الشريك التجاري المحلي الذي قدم الرعاية الرئيسية للحدث."},{"label":"B","text":"المشروبات والأغذية الرياضية","isCorrect":false,"rationale":"لم تكن شركة المشروبات هي الراعي الأساسي المستهدف في حالة خبيرون بـ بوتسوانا."},{"label":"C","text":"تعدين واستخراج الماس","isCorrect":true,"rationale":"شاركت شركة \"ديبسوانا\" المتخصصة في أبحاث وتعدين الماس كراعي رسمي وحامل لاسم البطولة."},{"label":"D","text":"شركات الاتصالات والحلول الرقمية","isCorrect":false,"rationale":"رغم شيوع رعاية الاتصالات للرياضة، إلا أن هذه الحالة المحددة اعتمدت على المورد الطبيعي الرئيس للدولة."}]},{"question":"وفقاً لما ورد في الندوة، ما الذي يميز مفهوم \"الاتحاد المحاوكَم\" أو الاتحاد الرشيد؟","hint":"يرتبط هذا المفهوم بالشفافية وإتاحة المعلومات الفنية والتنفيذية للجمهور والمتنافسين.","options":[{"label":"A","text":"إعلان البيانات وضوابط ومعايير اختيار المنتخبات بشفافية على الموقع الإلكتروني","isCorrect":true,"rationale":"تتحقق الحوكمة بوضوح الإجراءات ونشر الأرقام والمعايير للجميع بعيداً عن القرارات الفردية أو الاعتماد على الشخص الواحد."},{"label":"B","text":"الاعتماد الكامل على التمويل الحكومي دون البحث عن رعاة","isCorrect":false,"rationale":"تتطلب الحوكمة استدامة مالية وتنويعاً لمصادر الدخل ولا تقتصر على تلقي الدعم الحكومي."},{"label":"C","text":"التركيز على إقامة البطولات المحلية وتجاهل المشاركات الدولية","isCorrect":false,"rationale":"الحوكمة هي نظام إدارة وشفافية وليست اختيارات تتعلق بنوعية المسابقات المنظمة."},{"label":"D","text":"حصر جميع الصلاحيات والقرارات في يد رئيس الاتحاد فقط","isCorrect":false,"rationale":"يعتبر الاعتماد على الشخص الواحد (One-man show) نقيضاً صريحاً للحوكمة والإدارة المؤسسية المستدامة."}]},{"question":"ما الفرق الجوهري بين الشراكة التسويقية (Partnership) والتبرع التقليدي (Donation)؟","hint":"ركز على جانب المنفعة المتبادلة والاستثمار التجاري للطرفين.","options":[{"label":"A","text":"التبرع يمنح المؤسسة التزاماً مالياً مستمراً لسنوات طويلة","isCorrect":false,"rationale":"التبرع عادة ما يكون مقطوعاً وغير مستدام لأنه يعتمد على ظروف المتبرع شخصياً."},{"label":"B","text":"الشراكة التسويقية تنتهي بمجرد دفع المبلغ دون الحاجة إلى تفعيل","isCorrect":false,"rationale":"تتطلب الشراكة مرحلة تفعيل مستمرة وتقارير ختامية لقياس العائد على الاستثمار."},{"label":"C","text":"الشراكة تقدم حزمة من الحقوق المحددة بناءً على أهداف الراعي وتضمن منفعة متبادلة","isCorrect":true,"rationale":"تُبنى الشراكة على فهم احتياجات الراعي التجارية وتقديم مقابل استثماري وقيمة مضافة له بعكس التبرع."},{"label":"D","text":"التبرع يتطلب تقديم تقارير أداء تفصيلية للجهة المتبرعة","isCorrect":false,"rationale":"المتبرع التقليدي غالباً لا يطلب تقارير تسويقية تفصيلية أو عوائد استثمارية."}]},{"question":"في دورة الرعاية التسويقية المكونة من 7 خطوات، ما هما الخطوتان اللتان يقع فيهما الخطأ الشائع بإهمالهما بعد التعاقد؟","hint":"تأتي هاتان الخطوتان في نهاية خطة العمل لضمان استدامة العلاقة مع الشريك.","options":[{"label":"A","text":"البحث والاستهداف","isCorrect":false,"rationale":"البحث والاستهداف هما الخطوتان الأوليان في بداية العملية وليستا في نهايتها."},{"label":"B","text":"تحديد الأصول والتسعير","isCorrect":false,"rationale":"تجهيز الأصول والتسعير خطوات سابقة للتعاقد والعرض المباشر على الشريك."},{"label":"C","text":"إعداد العرض والتفاوض","isCorrect":false,"rationale":"لا يمكن توقيع العقد أو استلام الأموال دون المرور بمرحلتي العرض والتفاوض."},{"label":"D","text":"تفعيل الرعاية وتقديم التقرير الختامي","isCorrect":true,"rationale":"يتوقف الكثيرون عند التعاقد واستلام الأموال، بينما تفعيل الرعاية وإثبات العائد بالتقارير هما ما يضمنان تجديد العقود."}]},{"question":"ما هي المدة الزمنية الموصى بها لإرسال المقترح التسويقي للشريك المحتمل قبل تاريخ تنفيذ الحدث الرياضي؟","hint":"تحتاج الشركات عادة لنصف عام على الأقل لتضمين الرعايا في ميزانياتها المالية.","options":[{"label":"A","text":"6 أشهر على الأقل","isCorrect":true,"rationale":"تتطلب الشركات المحترفة فترة زمنية كافية لمراجعة ميزانياتها وتخطيط مشاركتها التسويقية بشكل محترف."},{"label":"B","text":"أسبوعان فقط","isCorrect":false,"rationale":"هذه المدى قصيرة جداً وتعطي انطباعاً بعدم الاحترافية وتمنع الشركات من إدراج الحدث في خططها."},{"label":"C","text":"ثلاث سنوات","isCorrect":false,"rationale":"رغم أن البطولات الكبرى تُخطط مبكراً، إلا أن فترة تقديم المقترحات التشغيلية للرعاية تكون عادة في حدود أمتار زمنية أقصر للاتحادات الوطنية."},{"label":"D","text":"قبل الحدث بيومين","isCorrect":false,"rationale":"إرسال العروض قبل الحدث بأيام قليلة يُفقد العرض قيمته ولا يتيح أي مجال لتفعيل الرعاية."}]}];
+const tr = {"correct":"صحيح!","incorrect":"خطأ","next":"السؤال التالي ←","seeResults":"عرض النتائج","complete":"اكتمل الاختبار!","scoreText":"أجبت {correct} من {total} بشكل صحيح","tryAgain":"حاول مرة أخرى","rightAnswer":"إجابة صحيحة","notQuite":"ليس تماماً"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
